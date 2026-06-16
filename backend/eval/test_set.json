@@ -1,0 +1,118 @@
+{
+  "description": "测试用例集 — 用于评估 DeepResearch Agent 输出质量",
+  "topics": [
+    {
+      "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+      "domain": "科技",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "expected_key_facts": [
+        "GitHub Copilot、Claude Code、Cursor、Codeium 等主要产品",
+        "各玩家的融资、估值和市场份额",
+        "差异化策略（如 Claude Code 的 Harness 方向、Cursor 的编辑器整合）",
+        "企业 vs 个人开发者的定价策略"
+      ]
+    },
+    {
+      "topic": "2025年人民币汇率走势分析及主要影响因素",
+      "domain": "金融",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "expected_key_facts": [
+        "美联储货币政策走向",
+        "中国央行汇率管理措施",
+        "中美利差变化",
+        "进出口数据和经常账户状况",
+        "主要机构对人民币汇率的预测"
+      ]
+    },
+    {
+      "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+      "domain": "科技+政策",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "expected_key_facts": [
+        "FSD V12/V13 的技术架构和性能指标",
+        "美国NHTSA和加州DMV的监管要求",
+        "中国工信部对自动驾驶的审批流程",
+        "特斯拉在中国面临的数据合规挑战",
+        "FSD在中美两地的用户反馈和事故数据"
+      ]
+    },
+    {
+      "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+      "domain": "产业政策",
+      "difficulty": "high",
+      "initial_search_query_count": 5,
+      "max_research_loops": 10,
+      "expected_key_facts": [
+        "美国芯片法案实施进展",
+        "欧盟芯片法案和投资计划",
+        "日本Rapidus和韩国三星/海力士的扩产计划",
+        "中国大陆半导体自主化进展和瓶颈",
+        "台积电全球布局（美国、日本、德国工厂）"
+      ]
+    },
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "domain": "技术方法论",
+      "difficulty": "low",
+      "initial_search_query_count": 1,
+      "max_research_loops": 1,
+      "expected_key_facts": [
+        "SDD 的核心概念和流程",
+        "AGENTS.md 和 CLAUDE.md 的设计目的和使用方式",
+        "两者在AI辅助开发中的分工",
+        "业界采用情况和案例"
+      ]
+    },
+    {
+      "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+      "domain": "科技",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "user_feedback": "看起来很全面，可以开始了",
+      "expected_intent": "proceed"
+    },
+    {
+      "topic": "2025年人民币汇率走势分析及主要影响因素",
+      "domain": "金融",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "user_feedback": "不要分析中国市场，改为分析东南亚市场的汇率走势",
+      "expected_intent": "replan"
+    },
+    {
+      "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+      "domain": "科技+政策",
+      "difficulty": "medium",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "user_feedback": "方向对的，但请再加入对开源自动驾驶方案（如Comma.ai）的竞争分析",
+      "expected_intent": "replan"
+    },
+    {
+      "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+      "domain": "产业政策",
+      "difficulty": "high",
+      "initial_search_query_count": 5,
+      "max_research_loops": 10,
+      "user_feedback": "可以",
+      "expected_intent": "proceed"
+    },
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "domain": "技术方法论",
+      "difficulty": "low",
+      "initial_search_query_count": 1,
+      "max_research_loops": 1,
+      "user_feedback": "这个计划完全不对，我需要的是对比分析SDD与传统开发方法的差异，不是介绍性内容",
+      "expected_intent": "replan"
+    }
+  ]
+}

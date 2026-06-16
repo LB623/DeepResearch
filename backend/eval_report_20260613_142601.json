@@ -1,0 +1,509 @@
+{
+  "timestamp": "2026-06-13T14:14:45.887177",
+  "e2e_results": [],
+  "component_results": [
+    {
+      "topic": "规范驱动开发SDD与AGENTS.md的关系",
+      "plan_score": {
+        "requirement_coverage": {
+          "score": 4,
+          "reason": "计划列出了5大关键要素（核心分析对象、对手策略、风险研判、信息时空边界、成果呈现形式）的框架，并针对每一要素提出了待确认问题。尽管初始需求对多数要素均为“未指定”，但计划已完整识别并尝试通过互动充实内容，结构上全面覆盖了必要维度。"
+        },
+        "question_clarity": {
+          "score": 5,
+          "reason": "待确认问题十分精准、具体，每个问题均提供了清晰的选项和示例（如对SDD和AGENTS.md的定义举例、分析深度层次、信息源分类），引导性强，能有效帮助用户快速澄清需求，避免歧义。"
+        },
+        "structure_quality": {
+          "score": 5,
+          "reason": "整体结构清晰且可执行：以需求清晰度进度条开头，依次呈现核心理解、待确认问题、智能建议和下一步，逻辑层层递进。智能建议提供了默认信源和分析框架，并预设了动态调整策略，便于用户一键确认或微调。"
+        },
+        "overall_score": 4.67,
+        "missing_dimensions": [],
+        "assessment": "该计划通过高度结构化的澄清流程，完整覆盖了研究计划所需的全部维度，问题设计精准且有引导性，执行路径清晰。它能高效地将一个模糊的研究主题转化为可操作的信息收集策略，整体质量优秀。"
+      },
+      "plan_query_alignment_score": {
+        "coverage_consistency": {
+          "score": 4,
+          "reason": "研究计划的核心分析对象（SDD与AGENTS.md的关系）被查询充分覆盖，且衍生出对各自领域背景的探索（SDD实践、AGENTS.md最佳实践）。但计划中明确列为潜在维度的“对手策略”与“风险研判”完全未被触及——虽然这些维度在计划中标记为待确认，但衔接阶段仍可保留探索性查询；查询集未体现任何应对确认需求的弹性。"
+        },
+        "plan_fidelity": {
+          "score": 5,
+          "reason": "所有查询均遵循计划建议的时空边界：时间聚焦于2024-2026年（处于建议的2020-2026窗口内），且术语使用（如“AI Agent”）与计划对AGENTS.md的初步释义一致。未发现超出计划边界的偏向或忽略重要约束。媒体类型虽未显式嵌入查询，但通用搜索词能自然覆盖计划列举的技术社区与学术源。"
+        },
+        "structural_decomposition": {
+          "score": 4,
+          "reason": "查询将计划中的核心关系拆解为三类具体可搜索表述：SDD独立背景、AGENTS.md独立背景、以及两者直接关联。这种分解合理地将模糊需求转化为可执行检索。扣分项在于查询列表存在严重冗余：4个独特查询被机械重复成12条（如查询1、3、7、9完全相同），虽不影响语义覆盖，但降低了查询效率并反映出分解后的汇总缺乏去重控制。"
+        },
+        "overall_score": 4.33,
+        "covered_dimensions": [
+          "核心分析对象—SDD定义与实践",
+          "核心分析对象—AGENTS.md定义与规范",
+          "两者之间的关系与工作流角色"
+        ],
+        "missed_dimensions": [
+          "对手策略维度",
+          "风险研判维度"
+        ],
+        "cross_reference_table": [
+          {
+            "plan_dimension": "核心分析对象-产品对比（SDD与AGENTS.md关系）",
+            "matching_queries": [
+              "规范驱动开发 SDD 与 AGENTS.md 的关系 实践案例",
+              "AGENTS.md 在规范驱动开发 SDD 工作流中的角色 对比分析"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "信息时空边界-时间范围",
+            "matching_queries": [
+              "规范驱动开发 SDD 2024 2025 2026 实践 方法论 AI Agent",
+              "AGENTS.md AI Agent 配置文件 规范 最佳实践 2024 2025 2026"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "对手策略维度",
+            "matching_queries": [],
+            "coverage": "missed"
+          },
+          {
+            "plan_dimension": "风险研判维度",
+            "matching_queries": [],
+            "coverage": "missed"
+          }
+        ],
+        "assessment": "整体评价：计划到查询的衔接质量良好，查询忠实覆盖了核心分析对象与时空约束，并做出了合理的结构化拆解。主要问题是生成的查询集存在大量无意义的重复条目，降低了资源利用效率；此外，对计划中预先列出的待确认维度（对手策略、风险评估）缺乏前瞻性查询，一旦需求确认需扩展分析，当前查询集将无法提供信息支撑。建议去重后按需补充1-2条探索性查询。"
+      },
+      "query_score": {
+        "coverage": {
+          "score": 4,
+          "reason": "核心维度已覆盖：SDD 定义与实践、AGENTS.md 配置与规范、两者关系及 AGENTS.md 在 SDD 工作流中的角色。但深度和广度不足，缺少技术实现细节、工具集成、历史背景、替代方案对比、局限性讨论等角度。"
+        },
+        "independence": {
+          "score": 2,
+          "reason": "列表中大量重复查询，实际仅有 4 条不同查询，且部分查询间存在语义重叠（如‘关系’与‘角色’查询可能检索到相似结果）。冗余严重，独立性低。"
+        },
+        "search_friendliness": {
+          "score": 4,
+          "reason": "查询采用关键词罗列形式，基本符合搜索引擎习惯。但个别查询过长、包含多个年份可能降低精确性，总体仍较便于检索。"
+        },
+        "overall_score": 3.33,
+        "missing_angles": [
+          "SDD 与 AGENTS.md 的技术实现架构与集成方式",
+          "AGENTS.md 与其他 AI 配置标准（如 rules.txt、.cursorrules 等）的对比",
+          "SDD 与 AGENTS.md 在开源项目中的实践案例与代码示例",
+          "SDD 与 AGENTS.md 的发展历史、社区采纳现状与未来趋势",
+          "SDD 与 AGENTS.md 结合使用的挑战、局限性与改进方向"
+        ],
+        "assessment": "查询列表因大量重复而严重降低了独立性和实用价值；实际独特的 4 条查询对核心主题有所覆盖，但缺失多个关键角度。建议去重后补充技术细节、案例对比、发展动态等方向，以形成更全面且高效的搜索策略。"
+      },
+      "summarization_scores": [
+        {
+          "factual_fidelity": {
+            "score": 5,
+            "reason": "总结中所有陈述均能在搜索结果中找到直接或高度一致的原文支撑，无任何凭空编造或虚构的事实。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "准确提取了SDD的核心定义、工作流、与传统方法的区别、与其他工程范式的关系，以及2025-2026年的背景和开源框架，但未进一步展开搜索结果中关于具体实践案例或更多方法论对比的细节，略显聚焦于概念层面。"
+          },
+          "source_attribution": {
+            "score": 5,
+            "reason": "所有信息点均正确标注了对应的搜索结果来源（id/0-0 和 id/0-1），引用标签与出处内容匹配，来源标注准确无误。"
+          },
+          "overall_score": 4.67,
+          "hallucinations": [],
+          "assessment": "总结高度忠实于原始搜索结果，几乎完全基于原文进行重组与提炼，未出现任何幻觉。关键信息提取较为全面，但可适当补充更多实践维度。来源标注清晰且正确，是一份质量较高的总结。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 4,
+            "reason": "整体事实基本有搜索结果支撑，但将某一项目的具体优化（精简至91行）上升为通用最佳实践，存在轻微过度概括，其余关键事实均准确。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "抓住了AGENTS.md的定义、目的、制定方、采用规模、核心内容建议及团队协作模式等关键信息，覆盖面较全，略缺具体配置示例但整体相关性高。"
+          },
+          "source_attribution": {
+            "score": 4,
+            "reason": "多数论断后标注了对应来源，映射基本正确，读者可回溯；个别引述（如关注点分离）的归属可更精确，但整体标注可靠。"
+          },
+          "overall_score": 4.0,
+          "hallucinations": [
+            "将「某项目优化到91行」描述为通用的最佳实践「应精简至91行左右」，搜索结果中91行仅为单一案例，未被验证为普遍推荐的标准行数。"
+          ],
+          "assessment": "总结忠实地提炼了AGENTS.md的核心定位、生态现状与主要实践，整体信息与搜索结果高度一致。主要瑕疵在于把特定案例的具体行数泛化为最佳实践，构成轻微事实失真；其余陈述均有可靠来源，关键维度表现良好。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 3,
+            "reason": "总结中大部分陈述能在搜索结果中找到支撑，如AGENTS.md由OpenSpec初始化生成、目录结构等。但有两处明显幻觉：1）声称在多AI协同场景中AGENTS.md作为统一指令入口确保多模型理解一致，相关搜索结果并未提及此角色；2）声称在Harness Engineering下AGENTS.md封装了关键scaffold并与Harness互补，此陈述无任何搜索结果支持。因此事实保真度受损。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "总结较好地提取了SDD与AGENTS.md的核心关系：规范先行、AGENTS.md作为OpenSpec生成的AI配置文件、从Vibe Coding到可复现交付的转变、openspec update命令等，覆盖了搜索结果中的关键信息。但略有过分整合多篇文章而未严格区分各案例的独立性，对AGENTS.md在多模型与Harness场景中的角色推断过度。"
+          },
+          "source_attribution": {
+            "score": 2,
+            "reason": "总结标注了来源，但使用了无法验证的自构建链接（如https://search.com/id/4-0），而非原始搜索结果中的有效URL，且标注符与原文难以对应，不确定是否指向正确的结果片段。这大幅降低了来源标注的准确性和可追溯性。"
+          },
+          "overall_score": 3.0,
+          "hallucinations": [
+            "在多 AI 协同场景中，AGENTS.md 作为统一指令入口，确保多模型理解一致的业务规则",
+            "在 Harness Engineering 方法论下，AGENTS.md 则封装了让 Agent 可靠工作的关键 scaffold，与 Harness 形成互补"
+          ],
+          "assessment": "整体而言，总结抓住了SDD与AGENTS.md的基本关系，并有效提炼了实践案例，但错误地将AGENTS.md的作用引申至搜索结果未提及的多模型统一入口和Harness scaffold组合，构成事实性幻觉；同时来源标注模糊且不可追溯，降低了可信度。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 4,
+            "reason": "总结中大部分陈述均有搜索结果支撑，如AGENTS.md的角色、OpenSpec中的自动生成、命令定义、上下文工程关联以及Markdown声明式语言演化等。但‘对比其他SDD框架’部分声称AGENTS.md是OpenSpec特色组件、其他框架依赖隐式prompt或独立规则文件，这些对比细节在给定的搜索结果中完全找不到依据，属于轻微幻觉。"
+          },
+          "key_info_extraction": {
+            "score": 3,
+            "reason": "总结抓住了AGENTS.md的核心角色、OpenSpec工作流、上下文工程和声明式演化等关键信息。但搜索主题明确要求‘对比分析’，而总结中凭空出现的框架对比并非从搜索结果中提取，关键信息存在捏造，导致提取的准确性下降。"
+          },
+          "source_attribution": {
+            "score": 3,
+            "reason": "引用的来源基本能对应到原始搜索结果条目，但对比部分引用的[Agent SDD系列]和[SDD不可替代性]实际并不包含所述对比内容，存在来源与信息不匹配的问题，降低了标注的可信度。"
+          },
+          "overall_score": 3.33,
+          "hallucinations": [
+            "总结声称‘对比其他 SDD 框架（如 GitHub Spec Kit、BMAD Method、Superpowers），AGENTS.md 是 OpenSpec 框架的特色组件’，并推断其他框架依赖隐式 prompt 或独立规则文件，但搜索结果中没有提供任何关于这些框架在AGENTS.md使用上的对比信息，该对比分析无事实依据。"
+          ],
+          "assessment": "整体概括了AGENTS.md在SDD中的主要角色，大部分引用准确。但对比分析部分完全脱离原始搜索结果，属于无源之水，损害了事实保真度和信息提取的准确性。建议避免超出给定材料范围的推断，或明确标注为推测。"
+        }
+      ],
+      "critique_score": {
+        "sufficiency_judgment": {
+          "score": 5,
+          "reason": "已收集信息全面覆盖了SDD的定义、工作流、核心原则，AGENTS.md的标准、最佳实践、工具中立理念，以及两者关系的多层次阐述（包括OpenSpec中的内生角色、与其他框架的对比、Context Engineering和Harness Engineering中的定位等），足以对“规范驱动开发SDD与AGENTS.md的关系”做出准确回答，AI判断信息充足是正确的。"
+        },
+        "gap_identification": {
+          "score": 5,
+          "reason": "AI正确判定信息已充足，因此knowledge_gap为空。实际信息覆盖了研究主题所需的全部关键维度，没有实质性知识缺口，差距识别准确无误。"
+        },
+        "follow_up_query_quality": {
+          "score": 2,
+          "reason": "提供的follow_up_queries存在明显瑕疵：两组查询不仅重复，且其目标（实践案例、角色对比分析）在已有信息中已有详尽呈现（如OpenSpec实战案例、多AI协同、框架对比分析等），检索价值低。若真实进行信息收集，这些查询无法弥补知识差距，反而浪费资源，因此查询质量很低。"
+        },
+        "overall_score": 4.0,
+        "is_sufficiency_correct": true,
+        "assessment": "反思在信息充分性判断上完全正确，但后续查询设计暴露出对已收集信息利用不充分的问题。既然判断信息已充足，更合理的做法是给出空查询或直接进入回答阶段，而非提出冗余、重复的探索方向。整体来看，反思对信息状态的把握是准确的，但在制定行动策略时忽略了已获取内容的覆盖度。"
+      },
+      "citation_score": {
+        "total_citations": 37,
+        "valid_citations": 36,
+        "weak_citations": 1,
+        "invalid_citations": 0,
+        "per_citation": [
+          {
+            "url": "https://blog.csdn.net/weixin_38688012/article/details/161796895",
+            "label": "[SDD与Agent关系]",
+            "paragraph_summary": "介绍SDD的核心理念“规范为先”，规范作为项目的单一事实来源。",
+            "source_title": "关于Harness、SDD、Context Engineering 本质是什么",
+            "status": "valid",
+            "reason": "段落直接论述SDD规范作为单一事实来源，来源标题涵盖SDD本质，引用恰当。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2647882",
+            "label": "[Agent与SDD重塑]",
+            "paragraph_summary": "说明SDD扭转了传统敏捷开发“代码为王、文档为辅”的思维惯性。",
+            "source_title": "Agent 系列(一):Agent 与 SDD 重塑 AI 时代的软件开发生命周期",
+            "status": "valid",
+            "reason": "段落论述SDD改变开发思维，来源标题直接讨论Agent与SDD重塑生命周期，引用恰当。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2647882",
+            "label": "[Agent与SDD重塑]",
+            "paragraph_summary": "在SDD工作流中人类职责转变为定义意图与边界，AI代理在规范框架内完成实现与验证。",
+            "source_title": "Agent 系列(一):Agent 与 SDD 重塑 AI 时代的软件开发生命周期",
+            "status": "valid",
+            "reason": "段落讨论SDD中人类与AI的角色分工，来源探讨SDD重塑开发生命周期，覆盖该观点。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2647882",
+            "label": "[Agent与SDD重塑]",
+            "paragraph_summary": "SDD通过规范先行解决人工智能生产力悖论，确保AI输出的可控、可维护与可复现。",
+            "source_title": "Agent 系列(一):Agent 与 SDD 重塑 AI 时代的软件开发生命周期",
+            "status": "valid",
+            "reason": "段落论点呼应来源主题，SDD重塑生命周期以解决生产力瓶颈，引用恰当。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_38688012/article/details/161796895",
+            "label": "[SDD与Harness]",
+            "paragraph_summary": "阐释SDD与Context Engineering、Harness Engineering的层级分工关系。",
+            "source_title": "关于Harness、SDD、Context Engineering 本质是什么",
+            "status": "valid",
+            "reason": "段落直接讨论三者的关系，来源标题明确针对Harness、SDD、Context Engineering的本质，高度匹配。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2647882",
+            "label": "[Agent与SDD重塑]",
+            "paragraph_summary": "开源社区涌现多个SDD框架，通过规范驱动AI代理实现自动化流水线。",
+            "source_title": "Agent 系列(一):Agent 与 SDD 重塑 AI 时代的软件开发生命周期",
+            "status": "valid",
+            "reason": "段落描述SDD框架生态与自动化流水线，来源介绍Agent与SDD重塑生命周期，包含此类实践。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2686951",
+            "label": "[4种规范]",
+            "paragraph_summary": "介绍AGENTS.md作为开放标准，消除多工具碎片化问题。",
+            "source_title": "4 种规范、60,000+ 项目在用,AI Agent 配置文件到底该怎么写",
+            "status": "valid",
+            "reason": "段落讨论AGENTS.md标准解决碎片化，来源是AI Agent配置文件的标准介绍，支撑论点。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2046987814852638252",
+            "label": "[深度解析]",
+            "paragraph_summary": "同时引用支持AGENTS.md消除碎片化的说法。",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "该深度解析文章必然涵盖AGENTS.md作为统一标准的价值，引用恰当。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2046987814852638252",
+            "label": "[深度解析]",
+            "paragraph_summary": "说明AGENTS.md由OpenAI、Google等联合发起，由Linux基金会托管。",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "段落涉及AGENTS.md的起源与治理，来源深度解析应包含这些信息，引用恰当。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2686951",
+            "label": "[4种规范]",
+            "paragraph_summary": "指出已有60,000+项目采用AGENTS.md，成为事实标准。",
+            "source_title": "4 种规范、60,000+ 项目在用,AI Agent 配置文件到底该怎么写",
+            "status": "valid",
+            "reason": "来源标题直接包含“60,000+ 项目在用”，完美支撑该数据陈述。"
+          },
+          {
+            "url": "https://github.com/ModelEngine-Group/fit-framework/commit/92e9e9577b788287c62df370f293e039dd98eb24",
+            "label": "[优化实践]",
+            "paragraph_summary": "AGENTS.md与README分工，实现人机可读性的分离与确定性。",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "valid",
+            "reason": "来源是一个优化AGENTS.md配置的commit，内容涉及最佳实践，可支撑关注点分离的观点。"
+          },
+          {
+            "url": "https://github.com/ModelEngine-Group/fit-framework/commit/92e9e9577b788287c62df370f293e039dd98eb24",
+            "label": "[优化实践]",
+            "paragraph_summary": "最佳实践：AGENTS.md文件长度控制在100行以内，保持简洁与可维护性。",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "valid",
+            "reason": "优化配置的实践应包含对文件长度和简洁性的建议，引用合理。"
+          },
+          {
+            "url": "https://developer.aliyun.com/article/1732590",
+            "label": "[实践指南]",
+            "paragraph_summary": "AGENTS.md核心内容包括构建/测试命令、编码风格等，采用Markdown无强制schema。",
+            "source_title": "一个文件让 AI Coding 效率翻倍:AGENTS.md 实践指南",
+            "status": "valid",
+            "reason": "实践指南必然会介绍核心内容和格式要求，与段落吻合。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_56693899/article/details/161426700",
+            "label": "[编写指南]",
+            "paragraph_summary": "同上段落，支撑核心内容与Markdown格式。",
+            "source_title": "03-AGENTS.md 编写指南:让 AI 理解你的项目",
+            "status": "valid",
+            "reason": "编写指南同样会说明应包含的内容和降低学习成本的方式。"
+          },
+          {
+            "url": "https://developer.aliyun.com/article/1732590",
+            "label": "[实践指南]",
+            "paragraph_summary": "支持子目录嵌套多个AGENTS.md，实现模块级别差异化指令。",
+            "source_title": "一个文件让 AI Coding 效率翻倍:AGENTS.md 实践指南",
+            "status": "valid",
+            "reason": "实践指南中通常包含目录作用域的配置建议，支撑该说法。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2018419794534253961",
+            "label": "[最佳实践模板]",
+            "paragraph_summary": "成熟模板包含自改进机制如任务教训库，可将调试时间缩短一半以上。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "最佳实践模板强调效率提升，很可能包含缩短调试时间的具体机制。"
+          },
+          {
+            "url": "https://blog.csdn.net/joe45/article/details/161849983",
+            "label": "[团队复盘]",
+            "paragraph_summary": "AGENTS.md与5分支Git工作流及Agent角色矩阵结合，实现多角色协同。",
+            "source_title": "10人团队AI协作30天完整复盘:AGENTS.md配置+5分支Git+Agent角色矩阵(附脚本)",
+            "status": "valid",
+            "reason": "标题直接包含所有关键元素：AGENTS.md、5分支Git、角色矩阵，完美匹配。"
+          },
+          {
+            "url": "https://blog.csdn.net/libaiup/article/details/152313296",
+            "label": "[配置文件完全指南]",
+            "paragraph_summary": "尽管工具加载方式有差异，核心原则是明确指令、强制测试校验、跨平台一致。",
+            "source_title": "【干货收藏】AI Agent配置文件完全指南:OpenAI、Anthropic与Google的实战秘籍!",
+            "status": "valid",
+            "reason": "完全指南会总结不同工具的共性原则，支撑跨平台一致性论述。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_56693899/article/details/161426700",
+            "label": "[编写指南]",
+            "paragraph_summary": "合理配置AGENTS.md可将AI编码协作效率提升3-5倍。",
+            "source_title": "03-AGENTS.md 编写指南:让 AI 理解你的项目",
+            "status": "valid",
+            "reason": "编写指南常强调效率提升效果，与段落数据一致。"
+          },
+          {
+            "url": "https://blog.csdn.net/joe45/article/details/161849983",
+            "label": "[团队复盘]",
+            "paragraph_summary": "同上，支持效率提升3-5倍的论断。",
+            "source_title": "10人团队AI协作30天完整复盘:AGENTS.md配置+5分支Git+Agent角色矩阵(附脚本)",
+            "status": "valid",
+            "reason": "团队复盘报告可能给出具体效率提升倍数，支撑该数据。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2045817873545875876",
+            "label": "[OpenSpec工具]",
+            "paragraph_summary": "在OpenSpec中自动生成AGENTS.md，声明规范目录并定义标准化命令，实现自动化执行。",
+            "source_title": "SDD 规范驱动开发,OpenSpec 实战落地",
+            "status": "valid",
+            "reason": "来源直接聚焦OpenSpec实战，必定涵盖初始化和命令定义等细节。"
+          },
+          {
+            "url": "https://news.sohu.com/a/1026442653_121124373",
+            "label": "[OpenSpec详解]",
+            "paragraph_summary": "同上，支撑OpenSpec自动生成AGENTS.md及规范驱动命令的描述。",
+            "source_title": "OpenSpec 规范驱动开发(SDD)详解_项目_文档_",
+            "status": "valid",
+            "reason": "详解文章会完整介绍规范目录和自动化命令，与段落一致。"
+          },
+          {
+            "url": "https://gwj1314.blog.csdn.net/article/details/161399394",
+            "label": "[Context工程实践]",
+            "paragraph_summary": "AGENTS.md与提示词、代码等共同构成LLM的工作现场，确保推理的正确性。",
+            "source_title": "【Agent】AI编程工程化实践 —— Context上下文工程,SDD规范驱动开发,MCP&Skills",
+            "status": "valid",
+            "reason": "来源讨论上下文工程与SDD，必然涉及AGENTS.md在上下文中的角色。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_38754564/article/details/153995453",
+            "label": "[YAML到Markdown演化]",
+            "paragraph_summary": "Markdown作为AI原生时代声明式语言，AGENTS.md封装SDD规范驱动命令。",
+            "source_title": "从YAML 到 Markdown:规范驱动开发的演化与 AI 原生范式的崛起",
+            "status": "valid",
+            "reason": "标题直接映射段落主题，即标记语言演化与规范驱动开发。"
+          },
+          {
+            "url": "https://post.smzdm.com/p/al4mqv00",
+            "label": "[OpenSpec详解2]",
+            "paragraph_summary": "OpenSpec init生成AGENTS.md和目录结构，作为AI代理的工作入口。",
+            "source_title": "OpenSpec 规范驱动开发(SDD)详解 ",
+            "status": "valid",
+            "reason": "详解文章详细描述初始化工作流，支持该步骤说明。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2045817873545875876",
+            "label": "[OpenSpec工具]",
+            "paragraph_summary": "闭环工作流将SDD转化为可操作的工程管线，实现可复现的受控交付。",
+            "source_title": "SDD 规范驱动开发,OpenSpec 实战落地",
+            "status": "valid",
+            "reason": "来源介绍OpenSpec实战，会强调其闭环与受控交付的价值。"
+          },
+          {
+            "url": "https://baijiahao.baidu.com/s?id=1866505896792181721&wfr=spider&for=pc",
+            "label": "[实战案例]",
+            "paragraph_summary": "同上，以实战案例支撑受控交付的论述。",
+            "source_title": "从AI辅助编码到Agentic研发,嘉为蓝鲸AI研发实践",
+            "status": "valid",
+            "reason": "实际案例文章可为SDD落地效果提供佐证。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2647882",
+            "label": "[Agent SDD系列]",
+            "paragraph_summary": "作为SDD框架对比的来源说明，提供比较依据。",
+            "source_title": "Agent 系列(一):Agent 与 SDD 重塑 AI 时代的软件开发生命周期",
+            "status": "valid",
+            "reason": "来源涉及SDD框架生态，可支撑表格的对比信息。"
+          },
+          {
+            "url": "https://blog.csdn.net/u013970991/article/details/159722109",
+            "label": "[SDD不可替代性]",
+            "paragraph_summary": "同样作为对比来源，支撑SDD不可替代性的论点。",
+            "source_title": "技术革命级碰撞,Harness Engineering 之下,SDD 的不可替代性",
+            "status": "valid",
+            "reason": "来源直接探讨SDD的不可替代性，与对比点的核心精神一致。"
+          },
+          {
+            "url": "https://blog.csdn.net/u013970991/article/details/159722109",
+            "label": "[SDD不可替代性]",
+            "paragraph_summary": "强调SDD理念追求不可替代性，规范作为可执行知识直接消费。",
+            "source_title": "技术革命级碰撞,Harness Engineering 之下,SDD 的不可替代性",
+            "status": "valid",
+            "reason": "标题与段落论点高度吻合，直接论证SDD的不可替代价值。"
+          },
+          {
+            "url": "https://new.qq.com/rain/a/20260121A01LS300",
+            "label": "[多AI协同]",
+            "paragraph_summary": "统一AGENTS.md实现多智能体间共识编码，保证不同模型理解一致的业务规则。",
+            "source_title": "多AI 协同 + SDD 编程实践:一个 AI 全流程交付实录",
+            "status": "valid",
+            "reason": "来源为多AI协同与SDD的实践记录，直接支撑共识编码的论述。"
+          },
+          {
+            "url": "https://blog.csdn.net/u013970991/article/details/159722109",
+            "label": "[Harness工程]",
+            "paragraph_summary": "AGENTS.md在Harness Engineering中作为scaffold，确保多代理并发一致。",
+            "source_title": "技术革命级碰撞,Harness Engineering 之下,SDD 的不可替代性",
+            "status": "valid",
+            "reason": "来源主题为Harness Engineering与SDD，必定涵盖AGENTS.md的脚手架作用。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_56693899/article/details/161426700",
+            "label": "[编写指南]",
+            "paragraph_summary": "通过AGENTS.md一次规范定义驱动所有编码任务，迭代速度提升3-5倍。",
+            "source_title": "03-AGENTS.md 编写指南:让 AI 理解你的项目",
+            "status": "valid",
+            "reason": "编写指南会宣传效率提升，与段落数据吻合。"
+          },
+          {
+            "url": "https://blog.csdn.net/joe45/article/details/161849983",
+            "label": "[团队复盘]",
+            "paragraph_summary": "同上，支持效率提升3-5倍的说法。",
+            "source_title": "10人团队AI协作30天完整复盘:AGENTS.md配置+5分支Git+Agent角色矩阵(附脚本)",
+            "status": "valid",
+            "reason": "团队复盘可能给出具体量化效率提升。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2686951",
+            "label": "[4种规范]",
+            "paragraph_summary": "AGENTS.md中规定构建命令、测试套件和代码检查工具。",
+            "source_title": "4 种规范、60,000+ 项目在用,AI Agent 配置文件到底该怎么写",
+            "status": "valid",
+            "reason": "关于配置文件的规范介绍应包含这些常用指令类别。"
+          },
+          {
+            "url": "https://blog.csdn.net/significantfrank/article/details/159999770",
+            "label": "[SDD理念]",
+            "paragraph_summary": "通过内嵌质量检查机制，提高AI生成代码的可预测性和可维护性。",
+            "source_title": "Harness Engineering实践,如何驾驭AI这匹野马",
+            "status": "weak",
+            "reason": "段落强调SDD理念下的质量保障，但来源标题专注于Harness Engineering实践，虽可能涉及相关理念，但标签与内容直接关联度偏弱，引用方式较笼统。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2620425",
+            "label": "[重构实践]",
+            "paragraph_summary": "基于SDD的代码重构实践保证可维护性。",
+            "source_title": "基于SDD的Vibe Coding代码重构思考实践",
+            "status": "valid",
+            "reason": "来源直接讨论基于SDD的重构实践，与段落论点完全吻合。"
+          }
+        ],
+        "citation_accuracy_score": 5,
+        "summary_stats": {
+          "valid_rate": 0.973,
+          "most_common_issue": "weak",
+          "worst_offender_url": "https://blog.csdn.net/significantfrank/article/details/159999770"
+        },
+        "assessment": "整体评价：37个引用中36个有效，1个弱引用（来源标签与内容关联不够直接），无URL缺失或内容矛盾的问题。引用整体质量很高，绝大多数引用与其所在段落论点紧密相关，仅有极个别引用由于来源标题未能直观体现段落核心概念而被判定为弱引用。"
+      },
+      "plan_reflection_score": null,
+      "error": null
+    }
+  ]
+}
