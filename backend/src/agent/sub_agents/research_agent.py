@@ -14,6 +14,8 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 import time
 
 from dotenv import load_dotenv
@@ -23,7 +25,18 @@ from langgraph.types import Send
 from loguru import logger
 
 from agent.base_agent import Agent, JsonAgent, WebSearchAgent
+from agent.checkpoint import get_checkpointer
 from agent.configuration import Configuration
+from agent.kb import FactExtractor, FactStore
+from agent.kb.lifecycle import (
+    FRESHNESS_MAX_AGE,
+    KBLifecycleMode,
+    get_mode,
+    should_decay,
+    should_filter,
+    should_tag,
+    should_warn,
+)
 from agent.post import Post
 from agent.prompts import (
     get_current_date,
@@ -34,16 +47,7 @@ from agent.prompts import (
 from agent.state import OverallState, QueryGenerationState, WebSearchState
 from agent.tools_and_schemas import Reflection, SearchQueryList
 from agent.utils import get_research_topic, resolve_urls
-from agent.kb import FactStore, FactExtractor
-from agent.kb.lifecycle import (
-    FRESHNESS_MAX_AGE,
-    KBLifecycleMode,
-    get_mode,
-    should_decay,
-    should_filter,
-    should_tag,
-    should_warn,
-)
+
 # 注意：agent.exceptions（KBConnectionError、KBConfigError 等）将在 teach-06-exception 中引入。
 # 目前，使用的是标准异常。
 
@@ -75,6 +79,60 @@ def _get_kb_extractor() -> FactExtractor:
 _GENERATE_QUERIES = "generate_queries"
 _WEB_SEARCH = "web_search"
 _CRITIQUE = "critique"
+
+
+def _query_dedupe_enabled() -> bool:
+    """Return whether query dedupe is enabled for benchmark A/B runs."""
+    return os.getenv("QUERY_DEDUPE_ENABLED", "1").strip().lower() not in {
+        "0",
+        "false",
+        "off",
+        "no",
+    }
+
+
+def _normalize_query(query: object) -> str:
+    """Normalize a search query for stable duplicate detection."""
+    if isinstance(query, dict):
+        query = query.get("query", "")
+    text = str(query or "").strip().lower()
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+
+def _dedupe_queries(
+    queries: list[object],
+    executed_queries: list[object] | None = None,
+) -> tuple[list[str], list[str]]:
+    """Deduplicate queries while preserving order.
+
+    Returns (kept_queries, skipped_queries). ``executed_queries`` is used to
+    avoid re-running follow-up queries that were already searched in prior
+    loops.
+    """
+    if not _query_dedupe_enabled():
+        return [str(q) for q in queries if str(q).strip()], []
+
+    seen = {
+        _normalize_query(q)
+        for q in (executed_queries or [])
+        if _normalize_query(q)
+    }
+    kept: list[str] = []
+    skipped: list[str] = []
+
+    for query in queries:
+        text = str(query or "").strip()
+        norm = _normalize_query(text)
+        if not norm:
+            continue
+        if norm in seen:
+            skipped.append(text)
+            continue
+        seen.add(norm)
+        kept.append(text)
+
+    return kept, skipped
 
 
 def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
@@ -141,15 +199,31 @@ def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
         research_proposal=state.get("plan", ""),
         known_facts=known_facts_text,
     )
-    logger.info(f"[ResearchAgent] 生成 {len(result.query)} 个查询: {result.query}")
-    return {"search_query": result.query, "initial_search_query_count": state["initial_search_query_count"]}
+    queries, skipped = _dedupe_queries(
+        result.query,
+        state.get("executed_queries", []),
+    )
+    logger.info(
+        f"[ResearchAgent] 生成 {len(result.query)} 个查询，"
+        f"保留 {len(queries)} 个，跳过重复 {len(skipped)} 个: {queries}"
+    )
+    return {
+        "search_query": queries,
+        "generated_queries": queries,
+        "skipped_duplicate_queries": skipped,
+        "initial_search_query_count": state["initial_search_query_count"],
+    }
 
 
 def _fan_out_to_web_search(state: QueryGenerationState) -> list[Send]:
     """Fan-out: 每个查询调用一次 web_search。"""
+    queries = state.get("generated_queries") or state.get("search_query", [])
+    queries, skipped = _dedupe_queries(queries, state.get("executed_queries", []))
+    if skipped:
+        logger.info(f"[ResearchAgent] fan-out 跳过 {len(skipped)} 个重复查询: {skipped}")
     return [
         Send(_WEB_SEARCH, {"search_query": q, "id": int(idx)})
-        for idx, q in enumerate(state["search_query"])
+        for idx, q in enumerate(queries)
     ]
 
 
@@ -161,11 +235,14 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
 
     if not response:
         logger.error(f"[ResearchAgent] 搜索结果为空： '{state['search_query']}'")
-        return {
+        result = {
             "sources_gathered": [],
-            "search_query": [state["search_query"]],
+            "executed_queries": [state["search_query"]],
             "web_search_result": [f"未找到关于 '{state['search_query']}' 的搜索结果"],
         }
+        if not _query_dedupe_enabled():
+            result["search_query"] = [state["search_query"]]
+        return result
 
     # URL shortening
     long2short = resolve_urls(response, state["id"])
@@ -206,11 +283,14 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     except Exception as exc:
         logger.warning(f"[KB] 跳过存储: {exc}")
 
-    return {
+    result = {
         "sources_gathered": sources,
-        "search_query": [state["search_query"]],
+        "executed_queries": [state["search_query"]],
         "web_search_result": [summary],
     }
+    if not _query_dedupe_enabled():
+        result["search_query"] = [state["search_query"]]
+    return result
 
 
 def _critique(state: OverallState, config: RunnableConfig) -> dict:
@@ -240,7 +320,7 @@ def _critique(state: OverallState, config: RunnableConfig) -> dict:
             "knowledge_gap": "评估模型暂时不可用，需要继续搜索以补充信息",
             "follow_up_queries": [],
             "research_loop_count": state["research_loop_count"],
-            "number_of_ran_queries": len(state["search_query"]),
+            "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
             "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
         }
 
@@ -253,7 +333,7 @@ def _critique(state: OverallState, config: RunnableConfig) -> dict:
         "knowledge_gap": result.knowledge_gap,
         "follow_up_queries": result.follow_up_queries,
         "research_loop_count": state["research_loop_count"],
-        "number_of_ran_queries": len(state["search_query"]),
+        "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
         "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
     }
 
@@ -268,10 +348,16 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
         return END  # ← exits sub-graph, parent takes over
     else:
         logger.info(f"[ResearchAgent] 继续循环 ({state['research_loop_count']}/{max_loops})")
+        queries, skipped = _dedupe_queries(
+            state.get("follow_up_queries", []),
+            state.get("executed_queries", []),
+        )
+        if skipped:
+            logger.info(f"[ResearchAgent] 跳过 {len(skipped)} 个已执行 follow-up 查询: {skipped}")
         return [
             Send(_WEB_SEARCH,
                  {"search_query": q, "id": state["number_of_ran_queries"] + int(idx)})
-            for idx, q in enumerate(state["follow_up_queries"])
+            for idx, q in enumerate(queries)
         ]
 
 
@@ -286,7 +372,7 @@ _builder.add_conditional_edges(_GENERATE_QUERIES, _fan_out_to_web_search, [_WEB_
 _builder.add_edge(_WEB_SEARCH, _CRITIQUE)
 _builder.add_conditional_edges(_CRITIQUE, _route_after_critique, [_WEB_SEARCH, END])
 
-research_agent_graph = _builder.compile(name="ResearchAgent")
+research_agent_graph = _builder.compile(checkpointer=get_checkpointer(), name="ResearchAgent")
 
 # try:
 #     display(Image(research_agent_graph.get_graph().draw_mermaid_png(output_file_path="./ResearchAgent子图.png")))

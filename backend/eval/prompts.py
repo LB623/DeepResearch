@@ -292,6 +292,9 @@ CITATION_JUDGE_INSTRUCTIONS = """# 任务说明
 # 研究报告（全文）
 {report}
 
+# 注意
+`citation_accuracy_score` 必须是 1 到 5 的整数评分，不要使用 10 分制、百分制或 0-100 分。
+
 # 输出"""
 
 

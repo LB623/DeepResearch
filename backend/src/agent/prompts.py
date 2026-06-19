@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 
@@ -163,6 +164,7 @@ query_writer_instructions = """# 任务说明
 - 你的搜索主题应该尽可能的广泛，如果研究主题本身就非常宽泛，则产出1条以上的搜索主题
 - 每个搜索主题应该具备独立性，即不要同时产出多个相似或者耦合的搜索主题
 - 搜索主题应该考虑时间，即除非研究主题要求，不然尽可能搜集近期的资料，当前时间是{current_date}
+{query_quality_guards}
 
 # Output Format
 你生成的内容应该是一个标准的json格式的内容，并包含两个字端
@@ -203,6 +205,7 @@ web_searcher_instructions = """# 角色定义
 2. 你需要结合当前的搜索内容来决定当前要整合的重点，即找到所有材料中和当前搜索契合的内容，并总结
 3. 在整合的内容中注意标明当前内容的信息来源是哪里
 4. 当前给定的内容包括搜索的主题，搜索结果，搜索的结果格式如下
+{summary_quality_guards}
 ```json
 [
 	{
@@ -359,6 +362,7 @@ draft_instructions = """# 任务说明
 - 充分利用提供的 Summaries 中的信息来论证观点
 - 可以使用表格、列表等方式来增强可读性
 - 引用来源时使用 markdown 链接格式：[来源名](url)
+{draft_quality_guards}
 - 当前日期是{current_date}
 {revision_context}
 
@@ -377,6 +381,9 @@ draft_instructions = """# 任务说明
 # 已收集的材料摘要
 {summaries}
 
+# 上一版草稿
+{previous_draft}
+
 # 输出"""
 
 polish_instructions = """# 任务说明
@@ -389,6 +396,9 @@ polish_instructions = """# 任务说明
 4. **完整性检查**：确认没有"待补充"或占位符内容
 5. **事实核查**：检查明显的事实错误或矛盾（信息来自 Summaries）
 6. **不要新增内容**：基于已有草稿打磨，不要凭空添加草稿中没有的分析
+{polish_quality_guards}
+9. **处理遗留问题**：逐条修复下方“最后一次审稿意见”中的 critical 和 major 问题；无法由材料支持的具体事实必须删除或改为明确的不确定性表述
+10. **禁止截断**：保留草稿中的全部一级、二级标题并输出完整报告；不得停在标题、列表或模板开头。若输出长度受限，优先原样保留完整草稿，只做必要的事实与引用修正
 
 # Output Format
 输出最终的 markdown 报告，放在 ```markdown 和 ``` 之间。
@@ -402,7 +412,45 @@ polish_instructions = """# 任务说明
 # 已收集的材料摘要（用于事实核查）
 {summaries}
 
+# 最后一次审稿意见
+{critic_feedback}
+
 # 输出"""
+
+
+def _prompt_quality_guards_enabled() -> bool:
+    return os.getenv("PROMPT_QUALITY_GUARDS", "1").strip().lower() not in {
+        "0",
+        "false",
+        "off",
+        "no",
+    }
+
+
+_QUALITY_GUARDS = {
+    "query_quality_guards": """- 必须显式对照“研究计划”生成查询：优先覆盖计划中的核心对象、对比维度、风险/挑战、最佳实践/案例等关键维度；如果查询数量有限，合并相近维度，不要只覆盖定义性问题。
+- 每条查询都应包含足够上下文，避免只写宽泛关键词；不要生成两个语义重复的查询。""",
+    "summary_quality_guards": """5. 只能总结下方“搜索结果”中明确出现的信息，不要引入外部常识、猜测、未在结果中出现的数据或案例。
+6. 每个关键事实后必须使用搜索结果 JSON 中原始提供的 url 做 markdown 引用；不要编造、改写或省略 URL。""",
+    "draft_quality_guards": """- 只能使用 Summaries 中已经出现的事实和 URL；不得编造来源、不得把来源名写成 URL、不得使用 summaries 之外的新 URL。
+- 每个包含具体事实、案例、数字、年份或工具名称的段落，至少保留一个来自 Summaries 的 markdown 引用；无法找到直接材料支撑时必须删除该事实或明确标注不确定性。
+- 严格区分事件发生日期、来源发布日期和预测时间，不得根据 URL、标题或当前日期推断事件日期；研究课题限定年份时，超出范围的信息只能作为明确标注的补充进展。
+- 必须覆盖大纲中的全部一级、二级章节。某章节材料不足时明确写明证据不足及待验证项，不得省略章节或停在标题、列表、模板开头。
+- 修改稿必须保留上一版中仍然有效的引用链接；不要在修订时删除 URL 或把 markdown 链接改成纯文本。""",
+    "polish_quality_guards": """7. **保留引用**：不得删除草稿中已有的 markdown URL 引用；如需调整句子，必须把原引用一起保留在对应事实旁边。
+8. **禁止编造 URL**：最终报告中的每个 URL 必须来自草稿或 Summaries 中已有的 URL，不要生成新 URL、占位 URL 或无法在材料中找到的链接。""",
+}
+
+for _name in _QUALITY_GUARDS:
+    _replacement = _QUALITY_GUARDS[_name] if _prompt_quality_guards_enabled() else ""
+    query_writer_instructions = query_writer_instructions.replace(
+        "{" + _name + "}", _replacement
+    )
+    web_searcher_instructions = web_searcher_instructions.replace(
+        "{" + _name + "}", _replacement
+    )
+    draft_instructions = draft_instructions.replace("{" + _name + "}", _replacement)
+    polish_instructions = polish_instructions.replace("{" + _name + "}", _replacement)
 
 
 # ── Debate-loop Critic prompt ─────────────────────────────────────────
@@ -411,7 +459,7 @@ critic_review_instructions = """# 任务说明
 你是一个严格的学术审稿人。你需要对一份AI生成的科研报告草稿进行质量审查，找出具体问题并给出修改建议。
 
 # 审查维度
-1. **事实准确性**: 报告中的陈述是否与提供的 Summaries 一致？是否存在虚构的数据、事件或引用？
+1. **事实准确性**: 报告中的每个具体数字、日期、专名、事件和引用是否能在提供的 Summaries 中直接定位？是否混淆事件日期、来源发布日期和预测时间？无法直接定位的具体事实一律视为 critical，不得用常识补全。
 2. **逻辑完整性**: 论证是否连贯？是否存在逻辑跳跃或矛盾？
 3. **覆盖度**: 报告是否涵盖了研究课题的所有关键方面？研究计划中的维度是否都有体现？
 4. **引用质量**: 引用是否恰当标注？来源是否可信？
@@ -430,7 +478,7 @@ critic_review_instructions = """# 任务说明
 - 1-2: 很差，建议重写
 
 # ready_for_polish 判断标准
-- 设为 true 的条件：无 critical 问题，major 问题 ≤ 1 个，且 overall_rating ≥ 6
+- 设为 true 的条件：无 unsupported claim、无 critical 问题、major 问题 ≤ 1 个，且 overall_rating ≥ 6
 - 设为 false 的条件：存在 critical 问题，或 major 问题 > 1 个，或 overall_rating < 6
 
 # 输出格式
@@ -470,6 +518,10 @@ critic_review_instructions = """# 任务说明
 
 # 已收集的材料摘要（用于事实核查）
 {summaries}
+
+# 确定性专名审计候选
+以下专名出现在草稿中，但未在研究课题或 Summaries 中找到完全匹配。逐项核对；若确无材料依据，必须标记为 critical 并要求删除，不得直接放行：
+{unsupported_named_terms}
 
 # 报告草稿（待审查）
 {draft}

@@ -1,0 +1,30 @@
+{
+  "description": "Fixed five-topic set for E2E prompt A/B evaluation",
+  "topics": [
+    {
+      "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "2025年人民币汇率走势分析及主要影响因素",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+      "initial_search_query_count": 5,
+      "max_research_loops": 10
+    },
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "initial_search_query_count": 1,
+      "max_research_loops": 1
+    }
+  ]
+}

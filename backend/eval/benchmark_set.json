@@ -1,0 +1,64 @@
+{
+  "topics": [
+    {
+      "topic": "2024-2025年全球AI编程助手市场竞争格局分析",
+      "domain": "AI Engineering",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "规范驱动开发 SDD 与 AGENTS.md 的关系",
+      "domain": "AI Engineering",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "2025年AI芯片市场趋势与主要玩家分析",
+      "domain": "AI Hardware",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "特斯拉 FSD 中美技术进展和监管政策对比",
+      "domain": "Autonomous Driving",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "全球半导体供应链重构趋势与中国企业影响",
+      "domain": "Semiconductor",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "开源大模型与闭源大模型在企业落地中的竞争分析",
+      "domain": "LLM",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "Agent Harness 工程方法：上下文管理、工具调用和状态恢复",
+      "domain": "Agent Engineering",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "RAG 系统评估方法：检索质量、答案忠实度和引用有效性",
+      "domain": "RAG",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "AI 搜索产品 Perplexity、ChatGPT Search、Google AI Overviews 对比",
+      "domain": "AI Search",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    },
+    {
+      "topic": "大模型推理成本优化方法：缓存、路由、小模型蒸馏和批处理",
+      "domain": "LLMOps",
+      "initial_search_query_count": 3,
+      "max_research_loops": 3
+    }
+  ]
+}

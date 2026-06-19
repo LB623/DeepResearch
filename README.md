@@ -134,3 +134,35 @@ DeepSeek资深研究员陈德里近日在社交媒体发布信息证实：DeepSe
 ```bash
 制作一份荔枝产品电商行业市场洞察报告
 ```
+
+**6. 查看 Milvus 数据库:**
+项目中使用了 Milvus 作为向量数据库来存储智能体提取的知识事实（Facts）。默认情况下，Milvus 运行在宿主机的 `19530` 端口。
+
+**方法一：使用官方可视化工具 Attu (推荐)**
+如果您希望通过浏览器图形化界面查看和管理集合、向量数据以及索引，可以运行以下命令临时启动 Attu 容器：
+```bash
+docker run -p 8000:3000 -e MILVUS_URL=host.docker.internal:19530 zilliz/attu:v2.4.6
+```
+*(注意：如果您是在 Linux 服务器上运行，请将 `host.docker.internal` 替换为服务器的局域网 IP)*
+
+启动后，在浏览器中访问 [http://localhost:8000](http://localhost:8000)，在登录界面无需输入密码，直接点击 "Connect" 即可登录后台管理面板。
+
+**方法二：使用 Python 脚本 (PyMilvus)**
+由于项目已安装 `pymilvus` 依赖，您也可以在项目目录下创建一个简单的 Python 脚本（例如 `check_milvus.py`）来快速验证数据：
+```python
+from pymilvus import MilvusClient
+
+# 连接到本地 Milvus
+client = MilvusClient(uri="http://localhost:19530")
+
+# 获取并打印所有集合
+collections = client.list_collections()
+print(f"Collections: {collections}")
+
+# 打印每个集合的描述和统计信息
+for col in collections:
+    print(f"\n--- Collection: {col} ---")
+    print(client.describe_collection(col))
+    print(f"Stats: {client.get_collection_stats(col)}")
+```
+执行 `python check_milvus.py` 即可在控制台查看结果。

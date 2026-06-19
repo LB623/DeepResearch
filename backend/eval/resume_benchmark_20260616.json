@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-16T10:57:39.802339",
+  "topic": "Agent Harness checkpoint resume",
+  "rows": [
+    {
+      "variant": "restart",
+      "success": true,
+      "failed_once": true,
+      "latency_seconds": 0.0176,
+      "web_search_calls": 6,
+      "query_generation_calls": 2,
+      "critique_calls": 2,
+      "executed_query_count": 3,
+      "state_next_after_failure": [],
+      "error": "RuntimeError: injected transient critique failure"
+    },
+    {
+      "variant": "resume",
+      "success": true,
+      "failed_once": true,
+      "latency_seconds": 0.0496,
+      "web_search_calls": 3,
+      "query_generation_calls": 1,
+      "critique_calls": 2,
+      "executed_query_count": 3,
+      "state_next_after_failure": [
+        "critique"
+      ],
+      "error": "RuntimeError: injected transient critique failure"
+    }
+  ]
+}

@@ -1,0 +1,428 @@
+{
+  "timestamp": "2026-06-17T19:13:05.972362",
+  "e2e_results": [],
+  "component_results": [
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "plan_score": {
+        "requirement_coverage": {
+          "score": 4,
+          "reason": "计划明确覆盖了五大要素：核心分析对象（SDD与AGENTS.md定义），对手策略（询问是否需分析质疑或替代方案），风险研判（列出四类风险供选择），信息时空边界（时间、信源偏好），成果呈现形式（给出六种格式选项）。虽未明确所有细节，但通过问题确认做到了全面覆盖。"
+        },
+        "question_clarity": {
+          "score": 4,
+          "reason": "每个待确认问题都提供了具体、可选的引导项，如AGENTS.md的多种定义场景、研究维度对比、时间范围、信源类型等，用户可快速作答，降低了认知负担。问题聚焦且无歧义，能有效推进需求澄清。"
+        },
+        "structure_quality": {
+          "score": 4,
+          "reason": "计划采用‘需求清晰度进度条→核心需求理解→待确认问题→智能建议→下一步’的结构，逻辑清晰，层次分明。它先展示现有理解，再引导用户补充缺失信息，并给出实用建议，执行性强，能有效在搜索前对齐需求。"
+        },
+        "overall_score": 4.0,
+        "missing_dimensions": [],
+        "assessment": "该研究计划很好地充当了需求澄清工具。它准确识别了用户需求中的模糊之处，围绕五大要素设计了具体且有引导性的问题，结构清晰可执行，并提供了智能建议，能显著提升后续搜索的针对性和效率。"
+      },
+      "plan_query_alignment_score": {
+        "coverage_consistency": {
+          "score": 2,
+          "reason": "研究计划明确列出了定义与关系、最佳实践、风险研判、对手策略等关键维度，但生成的4条查询仅覆盖了定义与关系和最佳实践两个维度，完全遗漏了风险研判和对手策略分析，覆盖不足。"
+        },
+        "plan_fidelity": {
+          "score": 2,
+          "reason": "计划的时间范围尚未确认（在待确认问题中列出），但所有查询均自行添加了'2025 2026'时间限定，违背了计划的不确定性边界；同时查询未体现对媒体来源、分析深度等计划要求的考虑。"
+        },
+        "structural_decomposition": {
+          "score": 1,
+          "reason": "查询仅是关键词的直接堆砌，未将计划中的多维度分析框架（概念层、关系层、方法层、风险层）拆解为具体的、可搜索的子问题，且存在两条重复查询，毫无结构化拆解。"
+        },
+        "overall_score": 1.67,
+        "covered_dimensions": [
+          "定义与关系",
+          "最佳实践"
+        ],
+        "missed_dimensions": [
+          "风险研判",
+          "对手策略/替代方案分析"
+        ],
+        "cross_reference_table": [
+          {
+            "plan_dimension": "定义与关系层",
+            "matching_queries": [
+              "Specification-Driven Development AGENTS.md definition relationship 2025 2026",
+              "Specification-Driven Development AGENTS.md definition relationship 2025 2026"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "最佳实践层",
+            "matching_queries": [
+              "AGENTS.md best practices specification-driven development software agent configuration 2025 2026",
+              "AGENTS.md best practices specification-driven development software agent configuration 2025 2026"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "风险研判层",
+            "matching_queries": [],
+            "coverage": "missed"
+          },
+          {
+            "plan_dimension": "对手策略/替代方案层",
+            "matching_queries": [],
+            "coverage": "missed"
+          }
+        ],
+        "assessment": "整体评价：计划到查询的衔接质量差。主要问题是：1) 遗漏了研究计划中明确列出的风险研判和对手策略两大关键维度；2) 无视计划中时间范围未确认的状态，擅自施加时间限定；3) 查询设计缺乏结构化拆解，仅将核心概念堆砌为关键词，且出现完全重复的查询，无法有效支持计划的四层分析框架。"
+      },
+      "query_score": {
+        "coverage": {
+          "score": 2,
+          "reason": "仅关注了定义、关系与最佳实践两个维度，且查询高度重复，未涵盖具体案例、工具链、集成策略、挑战、对比研究等关键角度。"
+        },
+        "independence": {
+          "score": 2,
+          "reason": "四个查询中只有两个是独特的，剩余两条均为完全重复，整体冗余严重；即使两条独特查询之间也存在较多关键词重叠（specification-driven development、AGENTS.md、2025 2026）。"
+        },
+        "search_friendliness": {
+          "score": 4,
+          "reason": "使用了具体的关键词组合（如definition, relationship, best practices, software agent configuration），并包含年份限定，符合搜索引擎的检索习惯，表达也较为直接，无过于笼统的短语。"
+        },
+        "overall_score": 2.67,
+        "missing_angles": [
+          "SDD与AGENTS.md在实际项目中的案例或教程",
+          "支持SDD+AGENTS.md的工具或框架",
+          "将AGENTS.md集成到现有SDD流程的策略与步骤",
+          "常见挑战、反模式与解决方案",
+          "与仅使用SDD或仅使用AGENTS.md的对比分析",
+          "社区讨论、博客或会议内容"
+        ],
+        "assessment": "查询集合存在严重重复，仅覆盖了两个基础方向，导致覆盖度和独立性评分较低；搜索友好性尚可，但由于维度单一和冗余，整体查询质量不足。"
+      },
+      "summarization_scores": [
+        {
+          "factual_fidelity": {
+            "score": 3,
+            "reason": "总结中关于SDD的定义和核心思想基本能在搜索结果中找到依据，但AGENTS.md的具体角色、它与SDD的关系等陈述缺乏直接来源，属于自行推断，存在幻觉。"
+          },
+          "key_info_extraction": {
+            "score": 3,
+            "reason": "总结提取了搜索结果中多个来源对SDD的定义，并注意到bilibili面经同时提到SDD和AGENTS.md，抓住了关联线索，但对AGENTS.md的具体作用进行了无依据的补充，影响了信息提取的准确性。"
+          },
+          "source_attribution": {
+            "score": 2,
+            "reason": "总结中为每段陈述标注了来源编号（如id/0-0、id/0-5），但链接为虚构的占位符，且同一编号被重复用于不同来源，未使用原始搜索结果中的真实url，标注不准确。"
+          },
+          "overall_score": 2.67,
+          "hallucinations": [
+            "“AGENTS.md是指导AI代理遵循项目规范的关键文件”——搜索结果中仅提及面试被问及该文件，未说明其具体作用。",
+            "“它定义了代理的行为准则，确保AI生成代码与规范一致”——搜索结果中没有对AGENTS.md功能的描述。",
+            "“AGENTS.md是具体实现该框架的工具文件，用于约束AI代理的行为”——搜索结果中未提供AGENTS.md与SDD实现关系的证据。",
+            "“两者共同在2025-2026年成为AI辅助开发的新范式，尤其在GitHub Spec Kit、OpenSpec等工具中得到实践”——OpenSpec相关结果中未提及AGENTS.md，无法支撑该综合论断。"
+          ],
+          "assessment": "整体上，总结对SDD的定义部分提炼较准确，但在解读AGENTS.md的角色及其与SDD的关系时，脱离了原始搜索结果的实际信息，增添了未经验证的推论，导致多处事实失实。来源标注存在链接虚化问题，影响可信度。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 3,
+            "reason": "总结的大部分陈述在搜索结果中有直接或间接支撑，但存在细节不准确和过度概括。例如，局部路由与提示词压缩结合节省Token 45-79%的数据来自‘Local-Splitter研究(2026)’，但总结中未提及研究名称，仅标注来源为MCP工具税优化指南，该指南中虽有提及但原文链接不同；此外，‘Harness Engineering定义’来源中OpenAI、LangChain的实践案例提及正确，但总结将‘OpenAI、LangChain等实践证明了这一规范驱动方法’实际是来源于Harness Engineering一文，该文提到了Manus、LangChain和OpenAI，但未明确说‘证明’，属于合理引申。另外，总结提到‘2026年Agent应用进入组织级阶段’源于多个搜索结果，但‘2026年’和‘组织级’在多个结果中均有体现，基本可接受。整体而言，未发现完全无中生有的严重幻觉，但部分合并和简化可能导致忠实度降低。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "总结较好地提取了搜索结果中的关键信息，如Harness Engineering概念、成本优化策略、生产级配置铁律、规模化落地趋势等，与搜索主题‘AGENTS.md best practices specification-driven development software agent configuration 2025 2026’高度相关。但可能忽略了搜索结果中涉及的具体框架（如OpenClaw、Hermes）以及部分政策信息，但核心要点覆盖较全。"
+          },
+          "source_attribution": {
+            "score": 2,
+            "reason": "总结中标注了多个来源URL（如https://search.com/id/1-0等），但这些URL并非原始搜索结果中的实际链接，而是虚构的占位格式（搜索结果中URL有具体的csdn.net、zhihu.com、baijiahao.baidu.com等域名）。总结采用[id-0]等编号方式，但未正确对应原始搜索结果，且URL为统一格式的search.com/id/...，这属于来源标注错误，无法据此追溯真实来源。虽然引用的内容确实来自搜索结果，但标注方式不诚实，降低了可信度。"
+          },
+          "overall_score": 3.0,
+          "hallucinations": [
+            "来源URL被替换为虚构的'https://search.com/id/1-0'等格式，无真实链接",
+            "总结提到'OpenAI、LangChain等实践证明了这一规范驱动方法'，但原始资料中并未直接使用'证明'一词，而是展示案例，属于轻微过度推断"
+          ],
+          "assessment": "总结整体围绕规范驱动开发主题，提取了搜索结果中的主要观点，没有严重的无中生有。但在来源标注上使用了虚假URL，这是一个严重问题，会导致可信度大幅下降。此外，个别表述存在过度概括或微小不准确。建议修正引用格式，并对声明进行更保守的措辞。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "AI 生成的总结完全偏离了搜索主题，全部内容均为 AGENTS.md 的最佳实践，而非所要求的「规范驱动开发（SDD）与 AI Agent 结合的风险与挑战」。提供的搜索结果中没有任何关于 AGENTS.md、OpenAI/Google/Cursor 联合发起、Linux 基金会托管、或相关效果数据的内容，总结中的陈述均无法在搜索结果中找到支撑，构成完全性幻觉。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "未提取任何与搜索主题相关的信息。搜索结果中包含了 SDD 定义、 SDD vs TDD/BDD 对比、上下文工程、开发框架安全风险等直接相关内容，但总结中完全没有涉及，而是凭空生成了与主题无关的 AGENTS.md 指南。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "来源标注完全错误。使用了 search.com/id/2-0 等虚构或不存在的引用格式，且这些引用的 id 与提供的原始搜索结果没有任何对应关系。原始结果中的 URL（如 note.mowen.cn、blog.csdn.net 等）均未被使用或提及。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "AGENTS.md 是一个由 OpenAI、Google、Cursor 等厂商于2025年8月联合发起的开放标准，现已由 Linux 基金会旗下的 Agentic AI Foundation 托管。（搜索结果中无此信息）",
+            "认真写好 AGENTS.md 可使 AI 生成 Bug 的数量平均下降 35% 到 55%。（搜索结果中无此数据或任何相关表述）",
+            "推荐的内容结构包括四部分：技术栈（精确版本）、运行命令、编码约定、以及禁止触碰的禁区。（搜索结果中无此信息）",
+            "一个真实的开源优化案例（fit-framework 项目）展示了最佳实践：将根目录的 AGENTS.md 精简至 91 行（减少 31.6%）...（搜索结果中无此案例）",
+            "行业趋势表明，AGENTS.md 应与 Agent Skills（可移植的“能力包”）结合使用。（搜索结果中无此信息）",
+            "OpenAI Codex CLI、Cursor 等主流工具在 2026 年已全面原生支持 AGENTS.md。（搜索结果中无此信息）"
+          ],
+          "assessment": "该总结完全未响应搜索主题，全部内容均为捏造的 AGENTS.md 相关信息，与提供的搜索结果零相关，属于严重的幻觉输出。在事实保真度、关键信息提取和来源标注三个维度上均不得分。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "总结通篇引入搜索结果中完全不存在的内容，包括'规范驱动开发(SDD)'、'Kiro/Spec Kit/Tessl'工具锁定、'子agent审查循环25分钟额外开销'、'TDD/BDD/DDD方法全景对比'等，所有核心论断均无原文支撑，构成严重幻觉。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "总结没有提取任何与搜索主题相关的内容。搜索结果围绕AGENTS.md标准、减少重复配置、跨工具互操作、AI编程最佳实践，而总结完全偏离，变成了一篇关于'规范驱动开发'风险的空泛讨论，与用户请求完全无关。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "总结标注了[3-0]、[3-1]等引用编号，但原始搜索结果中并没有这样的索引，且被引用的陈述在搜索结果中找不到对应原文，来源标注为虚构。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "规范驱动开发(SDD)成为核心方法论，以结构化规范为先导，将开发转向AI优先",
+            "文档负担加重，需在编码前编写详细规范作为唯一事实源",
+            "工具链锁定风险，主流工具如Kiro、Spec Kit、Tessl等可能形成生态依赖",
+            "团队采纳障碍因开发流程需转变为AI优先",
+            "子agent审查循环带来约25分钟额外开销且未改善质量，最终被内联自审替代",
+            "TDD/BDD/DDD方法论全景对比已被提出，但片段未提供具体差异"
+          ],
+          "assessment": "该总结完全脱离原始搜索结果，虚构了大量与搜索主题无关的论断，并将不存在的内容标注为引用。总结不仅没有回答关于AGENTS.md最佳实践、官方指南或开源实践的任何问题，反而凭空捏造了一套'规范驱动开发'的风险分析，属于严重幻觉案例。"
+        }
+      ],
+      "critique_score": {
+        "sufficiency_judgment": {
+          "score": 4,
+          "reason": "AI 判断信息不充足是正确的。已有信息覆盖了 SDD 与 AGENTS.md 的基本定义、关系、AGENTS.md 编写规范及部分风险，但确实缺少 SDD 与 TDD/BDD 的详细对比、更多真实企业案例、以及风险缓解策略等深层次内容，因此 is_sufficient=False 的判断合理。扣一分是因为已有信息中其实包含了一个开源案例和部分风险分析，可能被低估，但整体结论依然成立。"
+        },
+        "gap_identification": {
+          "score": 4,
+          "reason": "差距识别较为准确。明确指出缺乏三种类型的信息：① SDD 与传统方法的对比及 AGENTS.md 在其中的角色差异；② 更多真实项目案例、实践效果与陷阱；③ 权威机构对 SDD 风险的深度分析和缓解策略。这些正是当前信息的薄弱环节，描述与已收集信息摘要的缺失部分吻合。扣一分是因为 gap 描述可以更具体地指出已有风险部分缺乏缓解措施，而不仅仅说“深度分析”。"
+        },
+        "follow_up_query_quality": {
+          "score": 3,
+          "reason": "后续查询基本能够弥补所识别的差距：包含找最佳实践与开源模板、找风险与对比、找真实案例等，方向正确。但查询列表存在明显重复（4 条查询重复了一遍），降低了信息收集的效率和精确性。若去除冗余，查询质量可更高。因此给予中等分数。"
+        },
+        "overall_score": 3.67,
+        "is_sufficiency_correct": true,
+        "assessment": "AI 的反思总体合理，正确识别了当前信息在深度对比、案例丰富度和风险缓解策略方面的不足，判断信息不充分是正确的。差距描述准确，但后续查询因重复而质量受损，建议精简并去重以提高效率。整体反思有助于指导下一步信息收集。"
+      },
+      "citation_score": {
+        "total_citations": 25,
+        "valid_citations": 19,
+        "weak_citations": 0,
+        "invalid_citations": 6,
+        "per_citation": [
+          {
+            "url": "url_not_found",
+            "label": "[Tessl/深度解析]",
+            "paragraph_summary": "传统开发模式以代码为王，但规范应为首要产物，代理依据规范生成代码",
+            "source_title": "（未找到）",
+            "status": "url_not_found",
+            "reason": "来源列表中没有包含“Tessl”关键词的条目"
+          },
+          {
+            "url": "url_not_found",
+            "label": "[Thoughtworks/深度解析]",
+            "paragraph_summary": "SDD核心思想是以结构化规范作为单一事实源驱动设计、实现与验证",
+            "source_title": "（未找到）",
+            "status": "url_not_found",
+            "reason": "来源列表中没有包含“Thoughtworks”关键词的条目"
+          },
+          {
+            "url": "https://search.com/id/2-0",
+            "label": "[深度解析]",
+            "paragraph_summary": "AGENTS.md被主流工具采用并形成开放标准，实现一个文件适配所有代理",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "段落讨论AGENTS.md的标准化，来源正是关于AGENTS.md深度解析，引用恰当"
+          },
+          {
+            "url": "https://search.com/id/0-6",
+            "label": "[spec-driven.md]",
+            "paragraph_summary": "SDD颠覆代码为王的权力结构，使代码服务于规范",
+            "source_title": "spec-driven.md",
+            "status": "valid",
+            "reason": "段落阐述SDD核心理念，来源为spec-driven.md文档，内容直接相关"
+          },
+          {
+            "url": "https://search.com/id/2-1",
+            "label": "[效果实测]",
+            "paragraph_summary": "AGENTS.md是面向AI代理的配置文件，旨在确保代理遵循项目规范",
+            "source_title": "AGENTS.md:如何让AI编码Bug减少35%",
+            "status": "valid",
+            "reason": "段落说明AGENTS.md的作用，来源标题明确指向其降低Bug的效果，相关"
+          },
+          {
+            "url": "url_not_found",
+            "label": "[Tessl/深度解析]",
+            "paragraph_summary": "Tessl指出规范是首要产物，代理依据规范生成代码",
+            "source_title": "（未找到）",
+            "status": "url_not_found",
+            "reason": "同上，没有Tessl相关来源"
+          },
+          {
+            "url": "url_not_found",
+            "label": "[Thoughtworks/深度解析]",
+            "paragraph_summary": "Thoughtworks将SDD描述为以结构化规范为先导的开发方法",
+            "source_title": "（未找到）",
+            "status": "url_not_found",
+            "reason": "同上，没有Thoughtworks相关来源"
+          },
+          {
+            "url": "https://search.com/id/3-0",
+            "label": "[3-0]",
+            "paragraph_summary": "开发流程从围绕人转向围绕AI",
+            "source_title": "怎么用 SDD 让 AI Coding 一步到位",
+            "status": "valid",
+            "reason": "段落讨论SDD带来的流程转变，来源是关于SDD如何落地的指南，支撑该观点"
+          },
+          {
+            "url": "https://search.com/id/2-1",
+            "label": "[效果实测]",
+            "paragraph_summary": "AGENTS.md应包含技术栈、运行命令、编码约定和禁区四部分",
+            "source_title": "AGENTS.md:如何让AI编码Bug减少35%",
+            "status": "valid",
+            "reason": "段落给出AGENTS.md推荐结构，来源内容涉及效果实测，可支撑"
+          },
+          {
+            "url": "https://search.com/id/0-5",
+            "label": "[bilibili面经]",
+            "paragraph_summary": "bilibili面试询问AGENTS.md内容及其与README的区别",
+            "source_title": "前端八股文面经大全:bilibili生态技术方向二面 (2026-03-25)·面经深度解析",
+            "status": "valid",
+            "reason": "段落引用的面试问题直接来源自这份bilibili面经，匹配"
+          },
+          {
+            "url": "https://search.com/id/2-0",
+            "label": "[深度解析]",
+            "paragraph_summary": "AGENTS.md开放标准获得主流工具原生支持，一次编写跨工具生效",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "段落强调AGENTS.md的标准化和工具支持，来源专门解析AGENTS.md，相关"
+          },
+          {
+            "url": "https://search.com/id/2-3",
+            "label": "[项目优化]",
+            "paragraph_summary": "fit-framework项目精简AGENTS.md至91行，聚焦关键规则",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "valid",
+            "reason": "段落以fit-framework为例说明精简实践，来源正是该项目优化AGENTS.md的提交"
+          },
+          {
+            "url": "https://search.com/id/2-3",
+            "label": "[项目优化]",
+            "paragraph_summary": "明确agents.md、readme.md、preferences.yaml的职责分工",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "valid",
+            "reason": "段落讨论文件职责分隔，来源为同一项目优化实践，直接相关"
+          },
+          {
+            "url": "https://search.com/id/2-5",
+            "label": "[Agent Skills]",
+            "paragraph_summary": "Agent Skills通过结构化Schema驱动实现AI能力持久化与复用",
+            "source_title": "别写Prompt 了!Agent Skills 正在杀死 Prompt Engineering-CSDN博客",
+            "status": "valid",
+            "reason": "段落描述Agent Skills，来源标题明确聚焦Agent Skills，匹配"
+          },
+          {
+            "url": "https://search.com/id/2-3",
+            "label": "[项目优化]",
+            "paragraph_summary": "fit-framework优化后AI代理响应准确率提升，维护成本降低",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "valid",
+            "reason": "段落总结优化效果，来源为同一项目的优化记录，支撑论点"
+          },
+          {
+            "url": "https://search.com/id/2-1",
+            "label": "[效果实测]",
+            "paragraph_summary": "认真编写AGENTS.md可使Bug率下降35%–55%",
+            "source_title": "AGENTS.md:如何让AI编码Bug减少35%",
+            "status": "valid",
+            "reason": "段落给出具体降Bug数据，来源标题直接对应效果实测，引用恰当"
+          },
+          {
+            "url": "url_not_found",
+            "label": "[MCP工具税优化指南]",
+            "paragraph_summary": "通过任务拆解、局部路由与提示词压缩可实现45–79%的Token节省",
+            "source_title": "（未找到）",
+            "status": "url_not_found",
+            "reason": "来源列表中没有任何条目包含“MCP工具税优化指南”字样"
+          },
+          {
+            "url": "https://search.com/id/1-0",
+            "label": "[Agent性能与成本优化]",
+            "paragraph_summary": "按需检索工具定义以降低MCP工具税开销",
+            "source_title": "性能与成本双优化:Agent类产品设计与开发实践指南",
+            "status": "valid",
+            "reason": "段落讨论Agent性能与成本优化，来源标题直接点明性能与成本双优化，相关"
+          },
+          {
+            "url": "https://search.com/id/3-0",
+            "label": "[3-0]",
+            "paragraph_summary": "SDD要求在编码前编写详细规范，增加文档负担",
+            "source_title": "怎么用 SDD 让 AI Coding 一步到位",
+            "status": "content_mismatch",
+            "reason": "段落强调SDD的负担，来源标题侧重“一步到位”的正面引导，内容可能不支撑负面观点"
+          },
+          {
+            "url": "https://search.com/id/3-3",
+            "label": "[3-3]",
+            "paragraph_summary": "子Agent审查循环带来额外开销且未改善质量，被内联自审替代",
+            "source_title": "RELEASE-NOTES.md",
+            "status": "valid",
+            "reason": "段落提及一项实践改进，来源为发布说明可能记录该变更，可支撑"
+          },
+          {
+            "url": "https://search.com/id/3-1",
+            "label": "[3-1]",
+            "paragraph_summary": "SDD工具存在锁定风险，团队迁移成本较高",
+            "source_title": "规范驱动开发(Spec-Driven Development)深度解析",
+            "status": "valid",
+            "reason": "段落讨论工具链风险，来源为SDD深度解析，可能涵盖工具生态及风险，可接受"
+          },
+          {
+            "url": "https://search.com/id/3-0",
+            "label": "[3-0]",
+            "paragraph_summary": "团队转向SDD面临文化障碍，需习惯先写规范再写代码",
+            "source_title": "怎么用 SDD 让 AI Coding 一步到位",
+            "status": "valid",
+            "reason": "段落提及文化转型挑战，来源介绍SDD落地方法，包含团队采纳内容，可支撑"
+          },
+          {
+            "url": "https://search.com/id/2-5",
+            "label": "[Agent Skills]",
+            "paragraph_summary": "Agent Skills通过Schema驱动实现能力持久化、复用与协作",
+            "source_title": "别写Prompt 了!Agent Skills 正在杀死 Prompt Engineering-CSDN博客",
+            "status": "valid",
+            "reason": "段落强调Agent Skills价值，来源聚焦Agent Skills，匹配"
+          },
+          {
+            "url": "https://search.com/id/1-8",
+            "label": "[2026年十大趋势]",
+            "paragraph_summary": "2026年十大趋势指出Agentic AI整合规范驱动开发成为落地基础",
+            "source_title": "2026年Agentic AI十大关键趋势:技术、应用与治理三位一体",
+            "status": "valid",
+            "reason": "段落直接引用十大趋势，来源标题完全吻合，引用恰当"
+          },
+          {
+            "url": "https://search.com/id/1-5",
+            "label": "[Harness Engineering定义]",
+            "paragraph_summary": "Harness Engineering通过设计环境、约束和反馈循环实现可靠工作",
+            "source_title": "Harness Engineering:AI Agent 时代的工程化实践",
+            "status": "valid",
+            "reason": "段落解释Harness Engineering，来源正是关于该主题的工程化实践，直接相关"
+          }
+        ],
+        "citation_accuracy_score": 4,
+        "summary_stats": {
+          "valid_rate": 0.76,
+          "most_common_issue": "url_not_found",
+          "worst_offender_url": "https://fake-url.com"
+        },
+        "assessment": "整体评价：25个引用中19个有效，0个弱引用，6个无效（其中5个URL不在来源列表，1个内容不支撑）。主要问题集中在虚构的行业标签（如Tessl、Thoughtworks）和未列出的优化指南，其余引用与段落论点匹配良好，AGENTS.md相关文献覆盖充分。"
+      },
+      "plan_reflection_score": null,
+      "error": null
+    }
+  ]
+}

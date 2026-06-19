@@ -1,0 +1,212 @@
+{
+  "timestamp": "2026-06-18T09:27:21.996147",
+  "e2e_results": [],
+  "component_results": [
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "plan_score": {
+        "requirement_coverage": {
+          "score": 4,
+          "reason": "计划明确识别了5大关键要素（核心分析对象、对手策略、风险研判、信息时空边界、成果呈现），并通过待确认问题逐一引导用户澄清，未遗漏任何必要维度，但各要素仍处于待填充状态，尚未形成具体内容。"
+        },
+        "question_clarity": {
+          "score": 5,
+          "reason": "追问精准、具体且高度结构化：每个问题均提供多选选项或典型场景，如核心分析对象的A/B/C/D选项、风险维度的列举式选项、时间范围和信源类型的明确分档，能有效引导用户提供清晰反馈。"
+        },
+        "structure_quality": {
+          "score": 5,
+          "reason": "计划采用“核心需求理解→待确认问题→智能建议→下一步”的递进结构，逻辑清晰、可执行性强；智能建议部分还给出了默认信源组合、分析框架和动态扩充策略，显示出良好的引导性和可操作性。"
+        },
+        "overall_score": 4.67,
+        "missing_dimensions": [],
+        "assessment": "该计划在需求澄清阶段表现出色，全面覆盖五大分析维度，并以高度具体且结构化的追问引导用户细化需求，整体结构清晰、可执行性强。唯一的小幅扣分在于各维度的具体内容仍待用户输入，但作为澄清阶段的中间产物已属优秀。"
+      },
+      "plan_query_alignment_score": {
+        "coverage_consistency": {
+          "score": 2,
+          "reason": "研究计划中明确包含4个核心分析维度（SDD方法论、AGENTS.md文件结构、二者结合的案例/最佳实践、工具链），但两个查询仅覆盖了SDD原则与案例/最佳实践，完全遗漏了AGENTS.md文件结构分析和工具链维度，整体覆盖不足50%。"
+        },
+        "plan_fidelity": {
+          "score": 3,
+          "reason": "查询整体忠实于研究计划的核心主题（SDD与AGENTS.md的关系），但时间边界存在偏差：计划默认建议覆盖2023-2026年，而查询1限定在2025-2026，查询2限定在2024-2026，均遗漏了2023年的信息，未能完整遵循计划中隐含的时间范围建议。"
+        },
+        "structural_decomposition": {
+          "score": 2,
+          "reason": "查询仅将计划笼统拆分为‘原理+实践’和‘案例研究’两个宽泛查询，未针对计划中明确要求的“AGENTS.md文件结构”“工具链”等维度生成独立搜索查询，也未对SDD方法论本身进行进一步分解（如形式化规范、契约式设计等子问题），拆解粗糙且存在明显缺失。"
+        },
+        "overall_score": 2.33,
+        "covered_dimensions": [
+          "SDD方法论（部分）",
+          "二者结合案例/最佳实践"
+        ],
+        "missed_dimensions": [
+          "AGENTS.md文件结构",
+          "工具链"
+        ],
+        "cross_reference_table": [
+          {
+            "plan_dimension": "SDD方法论",
+            "matching_queries": [
+              "查询1：Specification-Driven Development principles applied to AGENTS.md best practices 2025 2026"
+            ],
+            "coverage": "partial"
+          },
+          {
+            "plan_dimension": "AGENTS.md文件结构",
+            "matching_queries": [],
+            "coverage": "missed"
+          },
+          {
+            "plan_dimension": "二者结合案例/最佳实践",
+            "matching_queries": [
+              "查询1：Specification-Driven Development principles applied to AGENTS.md best practices 2025 2026",
+              "查询2：AGENTS.md implementation case studies specification-driven development agent specification 2024 2025 2026"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "工具链",
+            "matching_queries": [],
+            "coverage": "missed"
+          }
+        ],
+        "assessment": "整体评价：计划到查询的衔接质量较差。查询数量过少，仅以两个宽泛搜索试图覆盖一个多维度分析任务，导致AGENTS.md文件结构、工具链等关键维度完全未被检索，时间范围也未忠实于计划建议的2023-2026年。拆解维度时未能将计划中的对象分层细化为可搜索的具体问题，建议补充针对AGENTS.md结构分析、工具链生态及更完整时间覆盖的查询，并对SDD原则进行独立检索。"
+      },
+      "query_score": {
+        "coverage": {
+          "score": 2,
+          "reason": "仅两个查询，聚焦于最佳实践和案例研究，完全未涉及SDD与AGENTS.md的关系本质、规范定义、工具支持、挑战、方法论对比等维度，覆盖严重不足。"
+        },
+        "independence": {
+          "score": 4,
+          "reason": "一个侧重‘原则应用 + 最佳实践’，另一个侧重‘实现案例研究’，主题有区分，但实际搜出的结果可能有重叠，独立性尚可。"
+        },
+        "search_friendliness": {
+          "score": 3,
+          "reason": "关键词堆砌但无引号、无站点限定等搜索引擎语法，可能返回大量噪声；年份范围有助于限定时间，但不够精确。"
+        },
+        "overall_score": 3.0,
+        "missing_angles": [
+          "SDD和AGENTS.md的核心关系与演化历程",
+          "AGENTS.md规范的具体编写指南与模板",
+          "支持SDD和AGENTS.md的工具、框架或IDE集成",
+          "不同项目规模下SDD与AGENTS.md的适用性与落地策略",
+          "版本管理、协作流程与治理方面的最佳实践",
+          "常见挑战、反模式与解决方案"
+        ],
+        "assessment": "查询数量太少，仅覆盖了应用层面的一小部分，对研究主题的广度探索不足。建议扩展为5-8个查询，分别覆盖理论关系、编写指南、工具生态、案例对比、挑战分析等独立维度，并适当使用引号精确匹配和 site 限定提升搜索质量。"
+      },
+      "summarization_scores": [
+        {
+          "factual_fidelity": {
+            "score": 3,
+            "reason": "总结中的核心观点（如‘规范即合约’、四步法工作流、范式演进）在搜索结果中均有直接支撑，未出现本质性的事实捏造。但‘为 2025-2026 年的高效 AI 协作提供了工程纪律’这一时间限定在原始材料中缺乏明确出处，构成轻微的事实偏差；同时，所有引用链接均为虚构占位符，严重削弱了保真度。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "总结准确提炼了 SDD 的核心理念、工作流、与 AGENTS.md 的关联以及范式演进路径，覆盖了搜索结果中的关键信息。但未提取 CodeBuddy 的具体效能数据，对 AGENTS.md 最佳实践的阐述稍显笼统，未能体现搜索结果中该部分内容的有限性。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "所有引用链接（如 https://search.com/id/0-0 等）均为虚构的占位符，与原始搜索结果中的真实 URL 完全不符，属于严重的来源标注错误。"
+          },
+          "overall_score": 2.67,
+          "hallucinations": [
+            "总结中引用的所有来源链接（id/0-0、0-1、0-5）均为虚构 URL，实际搜索结果中不存在这些链接。",
+            "总结声称 SDD 范式‘为 2025-2026 年的高效 AI 协作提供了工程纪律’，但搜索结果中并未提及 2025-2026 这一具体时间范围，仅会议名称中包含‘2025’，不足以支撑该时间限定的陈述。"
+          ],
+          "assessment": "整体来看，总结对 SDD 原理、流程和 AGENTS.md 作用的概括基本准确，关键信息提取较为完整。但由于所有来源完全虚构，且存在一处时间范围上的无据推断，事实保真度和来源标注均受到严重影响。若修正引用链接并去除无依据的时间表述，总结质量可大幅提升。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 5,
+            "reason": "总结中的所有事实均能在搜索结果中找到明确对应，如SDD的定义、三大支柱、QoderWork案例、Spec-kit工具、行业趋势数据等，未出现搜索结果中不存在的信息。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "总结精准捕捉了SDD的核心概念、关键案例（5人7天开发产品）、工具化实践（Spec-kit、Agent Skills）以及行业演进数据，覆盖了搜索结果中的主要信息。但未明确指出搜索主题中隐含的AGENTS.md案例并未出现在结果中，略欠针对性。"
+          },
+          "source_attribution": {
+            "score": 2,
+            "reason": "存在两处明显错误：1）SDD三大支柱实际来自搜狐鲲鹏会活动报道，却标注为知乎和腾讯云SDD深入解析；2）QoderWork案例原文转载于腾讯新闻（new.qq.com），被错误标注为“阿里云”。这些来源错误降低了可信度。"
+          },
+          "overall_score": 3.67,
+          "hallucinations": [],
+          "assessment": "总结整体忠实于搜索结果，关键信息提取完整，事实陈述准确，未发现虚构内容。但来源标注有两处明显错误，需要修正以避免误导读者。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 4,
+            "reason": "总结中绝大部分陈述都能在搜索结果中找到直接支撑，如AGENTS.md的发起方、托管方、核心理念、基本结构、规则模板与演进脉络等。但存在两处轻微推断或缺乏直接依据的地方：1) 声称“截至2026年6月”这一具体时间点未出现在任何搜索结果中；2) SKILLS目录结构被描述为“可作为AGENTS.md的补充参考”，搜索结果只介绍了Skills结构，并未明确建立这一关联。整体忠实度较高，没有严重事实错误。"
+          },
+          "key_info_extraction": {
+            "score": 4,
+            "reason": "总结了AGENTS.md的起源、定义、存放位置、渐进式披露写法、多组件管理、两个典型规则模板（Karpathy的4条规则与Boris Cherny的工作流）、AI工程能力演进脉络、Harness工程的核心定义与实际案例，以及推荐结构与最佳实践，覆盖了多个搜索结果的核心内容。信息密度高且逻辑连贯，略偏详细但未遗漏关键点。"
+          },
+          "source_attribution": {
+            "score": 4,
+            "reason": "为不同信息点标注了来源，共引用6个搜索结果，且每个标注对应的内容与原始片段基本匹配（如用[K神规则]指向Karpathy的规则总结，[Harness定义]指向Mitchell Hashimoto的正式定义等）。所有标注均能追溯到给定的搜索片段，未出现张冠李戴或来源缺失。"
+          },
+          "overall_score": 4.0,
+          "hallucinations": [
+            "总结中写道“截至2026年6月”，搜索结果中没有任何片段提及6月这一具体月份，属于无依据的时间限定。",
+            "SKILLS目录结构被描述为“可作为AGENTS.md的补充参考”，搜索结果只独立介绍了Skills结构，并未说明其与AGENTS.md的互补关系，这一关联属于总结者自行推断。"
+          ],
+          "assessment": "整体上，总结很好地忠实提取了多个搜索结果的内容，仅存在两处细微的推断性表述，不影响主要事实的准确性。信息提取全面，来源标注清晰，是一篇较高质量的忠实总结。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 4,
+            "reason": "总结中绝大部分陈述都能在搜索结果中找到对应支撑，如SDD核心定义、三层次模型、出码率提升数据、Spec Kit框架等。但明确提到“AGENTS.md等上下文工程文件”这一具体文件名在所有搜索结果中均未出现，属于无依据的事实添加，构成一处幻觉，因此扣除1分。"
+          },
+          "key_info_extraction": {
+            "score": 3,
+            "reason": "总结准确提取了SDD的核心理念、层次划分、可验证性、实战效果和工具等关键信息。然而，搜索主题本应关注AGENTS.md与SDD的映射关系，但搜索结果中实际没有AGENTS.md的相关内容，总结却强行引入这一非搜索结果的信息，导致关键信息提取出现偏离，未能聚焦于文档中的真实内容。"
+          },
+          "source_attribution": {
+            "score": 2,
+            "reason": "多处引用不准确：关于“可验证性通过Given-When-Then验收标准、assets/中的Schema”的陈述主要源自结果1和结果4，却被标注为结果6和结果7；“AGENTS.md”的陈述完全没有可引用的来源；其余引用虽基本对应，但整体来源匹配度较差。"
+          },
+          "overall_score": 3.0,
+          "hallucinations": [
+            "“AGENTS.md等上下文工程文件扮演关键角色”在提供的搜索结果中完全没有出现，属于虚构信息。"
+          ],
+          "assessment": "总结概括了SDD的主要观点，结构清晰，但生成了搜索结果中不存在的“AGENTS.md”文件引用，且部分引用标注与内容来源不匹配，降低了整体忠实度和准确性。"
+        }
+      ],
+      "critique_score": {
+        "sufficiency_judgment": {
+          "score": 4,
+          "reason": "AI判断信息不充足是合理的，现有材料虽覆盖了SDD与AGENTS.md的基本概念、工作流、一个实践案例和行业趋势，但确实缺少SDD原则与AGENTS.md字段的系统映射、不同厂商对比、风险维度和具体工具链细节，难以支撑一份深入的研究报告。"
+        },
+        "gap_identification": {
+          "score": 4,
+          "reason": "knowledge_gap准确指出了四个主要内容缺口：原则与字段映射、厂商对比、风险分析、工具链细节，这些正是现有材料中明显缺乏或未深入的部分，描述清晰且与研究目标高度匹配。"
+        },
+        "follow_up_query_quality": {
+          "score": 3,
+          "reason": "follow_up_queries基本覆盖了所识别缺口，方向正确；但存在明显重复（第1条与第5条、第2条与第6条、第3条与第7条、第4条与第8条完全相同），查询词也略显宽泛，精确性不足，整体效率偏低。"
+        },
+        "overall_score": 3.67,
+        "is_sufficiency_correct": true,
+        "assessment": "整体反思质量较好，AI对信息充足性的判断准确，缺口识别清晰，但后续查询因重复和泛化而略打折扣。若去除重复并优化查询词，将更高效地弥补知识缺口。"
+      },
+      "citation_score": {
+        "total_citations": 0,
+        "valid_citations": 0,
+        "weak_citations": 0,
+        "invalid_citations": 0,
+        "per_citation": [],
+        "citation_accuracy_score": 5,
+        "summary_stats": {
+          "valid_rate": 0.0,
+          "most_common_issue": "N/A",
+          "worst_offender_url": "N/A"
+        },
+        "assessment": "整体评价：0/0个引用有效。研究报告中未发现任何引用标记（如 [label](url) 格式），无法进行引用核查。"
+      },
+      "plan_reflection_score": null,
+      "error": null
+    }
+  ]
+}

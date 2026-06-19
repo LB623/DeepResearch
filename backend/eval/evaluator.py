@@ -10,10 +10,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
+import re
 import sys
 import textwrap
+import uuid
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -74,6 +78,23 @@ class _CaptureCtx:
         mod.WebSearchAgent.step = self._orig_step
 
 
+def _normalize_query(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip().lower())
+
+
+def _stable_unique_queries(values: list[object]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for value in values:
+        text = str(value or "").strip()
+        normalized = _normalize_query(text)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        unique.append(text)
+    return unique
+
+
 # ============================================================
 # 数据类型
 # ============================================================
@@ -126,6 +147,15 @@ class Evaluator:
 
     def __init__(self, judge_model_id: str | None = None):
         self.judge = Judge(model_id=judge_model_id)
+        self._async_runner = asyncio.Runner()
+
+    def _invoke_graph(self, state: dict, config: dict) -> dict:
+        """Run the async LangGraph from the synchronous eval CLI."""
+        return self._async_runner.run(graph.ainvoke(state, config=config))
+
+    def close(self) -> None:
+        """Release the persistent event loop after all eval topics finish."""
+        self._async_runner.close()
 
     # --------------------------------------------------------
     # 端到端
@@ -189,14 +219,14 @@ class Evaluator:
         """
         config = {
             "configurable": {
-                "thread_id": f"eval-{hash(cfg.topic + (cfg.user_feedback or '')) & 0xFFFF}",
+                "thread_id": f"eval-{hash(cfg.topic + (cfg.user_feedback or '')) & 0xFFFF}-{uuid.uuid4().hex[:8]}",
                 "number_of_initial_queries": cfg.initial_search_query_count,
                 "max_research_loops": cfg.max_research_loops,
             }
         }
 
         # ---- 阶段 1：触发计划生成 ----
-        phase1_state = graph.invoke(
+        phase1_state = self._invoke_graph(
             {"messages": [HumanMessage(content=cfg.topic)]},
             config=config,
         )
@@ -207,7 +237,7 @@ class Evaluator:
             if capture:
                 capture.patch()
             try:
-                phase2_state = graph.invoke(
+                phase2_state = self._invoke_graph(
                     {
                         "messages": [
                             HumanMessage(content=cfg.topic),
@@ -216,6 +246,9 @@ class Evaluator:
                         ],
                         "plan": plan_a,
                         "plan_status": "confirmed",
+                        "initial_search_query_count": cfg.initial_search_query_count,
+                        "max_research_loops": cfg.max_research_loops,
+                        "research_loop_count": 0,
                     },
                     config=config,
                 )
@@ -226,7 +259,7 @@ class Evaluator:
             plan_b = ""
         else:
             # ---- 阶段 2：发送用户反馈 ----
-            phase2_state = graph.invoke(
+            phase2_state = self._invoke_graph(
                 {
                     "messages": [
                         HumanMessage(content=cfg.topic),
@@ -235,6 +268,9 @@ class Evaluator:
                     ],
                     "plan": plan_a,
                     "plan_status": "confirmed",
+                    "initial_search_query_count": cfg.initial_search_query_count,
+                    "max_research_loops": cfg.max_research_loops,
+                    "research_loop_count": 0,
                 },
                 config=config,
             )
@@ -247,7 +283,7 @@ class Evaluator:
                 if capture:
                     capture.patch()
                 try:
-                    phase2_state = graph.invoke(
+                    phase2_state = self._invoke_graph(
                         {
                             "messages": [
                                 HumanMessage(content=cfg.topic),
@@ -256,6 +292,9 @@ class Evaluator:
                             ],
                             "plan": plan_b,
                             "plan_status": "confirmed",
+                            "initial_search_query_count": cfg.initial_search_query_count,
+                            "max_research_loops": cfg.max_research_loops,
+                            "research_loop_count": 0,
                         },
                         config=config,
                     )
@@ -346,9 +385,13 @@ class Evaluator:
             )
 
         # 评估搜索查询
-        search_queries = phase2.get("search_query", [])
+        search_queries = phase2.get("generated_queries") or phase2.get("search_query", [])
         if search_queries:
-            query_list = list(search_queries) if isinstance(search_queries, list) else []
+            query_list = (
+                _stable_unique_queries(search_queries)
+                if isinstance(search_queries, list)
+                else []
+            )
             result.query_score = self.judge.evaluate_queries(
                 research_topic=cfg.topic,
                 queries=query_list,
@@ -364,8 +407,15 @@ class Evaluator:
                 )
 
         # 评估摘要保真度（针对每个捕获的原始搜索结果）
-        web_search_results = phase2.get("web_search_result", [])
-        for idx, (raw, summary) in enumerate(zip(capture.raw_results, web_search_results)):
+        web_search_results = list(phase2.get("web_search_result", []) or [])
+        executed_queries = list(phase2.get("executed_queries", []) or [])
+        raw_by_query: dict[str, deque[dict]] = defaultdict(deque)
+        for raw in capture.raw_results:
+            raw_by_query[_normalize_query(raw.get("query", ""))].append(raw)
+
+        for query, summary in zip(executed_queries, web_search_results):
+            candidates = raw_by_query.get(_normalize_query(query))
+            raw = candidates.popleft() if candidates else None
             if not raw or not summary:
                 continue
             score = self.judge.evaluate_summarization(

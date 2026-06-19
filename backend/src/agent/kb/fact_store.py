@@ -51,12 +51,12 @@ class FactStore:
     def __init__(
         self,
         uri: str | None = None,
-        collection: str = COLLECTION_NAME,
+        collection: str | None = None,
         embedding_dim: int | None = None,
         embedding_model: str | None = None,
     ):
         self.uri = uri or os.getenv("MILVUS_URI", "http://localhost:19530")
-        self.collection = collection
+        self.collection = collection or os.getenv("MILVUS_COLLECTION", COLLECTION_NAME)
         self.embedding_dim = embedding_dim or int(
             os.getenv("EMBEDDING_DIM", str(DEFAULT_EMBEDDING_DIM))
         )

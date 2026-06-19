@@ -7,26 +7,27 @@
 """
 
 from dotenv import load_dotenv
+from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
-from langchain_core.messages import AIMessage
 from loguru import logger
 
+from agent.base_agent import Agent, JsonAgent
+from agent.checkpoint import get_checkpointer
 from agent.configuration import Configuration
+from agent.post import Post
 from agent.prompts import (
     get_current_date,
     plan_instructions,
     plan_reflection_instructions,
 )
-from agent.post import Post
 from agent.state import OverallState
+from agent.sub_agents import research_agent_graph, writer_agent_graph
 from agent.tools_and_schemas import PlanReflection
 from agent.utils import (
     get_last_user_response,
     get_research_topic,
 )
-from agent.base_agent import Agent, JsonAgent
-from agent.sub_agents import research_agent_graph, writer_agent_graph
 
 load_dotenv()
 
@@ -155,4 +156,4 @@ builder.add_edge(RESEARCH_AGENT_NODE, WRITER_AGENT_NODE)
 builder.add_edge(WRITER_AGENT_NODE, END)
 
 # -- compile --
-graph = builder.compile(name="pro-research-agent")
+graph = builder.compile(checkpointer=get_checkpointer(), name="pro-research-agent")

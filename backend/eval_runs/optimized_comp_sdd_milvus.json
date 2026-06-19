@@ -1,0 +1,658 @@
+{
+  "timestamp": "2026-06-18T09:14:51.230388",
+  "e2e_results": [],
+  "component_results": [
+    {
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "plan_score": {
+        "requirement_coverage": {
+          "score": 5,
+          "reason": "计划主动识别并详细询问了用户可能忽略的5大关键要素：核心分析对象、对手策略、风险研判、时空边界、成果呈现形式，没有遗漏任何维度，且每个要素均配以具体引导问题。"
+        },
+        "question_clarity": {
+          "score": 5,
+          "reason": "追问采用了单选题、多选题、开放式填空等多种形式，选项具体、场景化，如将核心分析对象细化为A-E五个方向，使用户能快速做出选择；问题表述精准、无歧义，引导性强，有效降低了用户认知负担。"
+        },
+        "structure_quality": {
+          "score": 5,
+          "reason": "计划以'进度条→核心理解→待确认问题→智能建议→下一步'的结构展开，逻辑递进清晰；核心理解部分解构了需求现状，待确认问题将缺失信息转化为可直接操作的选择，智能建议提供了可选的加速策略，整体形成一个闭环、可立即执行的澄清流程。"
+        },
+        "overall_score": 5.0,
+        "missing_dimensions": [],
+        "assessment": "该计划是一份教科书级的需求澄清模板。它完整覆盖了研究计划的五大关键维度，将模糊的主题转化为结构化、可操作的问题序列，问题设计清晰且富有引导性，结构高度合理，能够确保在极短时间内锁定完整需求，显著降低后续搜索的偏差。"
+      },
+      "plan_query_alignment_score": {
+        "coverage_consistency": {
+          "score": 4,
+          "reason": "计划中列出了核心分析对象（定义/关系/最佳实践）、对手策略（TDD/BDD对比）、风险研判、时间边界（2025-2026）等关键维度，所有维度均在查询中有所体现。但查询将SDD方法论本身与AGENTS.md定义强绑定搜索，缺乏对SDD核心原则的独立查询，存在轻微覆盖不足。"
+        },
+        "plan_fidelity": {
+          "score": 2,
+          "reason": "计划尚处于需求澄清阶段，对手策略与风险研判是‘待确认问题’，明确需用户确认是否纳入；搜索查询却直接加入TDD/BDD对比和风险挑战内容，严重违背了计划未锁定的边界。时间范围选用了2025-2026，虽与计划中的建议选项之一相符，但计划也曾建议默认近3年（2023-2026），选此时间未确认，但相较前置内容属于轻微偏离。"
+        },
+        "structural_decomposition": {
+          "score": 2,
+          "reason": "查询仅将计划粗分为两类（定义/对比类、风险/最佳实践类），且出现了完全重复的两对查询。未对‘核心分析对象’进行更细粒度的拆解（如SDD概念、AGENTS.md规范、实践案例、工具集成等），结构拆解度低，无法体现多样化、可独立执行的搜索维度。"
+        },
+        "overall_score": 2.67,
+        "covered_dimensions": [
+          "核心分析对象-定义与关系",
+          "核心分析对象-最佳实践",
+          "对手策略维度（与TDD/BDD对比）",
+          "风险研判维度（风险与挑战）",
+          "时间范围（2025-2026）"
+        ],
+        "missed_dimensions": [],
+        "cross_reference_table": [
+          {
+            "plan_dimension": "核心分析对象-定义与关系",
+            "matching_queries": [
+              "查询1",
+              "查询3"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "核心分析对象-最佳实践",
+            "matching_queries": [
+              "查询2",
+              "查询4"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "对手策略维度（与TDD/BDD对比）",
+            "matching_queries": [
+              "查询1",
+              "查询3"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "风险研判维度（风险与挑战）",
+            "matching_queries": [
+              "查询2",
+              "查询4"
+            ],
+            "coverage": "full"
+          },
+          {
+            "plan_dimension": "时间边界（2025-2026）",
+            "matching_queries": [
+              "查询1",
+              "查询2",
+              "查询3",
+              "查询4"
+            ],
+            "coverage": "full"
+          }
+        ],
+        "assessment": "整体评价：计划到查询的衔接质量偏低。主要问题在于：① 搜索查询在需求未确认的情况下贸然引入了对手策略和风险研判，违背了计划边界；② 查询结构粗放且重复，未对核心分析对象进行细致拆解，影响搜索的覆盖精度和可操作性；③ 虽关键维度均被提及，但强绑定式查询可能削弱对单点（如SDD独立定义）的检索效果。建议等待需求明确后再生成查询，并将每个维度（定义、实践、对比、风险）拆分为独立、准确的搜索短语。"
+      },
+      "query_score": {
+        "coverage": {
+          "score": 3,
+          "reason": "查询覆盖了规范驱动开发（SDD）与AGENTS.md的定义、关系、与传统开发模式对比，以及采用AGENTS.md的风险挑战和Claude Code的最佳实践，但缺少具体工作流示例、AGENTS.md文件格式规范、其他AI编码工具集成、社区案例和工具对比等维度。"
+        },
+        "independence": {
+          "score": 2,
+          "reason": "实际查询只有两个主题方向，但每个方向被重复两次，导致整个查询集合存在明显冗余，严重降低了独立性。即使不考虑重复，两个查询在内容上仍有少量重叠（都涉及AGENTS.md与SDD的关系），独立性一般。"
+        },
+        "search_friendliness": {
+          "score": 3,
+          "reason": "查询采用中文自然语言长句，包含括号备注和年份限制，虽能被现代搜索引擎部分理解，但缺乏关键词提炼和高级搜索语法（如引号、布尔运算符），搜索精度和召回可能受限。"
+        },
+        "overall_score": 2.67,
+        "missing_angles": [
+          "AGENTS.md文件格式、内容规范和编写示例",
+          "SDD与AGENTS.md在实际项目中的端到端工作流",
+          "不同AI编码工具（如GitHub Copilot、Cursor等）对AGENTS.md的支持对比",
+          "规范驱动开发在AI原生环境下的演变与AGENTS.md的角色",
+          "社区采纳AGENTS.md的案例和最佳实践分享",
+          "SDD与现有规范（如OpenAPI、AsyncAPI）结合使用AGENTS.md的方法"
+        ],
+        "assessment": "查询整体方向正确，但存在明显重复，导致独立性和覆盖度不足。查询语言偏自然对话式，搜索友好性中等，缺乏针对搜索引擎优化的关键词结构。建议去除重复查询，增加更多具体实践、工具链和案例研究的角度，并改用更精炼的搜索词组合以提高检索质量。"
+      },
+      "summarization_scores": [
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "总结内容与原始搜索结果严重偏离。总结主要讨论规范驱动开发(SDD)、TDD和BDD的概念与区别，而原始搜索结果几乎全部围绕AGENTS.md标准、Claude Code实践、以及规范驱动开发在AI编程中的具体应用与挑战。总结中关于TDD和BDD的详细定义、区别及历史背景在搜索结果中完全不存在，属于凭空捏造。此外，总结声称'搜索结果中未提及AGENTS.md的相关内容'，但多个搜索结果直接以AGENTS.md为主题，这是明显的事实错误。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "总结完全没有提取搜索结果中的关键信息。搜索主题明确要求评估采用AGENTS.md实现规范驱动开发的风险、挑战及最佳实践，搜索结果提供了AGENTS.md的起源、设计哲学、标准化进程、厂商协作、Claude Code的CLAUDE.md配置方法、内部最佳实践、子代理策略、自我改进循环等核心内容，但总结无一涉及，转而介绍与搜索主题无关的TDD和BDD概念。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "总结中引用的所有链接（如https://search.com/id/0-0等）均为虚构URL，并非原始搜索结果中提供的真实URL（如zhuanlan.zhihu.com、blog.csdn.net、xie.infoq.cn等）。即便链接真实，其内容也完全无法对应原始搜索结果，来源标注错误且具有误导性。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "总结大量讨论TDD（测试驱动开发）和BDD（行为驱动开发）的定义、区别及历史，这些内容在原始搜索结果中完全不存在。",
+            "总结声称'搜索结果中未提及AGENTS.md的相关内容'，而原始搜索结果中至少有5篇直接以AGENTS.md为主题或核心内容。",
+            "总结中所有搜索结果链接（如https://search.com/id/0-0）均为虚构，原始结果中没有这些URL。",
+            "总结中描述的'TDD是代码导向的测试方法'、'BDD由Dan North于2003年提出'、'Given-When-Then结构'等具体信息均无来源支撑。"
+          ],
+          "assessment": "该AI总结与原始搜索结果完全脱节，存在严重幻觉。总结将搜索主题替换为TDD与BDD的对比，未提取任何与AGENTS.md、Claude Code等真实内容相关的信息，且错误声称'未提及AGENTS.md'。来源标注均为虚构URL，整体不可信，无法满足用户对搜索主题的需求。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "总结中几乎所有核心陈述均无法在提供的搜索结果中找到支撑。例如“AGENTS.md由OpenAI、Anthropic、Google等联合发起并由Linux基金会托管”“Claude Code创始人Boris Cherny强调文档精简”“Andrej Karpathy总结的LLM三大通病”“采用AGENTS.md实现规范驱动开发”等内容，均未出现在任何一条原始搜索结果中。总结整体与给定搜索结果严重脱节。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "总结完全没有提取搜索结果中包含的关于SDD、TDD、BDD的定义、关系、对比等信息。搜索结果重点呈现了SDD的概念（如关于规格先于代码、规格可验证、规格贯穿全生命周期等）、TDD的“红-绿-重构”循环、BDD的Given-When-Then与协作特征等，但这些关键信息在总结中完全缺失。总结反而虚构了一套基于AGENTS.md、Claude Code的实践体系，与搜索主题的核心内容偏离。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "总结使用了“[sohu](https://search.com/id/...)”等来源标注，但所提供的全部搜索结果中没有任何一条来自sohu.com或search.com类似的域名，且id编号与搜索结果索引完全无法对应。标注完全虚假，无正确信息来源引用。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "AGENTS.md是OpenAI、Anthropic、Google等联合发起并由Linux基金会托管的统一指令文件",
+            "Claude Code创始人Boris Cherny强调文档要精简，不超过1000行",
+            "Andrej Karpathy总结的LLM三大通病：擅自主观假设、简单问题复杂化、随意修改无关代码",
+            "统一使用AGENTS.md实现规范驱动开发，面临各AI工具依赖私有规则文件的碎片化挑战",
+            "建议在项目根目录创建CLAUDE.md，并补充Commands、Subagents、Skills和.claude/settings.json",
+            "采用‘探索→规划→编码→验证’的闭环工作流，通过子代理保持主上下文干净",
+            "自我改进循环：每次用户纠正后立即更新tasks/lessons.md形成教训库",
+            "Anthropic官方推荐使用深度思考指令、默认只读权限以及CI/CD无头自动化",
+            "OpenSpec等规范驱动框架可与Claude Code协同，通过‘提案-审查-实施-归档’工作流管控需求偏移",
+            "2025年Agent技术架构已收敛，真正瓶颈转向‘业务重塑’"
+          ],
+          "assessment": "该总结完全脱离给定的搜索结果，自行构建了一套以AGENTS.md、Claude Code、Agent实践为中心的叙述，与搜索主题（SDD定义、与TDD/BDD关系及对比）毫无关联。总结中出现的所有来源标注均为伪造，未提取任何搜索结果中的真实信息，属于严重幻觉生成，不具备任何参考价值。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "总结中所有关于AGENTS.md的描述（如六大科技巨头2025年联合发布、捐赠给AAIF、三层标准结构、与MCP/A2A互补、苏黎世联邦理工学院2026年研究等）在提供的搜索结果中均无任何对应信息，完全是虚构内容。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "提供的搜索结果全部与AGENTS.md无关，总结没有提取到任何搜索结果中的真实关键信息，反而凭空生成了大量不相关内容。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "标注的引用链接（如[通用语言]、[Claude生态]、[CSDN博客]等）均为无效占位符，且对应内容在搜索结果中完全不存在，来源标注完全错误。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "AGENTS.md由OpenAI、Anthropic、Google、Cursor等六大科技巨头于2025年联合发布",
+            "该规范捐赠给Linux基金会旗下的Agentic AI Foundation (AAIF)进行中立治理",
+            "AGENTS.md属于三层标准中的“指令层”，与Anthropic的MCP（工具接入层）和Google的A2A（Agent间通信层）互补",
+            "文件采用Markdown格式而非JSON/YAML，首要服务人类阅读同时保证机器可解析",
+            "业界的通用内容包括项目概述、技术栈及版本、核心架构、编码规范等",
+            "有实践将AGENTS.md与知识图谱工具（graphify）结合，形成“自动化发现+人工提炼”闭环",
+            "AGENTS.md负责AI指令、README.md负责协作说明、preferences.yaml负责工具配置",
+            "苏黎世联邦理工学院2026年研究指出自动生成的AGENTS.md导致任务成功率下降约3%",
+            "总结整体描述为一个已发布的广泛使用的规范生态，但搜索结果中完全没有此类信息"
+          ],
+          "assessment": "AI生成的总结完全脱离所提供的搜索结果，从头到尾虚构了一个关于AGENTS.md的详细生态描述。所有事实、结构、引用来源均系编造，属于严重的幻觉现象，总结不具备任何忠实度或参考价值。"
+        },
+        {
+          "factual_fidelity": {
+            "score": 1,
+            "reason": "总结声称「搜索结果中未找到任何内容提及“AGENTS.md”或“specification-driven development artifact”」，但搜索结果中至少有7条结果明确在标题或正文中讨论AGENTS.md，与原文完全矛盾，属于严重幻觉。"
+          },
+          "key_info_extraction": {
+            "score": 1,
+            "reason": "未提取任何原始搜索结果中的关键信息，反而给出了完全错误的否定性结论，丧失了信息提取的功能。"
+          },
+          "source_attribution": {
+            "score": 1,
+            "reason": "总结未标注任何信息来源，也未引用任何一条搜索结果，无法验证其陈述的来源。"
+          },
+          "overall_score": 1.0,
+          "hallucinations": [
+            "总结声称“搜索结果中未找到任何内容提及‘AGENTS.md’或‘specification-driven development artifact’相关的真实案例或开源项目”，但搜索结果中大量内容均直接讨论AGENTS.md及其相关案例。"
+          ],
+          "assessment": "AI生成的总结完全背离了原始搜索结果，捏造了「未找到任何内容」的虚假结论，属于严重幻觉。所有维度均得最低分，该总结毫无忠实度可言。"
+        }
+      ],
+      "critique_score": {
+        "sufficiency_judgment": {
+          "score": 5,
+          "reason": "研究主题要求探讨SDD与AGENTS.md的关系及最佳实践。现有信息虽然覆盖了各自的基本定义和局部最佳实践，但缺乏：两者结合的真实案例、系统性的方法对比（如与TDD+传统文档的对比），以及理论层面的内在逻辑剖析。因此，判断信息不充足是完全合理的。"
+        },
+        "gap_identification": {
+          "score": 5,
+          "reason": "知识差距描述精准，明确指出了三个关键缺口：1）真实项目如何将AGENTS.md作为SDD核心产物并形成闭环的案例；2）“SDD+AGENTS.md”与其他开发方法的系统性效率和质量对比；3）AGENTS.md作为形式化规范与SDD原则之间的深层理论联系。这些正是将话题从概念推向实践和深度分析所必需的信息。"
+        },
+        "follow_up_query_quality": {
+          "score": 3,
+          "reason": "后续查询能够有效弥补所识别的差距，但存在明显的重复查询（英文和中文各重复一次），导致查询列表冗余，不够精炼，反映出一定的随意性。查询本身内容合理，但重复降低了整体质量。"
+        },
+        "overall_score": 4.33,
+        "is_sufficiency_correct": true,
+        "assessment": "AI对信息充足性的判断正确，差距识别精准，后续查询方向正确但存在冗余。整体反思质量较高，能推动研究向更深层次发展。"
+      },
+      "citation_score": {
+        "total_citations": 51,
+        "valid_citations": 50,
+        "weak_citations": 0,
+        "invalid_citations": 1,
+        "per_citation": [
+          {
+            "url": "https://blog.csdn.net/2403_86932067/article/details/160059334",
+            "label": "全面认识SDD",
+            "paragraph_summary": "介绍SDD的核心原则Spec-First，先定义规格再驱动开发，规格作为单一事实来源。",
+            "source_title": "2025年全面认识SDD:规范驱动开发到底是什么?",
+            "status": "valid",
+            "reason": "段落讨论SDD核心原则，来源正是全面介绍SDD的文章，直接相关。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2631688",
+            "label": "规范驱动开发深入解析",
+            "paragraph_summary": "规格需满足明确、结构化、可验证、可演进、面向实现五个特征。",
+            "source_title": "规范驱动开发(Spec-Driven Development)深入解析——从方法论演进到 AI 时代的软件工程范式转移",
+            "status": "valid",
+            "reason": "段落讨论规格特征，来源为SDD深入解析，应包括规格特征的阐述。"
+          },
+          {
+            "url": "https://blog.csdn.net/2403_86932067/article/details/160059334",
+            "label": "全面认识SDD",
+            "paragraph_summary": "SDD在2025年因AI辅助编程受重视，明确规格可约束AI输出、减少需求偏差。",
+            "source_title": "2025年全面认识SDD:规范驱动开发到底是什么?",
+            "status": "valid",
+            "reason": "段落讨论SDD的重要性与AI关联，来源全面认识SDD，包含AI时代的应用分析。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "AGENTS.md是面向AI智能体的元数据规范，由六大巨头联合发布并捐赠给AAIF。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落讨论AGENTS.md的定义与标准化，来源正是关于其成为通用语言的报道。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_52632755/article/details/161778619",
+            "label": "Claude生态",
+            "paragraph_summary": "AGENTS.md被定位为“宪法”，所有主流AI编程工具可识别自动加载。",
+            "source_title": "Claude 生态全解析:AGENTS.md、CLAUDE.md 与 Skill 的爱恨情仇!",
+            "status": "valid",
+            "reason": "段落讨论工具识别，来源解析Claude生态，应提及工具对AGENTS.md的支持。"
+          },
+          {
+            "url": "https://github.com/ModelEngine-Group/fit-framework/commit/92e9e9577b788287c62df370f293e039dd98eb24",
+            "label": "最佳实践",
+            "paragraph_summary": "职责分工上AGENTS.md负责AI指令，README.md负责协作说明，preferences.yaml负责工具配置。",
+            "source_title": "docs(ai-agents): 优化 AGENTS.md 配置,遵循官方标准最佳实践",
+            "status": "content_mismatch",
+            "reason": "段落讨论文件职责分工，来源为优化AGENTS.md配置的commit，标题未体现职责分工内容，相关性不足。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_29138345/article/details/160511501",
+            "label": "元数据规范",
+            "paragraph_summary": "AGENTS.md采用Markdown格式，首要服务人类阅读，同时保证机器可解析。",
+            "source_title": "AI智能体元数据规范:agents.md的设计哲学与工程实践",
+            "status": "valid",
+            "reason": "段落讨论格式选择，来源涉及设计哲学，应包含格式决定的理由。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "设计体现“写给Agent的README”理念，使AI走向统一语言标准化时代。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落讨论统一语言与标准化，与来源主题直接吻合。"
+          },
+          {
+            "url": "https://www.cnblogs.com/Leo_wl/p/17845139.html",
+            "label": "TDD、BDD、ATDD",
+            "paragraph_summary": "TDD以“红-绿-重构”循环为核心：先写测试，再写代码，最后重构。",
+            "source_title": "测试驱动开发(TDD)、行为驱动开发(BDD)和验收测试驱动开发(ATDD) - HackerVirus - 博客园",
+            "status": "valid",
+            "reason": "段落讨论TDD循环，来源涵盖TDD等测试驱动开发内容。"
+          },
+          {
+            "url": "https://easylearn.baidu.com/edu-page/tiangong/questiondetail?id=1833329545004511148&fr=search",
+            "label": "TDD与BDD区别",
+            "paragraph_summary": "TDD聚焦开发者视角，使用编程语言编写单元测试。",
+            "source_title": "请解释测试驱动开发(TDD)和行为驱动开发(BDD)之间的区别。",
+            "status": "valid",
+            "reason": "段落说明TDD特点，来源专门解释TDD与BDD区别，可支撑该描述。"
+          },
+          {
+            "url": "https://baike.baidu.com/item/行为驱动开发/9424963",
+            "label": "行为驱动开发",
+            "paragraph_summary": "BDD是TDD扩展，由Dan North提出，使用Given-When-Then描述行为，强调协作。",
+            "source_title": "行为驱动开发",
+            "status": "valid",
+            "reason": "段落介绍BDD定义与历史，来源正是BDD百科条目。"
+          },
+          {
+            "url": "https://cloud.tencent.com/developer/article/2375352",
+            "label": "软件测试框架介绍",
+            "paragraph_summary": "BDD关注用户可见行为，将需求、测试和文档集成为可执行规范。",
+            "source_title": "软件测试/测试开发|常见软件测试框架类型:TDD、BDD、DDD、ATDD、DevOps介绍",
+            "status": "valid",
+            "reason": "段落讨论BDD作为可执行规范，来源介绍测试框架，应包括BDD的特性。"
+          },
+          {
+            "url": "https://easylearn.baidu.com/edu-page/tiangong/questiondetail?id=1833329545004511148&fr=search",
+            "label": "TDD与BDD区别",
+            "paragraph_summary": "SDD与TDD、BDD在视角、语言形式、协作对象上存在关键差异。",
+            "source_title": "请解释测试驱动开发(TDD)和行为驱动开发(BDD)之间的区别。",
+            "status": "valid",
+            "reason": "段落进行对比，来源解释TDD与BDD区别，可作为差异讨论的基础。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "AGENTS.md是SDD原则的落地文件，通过统一规范让AI走向标准化时代。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落将AGENTS.md与SDD结合并强调统一语言，来源正阐述AGENTS.md的标准化意义。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "AGENTS.md定义项目概述、技术栈、架构、编码规范等核心规则。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落列举AGENTS.md的内容，来源应包含其定义范畴。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_52632755/article/details/161778619",
+            "label": "Claude生态",
+            "paragraph_summary": "AGENTS.md定义项目概述、技术栈、架构、编码规范等核心规则。",
+            "source_title": "Claude 生态全解析:AGENTS.md、CLAUDE.md 与 Skill 的爱恨情仇!",
+            "status": "valid",
+            "reason": "段落讨论AGENTS.md承载规格，来源解析Claude生态，应涉及AGENTS.md的作用与内容。"
+          },
+          {
+            "url": "https://blog.csdn.net/2403_86932067/article/details/160059334",
+            "label": "全面认识SDD",
+            "paragraph_summary": "规范驱动开发与AI辅助编程自然契合，明确规格弥补LLM不足。",
+            "source_title": "2025年全面认识SDD:规范驱动开发到底是什么?",
+            "status": "valid",
+            "reason": "段落讨论SDD与AI契合，来源全面介绍SDD，应包括AI辅助的讨论。"
+          },
+          {
+            "url": "https://blog.csdn.net/2403_86932067/article/details/160059334",
+            "label": "全面认识SDD",
+            "paragraph_summary": "形式化规范（AGENTS.md）→ 代码生成 → 验证的工作流。",
+            "source_title": "2025年全面认识SDD:规范驱动开发到底是什么?",
+            "status": "valid",
+            "reason": "段落描述SDD工作流，来源应包含SDD的核心循环。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "“探索→规划→编码→验证”的闭环开发流程。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "段落讨论闭环开发模式，来源为最佳实践模板，应包括该工作流。"
+          },
+          {
+            "url": "https://www.cnblogs.com/informatics/p/19625904",
+            "label": "sohu",
+            "paragraph_summary": "“探索→规划→编码→验证”的闭环开发流程。",
+            "source_title": "Coding Agent 最佳实践",
+            "status": "valid",
+            "reason": "来源为Coding Agent最佳实践，应涵盖闭环开发方法。"
+          },
+          {
+            "url": "https://it.sohu.com/a/920343950_121124377",
+            "label": "sohu",
+            "paragraph_summary": "“探索→规划→编码→验证”的闭环开发流程。",
+            "source_title": "刚刚!Claude Code对外公开了官方内部最佳实践!核心贡献者:CC是一个纯粹Agent工具,揭秘md文件、上下文进阶技巧 ",
+            "status": "valid",
+            "reason": "来源公开官方最佳实践，应包括开发流程的闭环描述。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "教训库（tasks/lessons.md）作为规格持续进化机制，每次纠正后更新。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "来源最佳实践模板，很可能包含教训库与持续改进机制。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "AGENTS.md作为项目的“宪法”或“通用守则”。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落使用“宪法”比喻，来源标题强调通用语言，概念高度一致。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2046987814852638252",
+            "label": "sohu",
+            "paragraph_summary": "价值在于消除多套私有规则文件导致的碎片化问题。",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "段落讨论消除碎片化的价值，来源深度解析AGENTS.md，应包含该优势。"
+          },
+          {
+            "url": "https://blog.csdn.net/shebao3333/article/details/158621427",
+            "label": "是否有用",
+            "paragraph_summary": "局限是自动生成的AGENTS.md可能导致任务成功率下降约3%。",
+            "source_title": "AGENTS.md 真的有用吗?",
+            "status": "valid",
+            "reason": "段落讨论自动AGENTS.md的副作用，来源探讨其有用性，可能引用相关研究。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2046987814852638252",
+            "label": "sohu",
+            "paragraph_summary": "各工具依赖私有规则文件，重复维护，无法跨工具迁移。",
+            "source_title": "AGENTS.md 深度解析:为 AI 代理而生的 README",
+            "status": "valid",
+            "reason": "段落讨论标准碎片化问题，来源深度解析应涉及统一的必要背景。"
+          },
+          {
+            "url": "https://blog.51cto.com/aiweker/14522116",
+            "label": "通用语言",
+            "paragraph_summary": "AGENTS.md推出打破壁垒，六大科技巨头联合宣布支持，成为跨工具统一指令。",
+            "source_title": "AI编程的“通用语言”:AGENTS.md ",
+            "status": "valid",
+            "reason": "段落讨论AGENTS.md作为统一标准，与来源主题直接相关。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "文档过度膨胀风险，Boris Cherny建议精简文档（不超过1000行）。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "来源最佳实践模板应包含文档精简的具体建议。"
+          },
+          {
+            "url": "https://blog.csdn.net/m0_59163425/article/details/159553990",
+            "label": "sohu",
+            "paragraph_summary": "上下文稀释风险，长对话中重要规则被边缘化，导致Agent行为不稳定。",
+            "source_title": "Claude Code 最佳实践仓库拆解:一篇看懂 Agentic Engineering 落地方法",
+            "status": "valid",
+            "reason": "来源讨论落地方法，应涉及上下文管理问题。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2049609181892711018",
+            "label": "sohu",
+            "paragraph_summary": "Agent三大通病：擅自主观假设、简单问题复杂化、随意修改无关代码。",
+            "source_title": "照搬K神AGENTS.md规则,Codex/Claude Code瞬间变好用,告别乱改代码!",
+            "status": "valid",
+            "reason": "来源标题提及告别乱改代码，应涵盖这类Agent常见问题。"
+          },
+          {
+            "url": "https://blog.51cto.com/u_16163442/14427913",
+            "label": "sohu",
+            "paragraph_summary": "传统SOP需被解构并以Agent友好的方式沉淀，对一线从业者构成挑战。",
+            "source_title": "2025年Agent复盘:架构收敛与Deep Agent构建全攻略,引领行业重塑与快速迭代!",
+            "status": "valid",
+            "reason": "来源复盘业务重塑，应涉及SOP解构的挑战。"
+          },
+          {
+            "url": "https://blog.csdn.net/2401_85327249/article/details/156110563",
+            "label": "sohu",
+            "paragraph_summary": "传统SOP需被解构并以Agent友好的方式沉淀，对一线从业者构成挑战。",
+            "source_title": "Agent 的架构之争已经结束?从 Claude Code 到 Deep Agent,复盘 Agent 元年!",
+            "status": "valid",
+            "reason": "来源复盘Agent元年，应涵盖业务重塑与SOP转型的内容。"
+          },
+          {
+            "url": "https://www.cnblogs.com/informatics/p/19625904",
+            "label": "sohu",
+            "paragraph_summary": "团队需学习编写高质量AGENTS.md，理解分层配置（全局/项目/目录级别）。",
+            "source_title": "Coding Agent 最佳实践",
+            "status": "valid",
+            "reason": "来源最佳实践应包括分层配置的指导。"
+          },
+          {
+            "url": "https://blog.csdn.net/m0_59163425/article/details/159553990",
+            "label": "sohu",
+            "paragraph_summary": "推荐采用AGENTS.md + CLAUDE.md分层配置。",
+            "source_title": "Claude Code 最佳实践仓库拆解:一篇看懂 Agentic Engineering 落地方法",
+            "status": "valid",
+            "reason": "来源拆解最佳实践，应包括分层配置的建议。"
+          },
+          {
+            "url": "https://www.cnblogs.com/informatics/p/19625904",
+            "label": "sohu",
+            "paragraph_summary": "应建立全局、项目、目录级别的约束，避免单一文件信息过载。",
+            "source_title": "Coding Agent 最佳实践",
+            "status": "valid",
+            "reason": "来源最佳实践应包括目录级别约束的设计。"
+          },
+          {
+            "url": "https://gitcode.csdn.net/69d62a7a0a2f6a37c59dd0eb.html",
+            "label": "构建实践",
+            "paragraph_summary": "链接知识图谱工具，形成“自动化发现+人工提炼”闭环。",
+            "source_title": "AGENTS.md 构建实践:用知识图谱驱动的 AI Agent 上下文体系",
+            "status": "valid",
+            "reason": "段落讨论知识图谱集成，来源标题直接对应知识图谱驱动构建，密切相关。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "非琐碎任务必须先规划，通过子代理保持主上下文干净，强制验证的闭环。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "来源最佳实践模板应包括任务规划和子代理机制。"
+          },
+          {
+            "url": "https://www.cnblogs.com/informatics/p/19625904",
+            "label": "sohu",
+            "paragraph_summary": "非琐碎任务必须先规划，通过子代理保持主上下文干净，强制验证的闭环。",
+            "source_title": "Coding Agent 最佳实践",
+            "status": "valid",
+            "reason": "来源最佳实践应包括工作流和子代理使用指导。"
+          },
+          {
+            "url": "https://it.sohu.com/a/920343950_121124377",
+            "label": "sohu",
+            "paragraph_summary": "非琐碎任务必须先规划，通过子代理保持主上下文干净，强制验证的闭环。",
+            "source_title": "刚刚!Claude Code对外公开了官方内部最佳实践!核心贡献者:CC是一个纯粹Agent工具,揭秘md文件、上下文进阶技巧 ",
+            "status": "valid",
+            "reason": "来源官方最佳实践应包括上下文管理和验证流程。"
+          },
+          {
+            "url": "https://blog.csdn.net/peraglobal/article/details/161226244",
+            "label": "sohu",
+            "paragraph_summary": "OpenSpec规范驱动框架可与Claude Code协同，遵循“提案-审查-实施-归档”工作流。",
+            "source_title": "Claude Code + OpenCode + OpenSpec 规范驱动开发实战:AI 驱动智能客服管理系统开发",
+            "status": "valid",
+            "reason": "来源标题直接提及OpenSpec和Claude Code协同，应包括该工作流。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2049609181892711018",
+            "label": "sohu",
+            "paragraph_summary": "关键规则：简洁优先，只修改必要内容，对不确定点主动提问。",
+            "source_title": "照搬K神AGENTS.md规则,Codex/Claude Code瞬间变好用,告别乱改代码!",
+            "status": "valid",
+            "reason": "来源规则应包括简洁编码和主动提问等实践。"
+          },
+          {
+            "url": "https://www.cnblogs.com/informatics/p/19625904",
+            "label": "sohu",
+            "paragraph_summary": "使用深度思考指令（如think hard、ultrathink）引导Agent深入推理。",
+            "source_title": "Coding Agent 最佳实践",
+            "status": "valid",
+            "reason": "来源最佳实践应包括工具链优化技巧。"
+          },
+          {
+            "url": "https://it.sohu.com/a/920343950_121124377",
+            "label": "sohu",
+            "paragraph_summary": "使用深度思考指令（如think hard、ultrathink）引导Agent深入推理。",
+            "source_title": "刚刚!Claude Code对外公开了官方内部最佳实践!核心贡献者:CC是一个纯粹Agent工具,揭秘md文件、上下文进阶技巧 ",
+            "status": "valid",
+            "reason": "来源应包含思考指令等上下文进阶技巧。"
+          },
+          {
+            "url": "https://it.sohu.com/a/920343950_121124377",
+            "label": "sohu",
+            "paragraph_summary": "设置默认只读权限，仅在CI/CD无头自动化场景下开放写权限。",
+            "source_title": "刚刚!Claude Code对外公开了官方内部最佳实践!核心贡献者:CC是一个纯粹Agent工具,揭秘md文件、上下文进阶技巧 ",
+            "status": "valid",
+            "reason": "来源可能提及权限控制策略。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "自我改进循环：每次用户纠正后立即更新教训库。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "来源最佳实践模板应包括持续改进和教训库机制。"
+          },
+          {
+            "url": "https://zhuanlan.zhihu.com/p/2049609181892711018",
+            "label": "sohu",
+            "paragraph_summary": "遵循简洁优先原则，不建不必要的抽象层。",
+            "source_title": "照搬K神AGENTS.md规则,Codex/Claude Code瞬间变好用,告别乱改代码!",
+            "status": "valid",
+            "reason": "来源规则应包括简洁编码建议。"
+          },
+          {
+            "url": "https://blog.csdn.net/shebao3333/article/details/158621427",
+            "label": "是否有用",
+            "paragraph_summary": "审慎设计AGENTS.md，避免冗长冗余，保持每节聚焦可验证。",
+            "source_title": "AGENTS.md 真的有用吗?",
+            "status": "valid",
+            "reason": "段落讨论设计原则，来源探讨有用性，应包含设计建议。"
+          },
+          {
+            "url": "https://blog.csdn.net/weixin_48708052/article/details/158290098",
+            "label": "sohu",
+            "paragraph_summary": "持续迭代机制：定期审计AGENTS.md效果，根据错误模式更新教训库。",
+            "source_title": "Claude Code 最佳实践:这个 Agents.md / CLAUDE.md 模板,让你瞬间变身 10x 工程师!",
+            "status": "valid",
+            "reason": "来源应包括迭代和教训库机制。"
+          },
+          {
+            "url": "https://blog.51cto.com/u_16163442/14427913",
+            "label": "sohu",
+            "paragraph_summary": "技术架构收敛，瓶颈转向业务重塑，传统SOP需被解构为Agent友好方式。",
+            "source_title": "2025年Agent复盘:架构收敛与Deep Agent构建全攻略,引领行业重塑与快速迭代!",
+            "status": "valid",
+            "reason": "来源标题涉及架构收敛与业务重塑。"
+          },
+          {
+            "url": "https://blog.csdn.net/2401_85327249/article/details/156110563",
+            "label": "sohu",
+            "paragraph_summary": "技术架构收敛，瓶颈转向业务重塑，传统SOP需被解构为Agent友好方式。",
+            "source_title": "Agent 的架构之争已经结束?从 Claude Code 到 Deep Agent,复盘 Agent 元年!",
+            "status": "valid",
+            "reason": "来源复盘Agent元年，应包含业务重塑趋势。"
+          },
+          {
+            "url": "https://blog.csdn.net/cmzznet/article/details/160546010",
+            "label": "CSDN博客",
+            "paragraph_summary": "MCP、A2A、AGENTS.md三者互补：指令规范、工具接入、Agent间协作。",
+            "source_title": "MCP、A2A、AGENTS.md——Agent 标准之争,开发者到底该跟哪个_agents标准-CSDN博客",
+            "status": "valid",
+            "reason": "来源直接讨论三者关系与互补性。"
+          }
+        ],
+        "citation_accuracy_score": 4,
+        "summary_stats": {
+          "valid_rate": 0.98,
+          "most_common_issue": "content_mismatch",
+          "worst_offender_url": "https://github.com/ModelEngine-Group/fit-framework/commit/92e9e9577b788287c62df370f293e039dd98eb24"
+        },
+        "assessment": "整体评价：51个引用中50个有效，仅1处存在内容不匹配（职责分工引用未在来源标题中体现支撑），整体引用准确率极高，报告论证可靠。"
+      },
+      "plan_reflection_score": null,
+      "error": null
+    }
+  ]
+}

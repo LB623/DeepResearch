@@ -1,23 +1,22 @@
 """Integration tests for ResearchAgent sub-graph — nodes, routing, and graph topology."""
 
-import json
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from langgraph.graph import StateGraph
+from unittest.mock import MagicMock, patch
 
-from agent.state import OverallState
+import pytest
+
 from agent.sub_agents.research_agent import (
-    research_agent_graph,
-    _generate_queries,
-    _fan_out_to_web_search,
-    _web_search,
-    _critique,
-    _route_after_critique,
+    _CRITIQUE,
     _GENERATE_QUERIES,
     _WEB_SEARCH,
-    _CRITIQUE,
+    _critique,
+    _dedupe_queries,
+    _fan_out_to_web_search,
+    _generate_queries,
+    _normalize_query,
+    _route_after_critique,
+    _web_search,
+    research_agent_graph,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # Graph topology
@@ -54,6 +53,7 @@ class TestGenerateQueries:
 
             result = _generate_queries(sample_state, {"configurable": {}})
             assert "search_query" in result
+            assert "generated_queries" in result
             assert len(result["search_query"]) == 2
 
     def test_generates_queries_with_kb_hits(self, sample_state):
@@ -76,6 +76,7 @@ class TestGenerateQueries:
 
             result = _generate_queries(sample_state, {"configurable": {}})
             assert "search_query" in result
+            assert result["generated_queries"] == ["q1"]
             mock_store.query.assert_called_once()
 
     def test_kb_failure_does_not_block(self, sample_state):
@@ -92,6 +93,29 @@ class TestGenerateQueries:
 
             result = _generate_queries(sample_state, {"configurable": {}})
             assert len(result["search_query"]) == 1
+
+
+class TestQueryDedupe:
+    def test_normalize_query_collapses_case_and_whitespace(self):
+        assert _normalize_query("  AI   Chip 市场  ") == "ai chip 市场"
+
+    def test_dedupe_queries_preserves_order(self, monkeypatch):
+        monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "1")
+        kept, skipped = _dedupe_queries(["AI芯片", " ai芯片 ", "GPU市场"], [])
+        assert kept == ["AI芯片", "GPU市场"]
+        assert skipped == ["ai芯片"]
+
+    def test_dedupe_queries_skips_already_executed(self, monkeypatch):
+        monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "1")
+        kept, skipped = _dedupe_queries(["GPU市场", "AI芯片"], ["gpu市场"])
+        assert kept == ["AI芯片"]
+        assert skipped == ["GPU市场"]
+
+    def test_dedupe_can_be_disabled_for_baseline(self, monkeypatch):
+        monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "0")
+        kept, skipped = _dedupe_queries(["AI芯片", "AI芯片"], ["AI芯片"])
+        assert kept == ["AI芯片", "AI芯片"]
+        assert skipped == []
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -113,6 +137,16 @@ class TestFanOutToWebSearch:
         state = {"search_query": []}
         sends = _fan_out_to_web_search(state)
         assert len(sends) == 0
+
+    def test_fan_out_uses_generated_queries_and_skips_executed(self, monkeypatch):
+        monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "1")
+        state = {
+            "search_query": ["legacy"],
+            "generated_queries": ["q1", "q2", "q1"],
+            "executed_queries": ["q2"],
+        }
+        sends = _fan_out_to_web_search(state)
+        assert [send.arg["search_query"] for send in sends] == ["q1"]
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -158,6 +192,7 @@ class TestWebSearchNode:
             )
 
             assert result["sources_gathered"] == []
+            assert result["executed_queries"] == ["no results"]
             assert "未找到" in result["web_search_result"][0]
 
 
@@ -238,6 +273,22 @@ class TestRouteAfterCritique:
         assert len(result) == 2
         assert result[0].arg["search_query"] == "new query 1"
 
+    def test_route_continue_skips_executed_followups(self, sample_state, monkeypatch):
+        monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "1")
+        state = {
+            **sample_state,
+            "is_sufficient": False,
+            "research_loop_count": 1,
+            "max_research_loops": 3,
+            "follow_up_queries": ["new query 1", "new query 2", "new query 1"],
+            "executed_queries": ["new query 2"],
+            "number_of_ran_queries": 3,
+        }
+        result = _route_after_critique(state, {"configurable": {}})
+
+        assert isinstance(result, list)
+        assert [send.arg["search_query"] for send in result] == ["new query 1"]
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # TestWebSearchKBStorage — KB 存储路径覆盖
@@ -248,7 +299,6 @@ class TestWebSearchKBStorage:
 
     def test_kb_store_facts_on_success(self, sample_state):
         """搜索成功 → 事实被提取并存入 KB。"""
-        from agent.tools_and_schemas import Reflection  # noqa: 保持导入兼容
 
         with patch(
             "agent.sub_agents.research_agent.WebSearchAgent"

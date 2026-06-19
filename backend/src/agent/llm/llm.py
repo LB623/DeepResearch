@@ -1,27 +1,66 @@
 import os
-from loguru import logger
 
-from openai import OpenAI, AsyncOpenAI
+from loguru import logger
 from openai import (
-    APIError,
     APIConnectionError,
-    RateLimitError,
+    APIError,
+    APITimeoutError,
+    AsyncOpenAI,
     AuthenticationError,
     BadRequestError,
-    NotFoundError,
-    PermissionDeniedError,
-    APITimeoutError,
     InternalServerError,
+    NotFoundError,
+    OpenAI,
+    PermissionDeniedError,
+    RateLimitError,
 )
 
 from agent.exceptions import (
-    LLMRateLimitError,
-    LLMServerError,
-    LLMNetworkError,
     LLMAuthError,
     LLMBadRequestError,
+    LLMNetworkError,
+    LLMRateLimitError,
+    LLMServerError,
     LLMUnexpectedError,
 )
+
+_USAGE_TOTALS = {
+    "calls": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "prompt_chars": 0,
+}
+
+
+def reset_usage_totals() -> None:
+    """Reset process-local LLM usage counters for benchmark runs."""
+    for key in _USAGE_TOTALS:
+        _USAGE_TOTALS[key] = 0
+
+
+def get_usage_totals() -> dict:
+    """Return a copy of process-local LLM usage counters."""
+    return dict(_USAGE_TOTALS)
+
+
+def _record_usage(response, prompt: str) -> None:
+    """Record token usage when the provider returns it."""
+    _USAGE_TOTALS["calls"] += 1
+    _USAGE_TOTALS["prompt_chars"] += len(prompt or "")
+
+    usage = getattr(response, "usage", None)
+    if not usage:
+        return
+
+    for source_attr, target_key in (
+        ("prompt_tokens", "prompt_tokens"),
+        ("completion_tokens", "completion_tokens"),
+        ("total_tokens", "total_tokens"),
+    ):
+        value = getattr(usage, source_attr, None)
+        if value is not None:
+            _USAGE_TOTALS[target_key] += int(value)
 
 
 def _resolve_credentials(model_id: str) -> tuple[str | None, str | None]:
@@ -117,6 +156,7 @@ class OpenAICompatibleLLM:
         except APIError as e:
             raise _translate_openai_error(e) from e
 
+        _record_usage(response, query)
         content = response.choices[0].message.content
         if content is None:
             raise LLMUnexpectedError("LLM returned empty content (None)")
@@ -147,6 +187,7 @@ class OpenAICompatibleLLM:
         except APIError as e:
             raise _translate_openai_error(e) from e
 
+        _record_usage(response, query)
         content = response.choices[0].message.content
         if content is None:
             raise LLMUnexpectedError("LLM returned empty content (None)")

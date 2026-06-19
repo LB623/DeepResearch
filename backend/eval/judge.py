@@ -249,6 +249,11 @@ class Judge:
             report=report[:12000],
         )
         result = self._call(prompt)
+        if result and isinstance(result.get("citation_accuracy_score"), (int, float)):
+            score = float(result["citation_accuracy_score"])
+            if score > 5:
+                score = score / 2 if score <= 10 else 5
+            result["citation_accuracy_score"] = max(1, min(5, round(score)))
         return CitationScore(**result) if result else None
 
     def evaluate_plan_query_alignment(

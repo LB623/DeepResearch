@@ -1,8 +1,12 @@
 """Shared fixtures and mock helpers for the DeepResearch test suite."""
 
 import os
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
+# Test modules compile LangGraph graphs during import, before fixtures run.
+os.environ["CHECKPOINT_BACKEND"] = "none"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -22,6 +26,7 @@ def mock_env(monkeypatch):
         '[{"model_id":"qwen-test","display_name":"Qwen-Test","icon":"Zap","icon_color":"yellow-400"}]',
     )
     monkeypatch.setenv("WEB_SEARCH_MAX_QPS", "100")
+    monkeypatch.setenv("CHECKPOINT_BACKEND", "none")
     monkeypatch.setenv("MILVUS_URI", "http://localhost:19530")
     monkeypatch.setenv("EMBEDDING_API_KEY", "test-embedding-key")
     monkeypatch.setenv("EMBEDDING_BASE_URL", "https://test-embedding.example.com/v1")
@@ -56,6 +61,9 @@ def sample_state():
         "plan_status": "confirmed",
         "plan_messages": [],
         "search_query": [],
+        "generated_queries": [],
+        "executed_queries": [],
+        "skipped_duplicate_queries": [],
         "web_search_result": ["AI芯片市场规模达500亿美元", "NVIDIA占据80%市场份额"],
         "sources_gathered": [
             {"short_url": "https://search.com/id/0-0", "value": "https://real.com/1", "label": "Source 1"},

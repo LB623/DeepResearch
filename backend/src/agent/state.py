@@ -16,6 +16,9 @@ class OverallState(TypedDict):
     plan_status: str
     plan_messages: Annotated[list, add_messages]
     search_query: Annotated[list, operator.add]
+    generated_queries: Annotated[list, operator.add]
+    executed_queries: Annotated[list, operator.add]
+    skipped_duplicate_queries: Annotated[list, operator.add]
     web_search_result: Annotated[list, operator.add]
     sources_gathered: Annotated[list, operator.add]
     initial_search_query_count: int
@@ -56,6 +59,9 @@ class Query(TypedDict):
 
 class QueryGenerationState(TypedDict):
     search_query: list[Query]
+    generated_queries: list[str]
+    executed_queries: list[str]
+    skipped_duplicate_queries: list[str]
 
 
 class WebSearchState(TypedDict):

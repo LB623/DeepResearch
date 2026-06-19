@@ -167,18 +167,21 @@ def main():
     evaluator = Evaluator(judge_model_id=args.judge_model)
     report = EvalReport(timestamp=datetime.now().isoformat())
 
-    if args.mode in ("e2e", "all"):
-        print("=" * 60)
-        print("  运行端到端评估...")
-        print("=" * 60)
-        report.e2e_results = evaluator.run_e2e(cfgs)
+    try:
+        if args.mode in ("e2e", "all"):
+            print("=" * 60)
+            print("  运行端到端评估...")
+            print("=" * 60)
+            report.e2e_results = evaluator.run_e2e(cfgs)
 
-    if args.mode in ("comp", "all"):
-        print()
-        print("=" * 60)
-        print("  运行组件级评估...")
-        print("=" * 60)
-        report.component_results = evaluator.run_components(cfgs)
+        if args.mode in ("comp", "all"):
+            print()
+            print("=" * 60)
+            print("  运行组件级评估...")
+            print("=" * 60)
+            report.component_results = evaluator.run_components(cfgs)
+    finally:
+        evaluator.close()
 
     # 打印摘要
     print()
