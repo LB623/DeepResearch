@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000" role="img" aria-labelledby="svg-title svg-desc">
+  <title id="svg-title">DeepResearch Agent 系统架构</title>
+  <desc id="svg-desc">展示用户问题经过 React Web UI、Planner、ResearchAgent 和 WriterAgent 生成 Markdown 研究报告，并连接 Milvus、Redis、LangGraph Checkpoint、LLM 与 DashScope Application。</desc>
+  <defs>
+    <marker id="arrow-black" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#111111"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F97316"/>
+    </marker>
+    <style>
+      .bg { fill: #ffffff; }
+      .title { font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 34px; font-weight: 700; fill: #111111; }
+      .label { font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 18px; font-weight: 600; fill: #111111; }
+      .small { font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 15px; fill: #111111; }
+      .group-title { font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 21px; font-weight: 700; fill: #111111; }
+      .box { fill: #ffffff; stroke: #111111; stroke-width: 1.4; }
+      .group { fill: none; stroke: #b5b5b5; stroke-width: 1.4; stroke-dasharray: 8 6; }
+      .flow { fill: none; stroke: #111111; stroke-width: 1.5; marker-end: url(#arrow-black); }
+      .dep { fill: none; stroke: #777777; stroke-width: 1.3; stroke-dasharray: 7 6; marker-end: url(#arrow-gray); }
+      .feedback { fill: none; stroke: #F97316; stroke-width: 1.6; marker-end: url(#arrow-orange); }
+    </style>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#777777"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1800" height="1000"/>
+  <text class="title" x="60" y="70">DeepResearch Agent 系统架构</text>
+
+  <!-- Top-level main flow nodes -->
+  <rect class="box" x="70" y="270" width="140" height="90"/>
+  <text class="label" x="140" y="322" text-anchor="middle">用户问题</text>
+
+  <rect class="box" x="270" y="270" width="150" height="90"/>
+  <text class="label" x="345" y="322" text-anchor="middle">React Web UI</text>
+
+  <rect class="box" x="480" y="245" width="180" height="140"/>
+  <text class="label" x="570" y="310" text-anchor="middle">Planner</text>
+  <text class="small" x="570" y="350" text-anchor="middle">计划生成 · 用户确认</text>
+  <text class="small" x="570" y="372" text-anchor="middle">反馈重规划</text>
+
+  <!-- ResearchAgent group -->
+  <rect class="group" x="760" y="125" width="360" height="530" rx="10"/>
+  <text class="group-title" x="940" y="165" text-anchor="middle">ResearchAgent</text>
+
+  <rect class="box" x="820" y="200" width="240" height="52"/>
+  <text class="label" x="940" y="233" text-anchor="middle">Milvus 事实召回</text>
+
+  <rect class="box" x="820" y="285" width="240" height="52"/>
+  <text class="label" x="940" y="318" text-anchor="middle">查询生成与去重</text>
+
+  <rect class="box" x="820" y="370" width="240" height="52"/>
+  <text class="label" x="940" y="403" text-anchor="middle">并行 Web Search</text>
+
+  <rect class="box" x="820" y="455" width="240" height="52"/>
+  <text class="label" x="940" y="488" text-anchor="middle">证据摘要</text>
+
+  <rect class="box" x="820" y="540" width="240" height="52"/>
+  <text class="label" x="940" y="573" text-anchor="middle">事实提取与写回</text>
+
+  <rect class="box" x="820" y="610" width="240" height="52"/>
+  <text class="label" x="940" y="643" text-anchor="middle">Research Critic</text>
+
+  <!-- WriterAgent group -->
+  <rect class="group" x="1210" y="125" width="330" height="530" rx="10"/>
+  <text class="group-title" x="1375" y="165" text-anchor="middle">WriterAgent</text>
+
+  <rect class="box" x="1260" y="215" width="230" height="52"/>
+  <text class="label" x="1375" y="248" text-anchor="middle">报告大纲</text>
+
+  <rect class="box" x="1260" y="320" width="230" height="52"/>
+  <text class="label" x="1375" y="353" text-anchor="middle">报告草稿</text>
+
+  <rect class="box" x="1260" y="425" width="230" height="52"/>
+  <text class="label" x="1375" y="458" text-anchor="middle">Writer Critic</text>
+
+  <rect class="box" x="1260" y="530" width="230" height="52"/>
+  <text class="label" x="1375" y="563" text-anchor="middle">引用校验与终稿</text>
+
+  <rect class="box" x="1610" y="270" width="145" height="100"/>
+  <text class="label" x="1682.5" y="314" text-anchor="middle">Markdown</text>
+  <text class="label" x="1682.5" y="342" text-anchor="middle">研究报告</text>
+
+  <!-- Main flow -->
+  <path class="flow" d="M 210 315 L 270 315"/>
+  <path class="flow" d="M 420 315 L 480 315"/>
+  <path class="flow" d="M 660 315 L 760 315"/>
+  <path class="flow" d="M 1060 636 L 1155 636 L 1155 241 L 1260 241"/>
+  <path class="flow" d="M 1490 556 L 1565 556 L 1565 320 L 1610 320"/>
+
+  <!-- ResearchAgent internal flow -->
+  <path class="flow" d="M 940 252 L 940 285"/>
+  <path class="flow" d="M 940 337 L 940 370"/>
+  <path class="flow" d="M 940 422 L 940 455"/>
+  <path class="flow" d="M 940 507 L 940 540"/>
+  <path class="flow" d="M 940 592 L 940 610"/>
+
+  <!-- ResearchAgent feedback -->
+  <path class="feedback" d="M 1060 636 L 1100 636 L 1100 396 L 1060 396"/>
+
+  <!-- WriterAgent internal flow -->
+  <path class="flow" d="M 1375 267 L 1375 320"/>
+  <path class="flow" d="M 1375 372 L 1375 425"/>
+  <path class="flow" d="M 1375 477 L 1375 530"/>
+
+  <!-- WriterAgent feedback -->
+  <path class="feedback" d="M 1490 451 L 1522 451 L 1522 346 L 1490 346"/>
+
+  <!-- Infrastructure area -->
+  <line x1="60" y1="735" x2="1740" y2="735" stroke="#111111" stroke-width="1.2"/>
+  <text class="small" x="60" y="720">基础设施</text>
+
+  <rect class="box" x="90" y="790" width="250" height="100"/>
+  <text class="label" x="215" y="835" text-anchor="middle">Milvus</text>
+  <text class="small" x="215" y="862" text-anchor="middle">事实级长期记忆</text>
+
+  <rect class="box" x="390" y="790" width="260" height="100"/>
+  <text class="label" x="520" y="835" text-anchor="middle">Redis Search Cache</text>
+  <text class="small" x="520" y="862" text-anchor="middle">网页搜索缓存</text>
+
+  <rect class="box" x="700" y="790" width="280" height="100"/>
+  <text class="label" x="840" y="835" text-anchor="middle">LangGraph Checkpoint</text>
+  <text class="small" x="840" y="862" text-anchor="middle">任务状态与失败恢复</text>
+
+  <rect class="box" x="1030" y="790" width="300" height="100"/>
+  <text class="label" x="1180" y="835" text-anchor="middle">OpenAI-compatible LLM</text>
+  <text class="small" x="1180" y="862" text-anchor="middle">计划、反思与报告生成</text>
+
+  <rect class="box" x="1380" y="790" width="300" height="100"/>
+  <text class="label" x="1530" y="835" text-anchor="middle">DashScope Application</text>
+  <text class="small" x="1530" y="862" text-anchor="middle">实时网页搜索</text>
+
+  <!-- Infrastructure dependencies: exact only -->
+  <path class="dep" d="M 215 790 L 215 700 L 790 700 L 790 226 L 820 226"/>
+  <path class="dep" d="M 820 566 L 520 566 L 520 735 L 215 735 L 215 790"/>
+
+  <path class="dep" d="M 520 790 L 520 720 L 780 720 L 780 396 L 820 396"/>
+  <path class="dep" d="M 1530 790 L 1530 710 L 1110 710 L 1110 396 L 1060 396"/>
+
+  <path class="dep" d="M 1180 790 L 1180 760 L 570 760 L 570 385"/>
+  <path class="dep" d="M 1180 790 L 1180 730 L 1080 730 L 1080 655"/>
+  <path class="dep" d="M 1180 790 L 1180 730 L 1460 730 L 1460 655"/>
+
+  <path class="dep" d="M 840 790 L 840 770 L 600 770 L 600 385"/>
+  <path class="dep" d="M 840 790 L 840 750 L 800 750 L 800 655"/>
+  <path class="dep" d="M 840 790 L 840 750 L 1240 750 L 1240 655"/>
+</svg>

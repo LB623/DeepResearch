@@ -1,6 +1,6 @@
 {
   "timestamp": "2026-06-16T09:53:55.503040",
-  "benchmark_set": "/Users/liuwenhao/Documents/DeepResearch/backend/eval/benchmark_set.json",
+  "benchmark_set": "eval/benchmark_set.json",
   "run_mode": "research-only",
   "query_model": "deepseek-v4-flash",
   "reflection_model": "deepseek-v4-flash",

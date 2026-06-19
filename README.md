@@ -1,168 +1,264 @@
-# DeepResearch Quick Start
+<h1 align="center">🔬 DeepResearch</h1>
 
-当前项目展示了如何使用Langgraph搭建一个DeepResearch的应用
-<img src="./app.png" title="Use Langgraph to build an DeepResearch" alt="如何使用Langgraph搭建一个DeepResearch的应用" width="90%">
+<p align="center">
+  <strong>基于 LangGraph 的多阶段深度研究 Agent</strong><br>
+  <sub>融合实时网络检索、事实级长期记忆、双重 Critic 审查与可追溯引用</sub>
+</p>
 
-## 项目结构
-当前项目目录分为以下两个结构
--   `frontend/`: 项目前端
--   `backend/`: 包含了核心的后端逻辑，所有的Agent体系的后端逻辑都在当前目录下
+<p align="center">
+  <a href="#-项目亮点">项目亮点</a> ·
+  <a href="#-研究链路">研究链路</a> ·
+  <a href="#-系统架构">系统架构</a> ·
+  <a href="#-快速开始">快速开始</a> ·
+  <a href="#-工程验证">工程验证</a> ·
+  <a href="#-项目结构">项目结构</a>
+</p>
 
-## 项目目录结构
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/LangGraph-Multi--Stage%20Agent-1C3C3C" alt="LangGraph Multi-Stage Agent">
+  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black" alt="React 19">
+  <img src="https://img.shields.io/badge/Memory-Milvus-00A1EA" alt="Milvus Fact Memory">
+  <img src="https://img.shields.io/badge/Recovery-Redis%20Checkpoint-DC382D?logo=redis&logoColor=white" alt="Redis Checkpoint">
+  <img src="https://img.shields.io/badge/Tests-270%20passed-brightgreen" alt="270 tests passed">
+</p>
+
+<p align="center">
+  <strong>计划确认</strong> → <strong>深度检索</strong> → <strong>证据反思</strong> → <strong>报告写作</strong> → <strong>审查修订</strong> → <strong>引用校验</strong>
+</p>
+
+<p align="center">
+  <img src="./app.png" width="92%" alt="DeepResearch Web UI">
+  <br>
+  <sub>可视化展示研究计划、检索过程、Agent 状态与最终报告</sub>
+</p>
+
+---
+
+## ✨ 项目亮点
+
+![DeepResearch Agent 核心亮点](./docs/assets/deepresearch-highlights-v2.png)
+
+| 🧭 **计划确认** | 🔎 **并行深度检索** |
+|---|---|
+| 支持用户确认、反馈与重新规划，再进入正式研究。 | 自动拆分问题、去重查询、并行搜索，并由 Research Critic 判断是否补充证据。 |
+| 🧠 **事实级长期记忆** | ✍️ **Writer/Critic 循环** |
+| 从 Milvus 召回历史事实，并将新事实写回长期记忆。 | 依次生成大纲、草稿、审查意见和终稿，按反馈迭代修订。 |
+| 🛡️ **事实与引用防护** | ♻️ **Checkpoint 恢复** |
+| 校验章节、专名和 URL，拒绝未知链接与截断终稿。 | 使用稳定 `thread_id` 恢复任务，避免重复外部搜索。 |
+| 📊 **可复现评测** | 🖥️ **可视化交互** |
+| 提供固定题集、LLM-as-Judge、A/B 与故障注入测试。 | React 前端展示计划、研究过程、状态和最终报告。 |
+
+> 本项目采用事实级 Memory-Augmented RAG，而不是传统的上传文档问答 RAG。Milvus 保存提取后的事实记录，Redis 分别承担搜索缓存与任务 Checkpoint。
+
+---
+
+## 🔄 研究链路
+
+![DeepResearch Agent 研究链路](./docs/assets/deepresearch-research-flow.png)
+
+---
+
+## 🏗️ 系统架构
+
+![DeepResearch Agent 系统架构](./docs/assets/deepresearch-system-architecture.svg)
+
+### 核心数据边界
+
+- **Milvus**：跨任务长期事实记忆与语义召回。
+- **Redis Search Cache**：短期缓存网页搜索结果，减少重复外部调用。
+- **LangGraph Checkpoint**：保存任务图状态，用于失败恢复和任务续跑。
+
+---
+
+## 🧰 技术栈
+
+| 模块 | 技术 |
+|---|---|
+| Agent 编排 | LangGraph、LangChain |
+| 后端 | Python 3.11+、FastAPI、LangGraph API |
+| 模型接入 | OpenAI-compatible API、DashScope Application |
+| 长期记忆 | Milvus、PyMilvus、Embedding API |
+| 缓存与恢复 | Redis、langgraph-checkpoint-redis |
+| 前端 | React 19、TypeScript、Vite、Tailwind CSS |
+| 评测 | Pytest、LLM-as-Judge、固定题集 A/B Benchmark |
+
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python `3.11+`
+- Node.js `18+`
+- Docker 与 Docker Compose
+- OpenAI-compatible LLM 和 Embedding 服务
+- DashScope Application/MCP Web Search 配置
+
+### 1. 安装依赖
+
+进入项目根目录后执行：
+
 ```bash
-deep research/
-├── backend/                          # 后端服务目录
-│   ├── src/
-│   │   ├── agent/                    # 核心代理模块
-│   │   │   ├── __init__.py
-│   │   │   ├── app.py               # FastAPI 应用入口
-│   │   │   ├── base_agent.py        # 基础代理类定义
-│   │   │   ├── configuration.py     # 系统配置管理
-│   │   │   ├── graph.py             # LangGraph 工作流定义
-│   │   │   ├── state.py             # 状态数据结构定义
-│   │   │   ├── tools_and_schemas.py # 工具和模式定义
-│   │   │   ├── prompts.py           # 提示词模板
-│   │   │   ├── post.py              # 后处理工具
-│   │   │   ├── utils.py             # 工具函数
-│   │   │   └── llm/                 # LLM 集成模块
-│   │   │       ├── __init__.py
-│   │   │       └── llm.py           # 大语言模型接口
-│   │   └── main.py                  # 主程序入口
-│   ├── langgraph.json               # LangGraph 配置文件
-│   ├── pyproject.toml               # Python 项目配置
-├── frontend/                        # 前端应用目录
-│   ├── src/
-│   │   ├── components/              # React 组件
-│   │   │   ├── ActivityTimeline.tsx # 活动时间线组件
-│   │   │   ├── ChatMessagesView.tsx # 聊天消息视图
-│   │   │   ├── InputForm.tsx        # 输入表单组件
-│   │   │   ├── WelcomeScreen.tsx    # 欢迎界面组件
-│   │   │   └── ui/                  # UI 组件库
-│   │   ├── App.tsx                  # 主应用组件
-│   │   ├── main.tsx                 # 应用入口
-│   │   └── global.css               # 全局样式
-│   ├── package.json                 # Node.js 依赖配置
-│   └── vite.config.ts               # Vite 构建配置
-├── README.md                        # 项目说明文档，即本文档
-└── run.sh                           # 启动脚本
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e "backend[dev]"
+
+cd frontend
+npm ci
+cd ..
 ```
-## Quick Start
-**1. 前期准备:**
-- Node.js and npm (or yarn/pnpm)
-- Python 3.11+
-- miniconda或anaconda
-- API Key，可以从[百炼](https://bailian.console.aliyun.com/)官网注册登录获取
 
-**2. Install Dependencies:**
+### 2. 启动 Milvus 与 Redis
 
-**Backend:**
+```bash
+docker compose -f infrastructure/milvus/docker-compose.yml up -d
+docker run -d --name deepresearch-redis -p 6379:6379 redis:7-alpine
+```
+
+如果本机已有 Redis，可跳过第二条命令。
+
+### 3. 配置环境变量
+
+创建 `backend/.env`，并替换以下配置：
+
+```dotenv
+# 研究模型 / 推理模型
+RESEARCH_LLM_MODEL=your-research-model
+RESEARCH_LLM_API_KEY=your-api-key
+RESEARCH_LLM_BASE_URL=https://your-llm-endpoint/v1
+
+REASONING_LLM_MODEL=your-reasoning-model
+REASONING_LLM_API_KEY=your-api-key
+REASONING_LLM_BASE_URL=https://your-llm-endpoint/v1
+
+# DashScope 应用与网页搜索
+MCP_API_KEY=your-dashscope-api-key
+MCP_APP_ID=your-web-search-application-id
+
+# Redis 搜索缓存与任务检查点
+REDIS_URL=redis://localhost:6379/0
+CHECKPOINT_BACKEND=redis
+CHECKPOINT_REDIS_URL=redis://localhost:6379/0
+
+# Milvus 事实记忆
+MILVUS_URI=http://localhost:19530
+MILVUS_COLLECTION=research_facts
+
+# OpenAI 兼容的向量嵌入服务
+EMBEDDING_BASE_URL=https://your-embedding-endpoint/v1
+EMBEDDING_API_KEY=your-embedding-api-key
+EMBEDDING_MODEL=text-embedding-v3
+EMBEDDING_DIM=1024
+```
+
+> `EMBEDDING_DIM` 必须与 Embedding 模型的实际输出维度及 Milvus Collection 维度一致。
+
+### 4. 启动应用
+
+分别在两个终端运行：
+
+```bash
+# 终端 1：启动 LangGraph 后端
+./run_backend.sh
+```
+
+```bash
+# 终端 2：启动 React 前端
+./run_frontend.sh
+```
+
+默认地址：
+
+- 🌐 Web UI: [http://localhost:5173](http://localhost:5173)
+- 🔗 LangGraph API: [http://localhost:2024](http://localhost:2024)
+- 🧩 LangGraph Studio: [https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
+
+---
+
+## 📊 工程验证
+
+项目保留固定题集、原始 JSON 结果和评测报告。以下结果只代表对应实验范围，不外推为通用生产指标。
+
+| 验证项 | 结果 | 说明 |
+|---|---|---|
+| 查询去重 A/B | 状态查询重复率 `50% → 0%` | 10 个固定主题均成功完成；平均状态查询数 `6 → 3` |
+| Checkpoint 故障恢复 | Web Search 调用 `6 → 3` | Critique 节点故障后恢复，最终执行查询数保持为 3 |
+| Prompt Quality Guards | 幻觉题数 `3/5 → 0/5` | 事实约束增强，但固定集均分 `4.36 → 4.24`，综合质量仍需优化 |
+
+详细报告：
+
+- [查询去重 Benchmark](./docs/reviews/2026-06-16-agent-harness-benchmark.md)
+- [Checkpoint Resume Benchmark](./docs/reviews/2026-06-16-agent-checkpoint-resume-benchmark.md)
+- [Prompt Quality Guards E2E A/B](./docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md)
+
+### 运行测试与评测
 
 ```bash
 cd backend
-pip install .
 
-# 以下可以不用，如果运行时发现缺失包，可以执行补充
-pip install langgraph>=0.2.6
-pip install langchain>=0.3.19
-pip install openai
-pip install python-dotenv>=1.0.1
-pip install langgraph-sdk>=0.1.57
-pip install langgraph-cli
-pip install langgraph-api
-pip install fastapi
+# 单元测试与回归测试
+../.venv/bin/python -m pytest
+
+# 固定题集端到端与组件级评测
+../.venv/bin/python -m eval.run_eval \
+  --mode all \
+  --test-set test_set_basic_5.json \
+  --output eval_runs/local_eval.json
+
+# 查询去重 A/B 基准测试
+../.venv/bin/python -m eval.run_benchmark --variant both
+
+# Checkpoint 故障注入基准测试
+../.venv/bin/python -m eval.run_resume_benchmark
 ```
 
-**Frontend:**
+> 端到端评测会调用真实 LLM、Web Search 和 Milvus。运行前请检查服务连通性、API 配额，并为评测使用独立的 Milvus Collection。
 
-```bash
-cd frontend
-npm install
+---
+
+## 📁 项目结构
+
+```text
+DeepResearch/
+├── backend/
+│   ├── src/agent/
+│   │   ├── graph.py                 # 主图：计划、研究、写作
+│   │   ├── checkpoint.py            # Redis/Memory Checkpoint
+│   │   ├── resume.py                # 任务恢复辅助接口
+│   │   ├── sub_agents/
+│   │   │   ├── research_agent.py    # 查询、检索、事实记忆、反思
+│   │   │   └── writer_agent.py      # 大纲、草稿、审查、终稿
+│   │   ├── kb/                       # Milvus 事实存储与生命周期
+│   │   ├── search_cache.py          # Redis 搜索缓存
+│   │   └── llm/llm.py               # OpenAI-compatible LLM
+│   ├── eval/                         # 评测框架与 Benchmark
+│   ├── eval_runs/                    # 固定集原始结果
+│   └── test/                         # 单元与回归测试
+├── frontend/                         # React + Vite Web UI
+├── infrastructure/milvus/            # Milvus Docker Compose
+├── docs/
+│   ├── assets/                       # README 图片与架构图
+│   └── reviews/                      # 工程验证报告
+├── run_backend.sh
+└── run_frontend.sh
 ```
 
-**3. Run Development Servers:**
-配置好相关的APIKey后，运行以下命令启动后端服务
-```bash
-run_backend.bat
+---
+
+## 🎯 示例研究问题
+
+```text
+规范驱动开发（SDD）与 AGENTS.md 的关系是什么？
+请结合工程实践、工具链、风险和真实案例生成一份带来源引用的研究报告。
 ```
 
-运行以下命令启动前端服务
-```bash
-run_fontend.bat
-```
-MAC（linux）下可以参考run.sh，run.sh属于整体的运行和部署脚本
-```bash
-sh run.sh
-```
+---
 
-**4. 启动后的接口**
+## ⚠️ 当前边界
 
-后端服务在启动时会提供三个访问链接：  
-1. API: http://127.0.0.1:2024  
-用途：LangGraph 后端服务的根地址  
-功能：提供所有 LangGraph 自动生成的标准端点（如 /runs/stream、/threads 等）、处理前端的流式通信请求、执行 Agent 工作流（graph.py 定义的研究流程）、包含自定义的 /api/models 接口（获取模型列表），前端应用通过 LangGraph SDK 调用
-
-2. Studio UI: https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024  
-用途：LangSmith Studio 可视化调试界面  
-功能：  
-📊 可视化监控：实时查看 Agent 的执行流程和状态  
-🔍 调试工具：追踪每个节点（generate_search、web_search、critique、final_answer）的执行情况  
-📝 日志查看：查看每次运行的详细日志和中间结果  
-🎯 性能分析：分析各阶段的耗时和 token 使用情况  
-💾 历史记录：保存和回放历史运行记录  
-开发者用于调试和优化 Agent
-
-3. API Docs: http://127.0.0.1:2024/docs  
-用途：FastAPI 自动生成的 Swagger UI 文档  
-功能：  
-📖 API 文档：展示所有可用的 API 端点及其参数  
-🧪 在线测试：可以直接在浏览器中测试 API 接口  
-📋 Schema 查看：查看请求/响应的数据结构定义  
-
-**4. 基础版参考查询请求**
-```bash
-DeepSeek资深研究员陈德里近日在社交媒体发布信息证实：DeepSeek正在组织一个新的Harness团队做Harness方向的产品和研究，并直言：简单来说就是对标Claude Code，做DeepSeek Code Harness。如何评价DeepSeek成立Harness团队？
-```
-
-```bash
-规范驱动开发SDD和AGENTS.md的关系是什么？
-```
-
-```bash
-目前AICoding的工具有Claude Code（以及Claude Code插件）、Codex、Curosr、Trae、CodeBuddy、Qoder、通义灵码插件等等。现在请仔细分析这些工具，给出一份详细的报告
-```
-**5. 电商版参考查询请求:**
-```bash
-制作一份荔枝产品电商行业市场洞察报告
-```
-
-**6. 查看 Milvus 数据库:**
-项目中使用了 Milvus 作为向量数据库来存储智能体提取的知识事实（Facts）。默认情况下，Milvus 运行在宿主机的 `19530` 端口。
-
-**方法一：使用官方可视化工具 Attu (推荐)**
-如果您希望通过浏览器图形化界面查看和管理集合、向量数据以及索引，可以运行以下命令临时启动 Attu 容器：
-```bash
-docker run -p 8000:3000 -e MILVUS_URL=host.docker.internal:19530 zilliz/attu:v2.4.6
-```
-*(注意：如果您是在 Linux 服务器上运行，请将 `host.docker.internal` 替换为服务器的局域网 IP)*
-
-启动后，在浏览器中访问 [http://localhost:8000](http://localhost:8000)，在登录界面无需输入密码，直接点击 "Connect" 即可登录后台管理面板。
-
-**方法二：使用 Python 脚本 (PyMilvus)**
-由于项目已安装 `pymilvus` 依赖，您也可以在项目目录下创建一个简单的 Python 脚本（例如 `check_milvus.py`）来快速验证数据：
-```python
-from pymilvus import MilvusClient
-
-# 连接到本地 Milvus
-client = MilvusClient(uri="http://localhost:19530")
-
-# 获取并打印所有集合
-collections = client.list_collections()
-print(f"Collections: {collections}")
-
-# 打印每个集合的描述和统计信息
-for col in collections:
-    print(f"\n--- Collection: {col} ---")
-    print(client.describe_collection(col))
-    print(f"Stats: {client.get_collection_stats(col)}")
-```
-执行 `python check_milvus.py` 即可在控制台查看结果。
+- Web Search 当前依赖 DashScope Application/MCP 配置。
+- Milvus 保存提取后的事实记录，不保存原始文档 Chunk。
+- Prompt Quality Guards 已增强事实约束，但覆盖度、时效性和来源分级仍需继续优化。
+- 生产部署前需要补充鉴权、密钥管理、监控和更严格的安全策略。

@@ -2,7 +2,7 @@
 
 - 生成时间: 2026-06-16T09:53:55.503040
 - 原始数据: `eval/benchmark_report_20260616.json`
-- Benchmark 集: `/Users/liuwenhao/Documents/DeepResearch/backend/eval/benchmark_set.json`
+- Benchmark 集: `backend/eval/benchmark_set.json`
 - Run mode: `research-only`
 - Query model: `deepseek-v4-flash`
 - Reflection model: `deepseek-v4-flash`

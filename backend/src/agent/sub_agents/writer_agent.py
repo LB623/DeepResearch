@@ -495,8 +495,3 @@ _builder.add_conditional_edges(
 _builder.add_edge(_CITE_AND_POLISH, END)
 
 writer_agent_graph = _builder.compile(checkpointer=get_checkpointer(), name="WriterAgent")
-
-# try:
-#     display(Image(writer_agent_graph.get_graph().draw_mermaid_png(output_file_path="./WriterAgent子图.png")))
-# except Exception:
-#     pass

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SquarePen, Brain, Send, StopCircle, Zap, Cpu } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,12 +19,14 @@ interface InputFormProps {
   hasHistory: boolean;
 }
 
-export const InputForm: React.FC<InputFormProps> = ({
-  onSubmit,
-  onCancel,
-  isLoading,
-  hasHistory,
-}) => {
+export interface InputFormHandle {
+  submitInput: (value: string) => void;
+}
+
+export const InputForm = forwardRef<InputFormHandle, InputFormProps>(function InputForm(
+  { onSubmit, onCancel, isLoading, hasHistory },
+  ref
+) {
   const [internalInputValue, setInternalInputValue] = useState("");
   const [effort, setEffort] = useState("low");
   const [model, setModel] = useState("qwen-turbo-latest");
@@ -58,6 +60,18 @@ export const InputForm: React.FC<InputFormProps> = ({
   };
 
   const isSubmitDisabled = !internalInputValue.trim() || isLoading;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      submitInput(value: string) {
+        if (!value.trim() || isLoading) return;
+        onSubmit(value, effort, model);
+        setInternalInputValue("");
+      },
+    }),
+    [effort, isLoading, model, onSubmit]
+  );
 
   return (
     <form
@@ -181,4 +195,4 @@ export const InputForm: React.FC<InputFormProps> = ({
       </div>
     </form>
   );
-};
+});

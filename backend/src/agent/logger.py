@@ -26,7 +26,7 @@ def setup_logger(log_dir="logs", console_log_level="INFO", file_log_level="DEBUG
             level=console_log_level
         )
         logger.add(
-            os.path.join(log_dir, "ZhiPoAI_DR_{time:YYYY-MM-DD}.log"),
+            os.path.join(log_dir, "DeepResearch_{time:YYYY-MM-DD}.log"),
             rotation="00:00",  # 每天轮换
             retention="30 days",  # 保留30天
             format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",

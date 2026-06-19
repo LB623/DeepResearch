@@ -373,8 +373,3 @@ _builder.add_edge(_WEB_SEARCH, _CRITIQUE)
 _builder.add_conditional_edges(_CRITIQUE, _route_after_critique, [_WEB_SEARCH, END])
 
 research_agent_graph = _builder.compile(checkpointer=get_checkpointer(), name="ResearchAgent")
-
-# try:
-#     display(Image(research_agent_graph.get_graph().draw_mermaid_png(output_file_path="./ResearchAgent子图.png")))
-# except Exception:
-#     pass

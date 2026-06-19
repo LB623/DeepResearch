@@ -41,7 +41,7 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *$py.class
-uv.lock
+.ruff_cache/
 
 # C extensions
 *.so
@@ -161,6 +161,10 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.env
+.env.*
+!.env.example
+!*.env.example
 backend/.env
 .venv
 env/
@@ -204,3 +208,8 @@ backend/.langgraph_api
 backend/logs/
 backend/build/
 infrastructure/milvus/volumes/
+.learnings/
+
+# Credentials and private keys
+*.pem
+*.key

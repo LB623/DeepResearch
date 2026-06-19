@@ -2,7 +2,7 @@ import type React from "react";
 import type { Message } from "@langchain/langgraph-sdk";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Copy, CopyCheck } from "lucide-react";
-import { InputForm } from "@/components/InputForm";
+import { InputForm, type InputFormHandle } from "@/components/InputForm";
 import { Button } from "@/components/ui/button";
 import { useState, ReactNode, useRef} from "react";
 import ReactMarkdown from "react-markdown";
@@ -202,7 +202,7 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   return (
     <div className={`relative break-words flex flex-col`}>
       {/* 如果是“研究计划”且有onStartResearch，只展示ReactMarkdown，不展示ActivityTimeline和Button */}
-      {timelineTitle === "生成计划" && onStartResearch ? (
+      {hasGeneratingSearchPlan && onStartResearch ? (
         <div className="mb-3 border-b border-neutral-700 pb-3 text-xs">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
             {typeof message.content === "string"
@@ -286,7 +286,7 @@ export function ChatMessagesView({
 }: ChatMessagesViewProps) {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [researchStarted, setResearchStarted] = useState(false);
-  const inputFormRef = useRef<any>(null);
+  const inputFormRef = useRef<InputFormHandle>(null);
 
   const handleCopy = async (text: string, messageId: string) => {
     try {
@@ -300,14 +300,10 @@ export function ChatMessagesView({
 
   // 需求确认按钮点击事件
   const handleStartResearch = () => {
-    if (inputFormRef.current && typeof inputFormRef.current.setInputValue === 'function') {
-      inputFormRef.current.setInputValue("需求确认");
-      setResearchStarted(true);
-      // 直接传值，确保提交的是"开始研究"
-      if (typeof inputFormRef.current.submitInput === 'function') {
-        inputFormRef.current.submitInput("需求确认");
-      }
-    }
+    if (!inputFormRef.current) return;
+
+    inputFormRef.current.submitInput("需求确认");
+    setResearchStarted(true);
   };
 
   return (
