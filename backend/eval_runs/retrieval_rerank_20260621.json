@@ -1,0 +1,807 @@
+{
+  "created_at": "2026-06-21T10:56:47+08:00",
+  "collection": "eval_retrieval_rerank_20260621",
+  "embedding_model": "bge-m3",
+  "fact_count": 48,
+  "case_count": 8,
+  "top_k": 3,
+  "cases": [
+    {
+      "query": "2026 AI编程助手市场规模与增长率",
+      "relevant": {
+        "2026年AI编程助手市场规模与同比增长率已发布最新统计。": 3,
+        "企业级AI编程助手在2026年的付费采用率继续增长。": 2,
+        "AI编程助手市场报告给出了2026年区域份额分布。": 2
+      }
+    },
+    {
+      "query": "Milvus 2.6 向量检索与混合搜索能力",
+      "relevant": {
+        "Milvus 2.6 支持稠密向量与稀疏向量的混合检索流程。": 3,
+        "Milvus 2.6 可对多路检索结果执行重排。": 3,
+        "Milvus 2.6 的向量索引配置影响召回延迟与精度。": 2
+      }
+    },
+    {
+      "query": "特斯拉FSD 2026年监管与产品进展",
+      "relevant": {
+        "2026年特斯拉FSD监管进展需要结合最新公开文件核验。": 3,
+        "特斯拉FSD在2026年的产品更新包含新的驾驶能力说明。": 2,
+        "不同地区对特斯拉FSD的监管要求存在差异。": 2
+      }
+    },
+    {
+      "query": "2026人民币汇率与央行政策变化",
+      "relevant": {
+        "2026年人民币汇率分析需要结合央行最新公开政策。": 3,
+        "跨境资金流动是分析2026年人民币汇率的重要维度。": 2,
+        "利率与外汇政策会共同影响人民币汇率预期。": 2
+      }
+    },
+    {
+      "query": "2026全球半导体供应链风险与产能布局",
+      "relevant": {
+        "2026年半导体供应链分析需覆盖先进制程产能布局。": 3,
+        "关键设备与材料供应是半导体供应链的风险维度。": 2,
+        "区域政策会影响半导体产能投资与交付周期。": 2
+      }
+    },
+    {
+      "query": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+      "relevant": {
+        "SDD通过可验证规范约束需求、实现与验收之间的映射。": 3,
+        "AGENTS.md可记录面向编码Agent的仓库级执行约束。": 3,
+        "SDD与AGENTS.md结合时应明确验收条件和工程边界。": 2
+      }
+    },
+    {
+      "query": "Redis 搜索缓存一致性与失效策略",
+      "relevant": {
+        "Redis搜索缓存应为查询结果设置明确的过期时间。": 3,
+        "缓存键规范化可减少同义查询产生的重复条目。": 2,
+        "缓存降级策略应避免外部服务故障阻塞主流程。": 2
+      }
+    },
+    {
+      "query": "LangGraph checkpoint 故障恢复与幂等执行",
+      "relevant": {
+        "LangGraph checkpoint可保存图执行中的稳定状态。": 3,
+        "恢复执行时应复用已完成节点结果并避免重复副作用。": 3,
+        "稳定thread_id是关联checkpoint与恢复请求的关键。": 2
+      }
+    }
+  ],
+  "variants": {
+    "baseline": {
+      "aggregate": {
+        "precision_at_k": 0.6666666666666666,
+        "recall_at_k": 0.6666666666666666,
+        "ndcg_at_k": 0.7861735630663303,
+        "slot_fill_rate": 0.9583333333333334,
+        "duplicate_rate": 0.3125
+      },
+      "cases": [
+        {
+          "query": "2026 AI编程助手市场规模与增长率",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "2026年AI编程助手市场规模与同比增长率已发布最新统计。",
+              "source_url": "https://benchmark.local/9dd18ff337de",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.92,
+              "relevance": 0.911,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.9153
+            },
+            {
+              "fact": "2026年AI编程助手市场规模与同比增长率已发布最新统计。",
+              "source_url": "https://benchmark.local/9dd18ff337de",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.89,
+              "relevance": 0.911,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.908
+            },
+            {
+              "fact": "AI编程助手市场报告给出了2026年区域份额分布。",
+              "source_url": "https://benchmark.local/faec9165d218",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.84,
+              "relevance": 0.826,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8356
+            }
+          ]
+        },
+        {
+          "query": "Milvus 2.6 向量检索与混合搜索能力",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8129131942200405,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "Milvus 2.6 支持稠密向量与稀疏向量的混合检索流程。",
+              "source_url": "https://benchmark.local/15fd3a0a7039",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.93,
+              "relevance": 0.859,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.884
+            },
+            {
+              "fact": "Milvus 2.6 支持稠密向量与稀疏向量的混合检索流程。",
+              "source_url": "https://benchmark.local/15fd3a0a7039",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.87,
+              "relevance": 0.859,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8695
+            },
+            {
+              "fact": "Milvus 2.6 可对多路检索结果执行重排。",
+              "source_url": "https://benchmark.local/39e755b99786",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.86,
+              "relevance": 0.762,
+              "created_at": 1781665003,
+              "age_days": 4.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7969
+            }
+          ]
+        },
+        {
+          "query": "特斯拉FSD 2026年监管与产品进展",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "2026年特斯拉FSD监管进展需要结合最新公开文件核验。",
+              "source_url": "https://benchmark.local/feb21926f01e",
+              "research_topic": "特斯拉FSD 2026年监管与产品进展",
+              "confidence": 0.94,
+              "relevance": 0.859,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8911
+            },
+            {
+              "fact": "2026年特斯拉FSD监管进展需要结合最新公开文件核验。",
+              "source_url": "https://benchmark.local/feb21926f01e",
+              "research_topic": "特斯拉FSD 2026年监管与产品进展",
+              "confidence": 0.89,
+              "relevance": 0.859,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8788
+            },
+            {
+              "fact": "特斯拉FSD在2026年的产品更新包含新的驾驶能力说明。",
+              "source_url": "https://benchmark.local/dffb2a5fa3f4",
+              "research_topic": "特斯拉FSD 2026年监管与产品进展",
+              "confidence": 0.86,
+              "relevance": 0.838,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8507
+            }
+          ]
+        },
+        {
+          "query": "2026人民币汇率与央行政策变化",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "2026年人民币汇率分析需要结合央行最新公开政策。",
+              "source_url": "https://benchmark.local/37e1c6b2d535",
+              "research_topic": "2026人民币汇率与央行政策变化",
+              "confidence": 0.94,
+              "relevance": 0.836,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8759
+            },
+            {
+              "fact": "2026年人民币汇率分析需要结合央行最新公开政策。",
+              "source_url": "https://benchmark.local/37e1c6b2d535",
+              "research_topic": "2026人民币汇率与央行政策变化",
+              "confidence": 0.9,
+              "relevance": 0.836,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8661
+            },
+            {
+              "fact": "利率与外汇政策会共同影响人民币汇率预期。",
+              "source_url": "https://benchmark.local/0c26574b421d",
+              "research_topic": "2026人民币汇率与央行政策变化",
+              "confidence": 0.81,
+              "relevance": 0.751,
+              "created_at": 1781578603,
+              "age_days": 5.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7734
+            }
+          ]
+        },
+        {
+          "query": "2026全球半导体供应链风险与产能布局",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "2026年半导体供应链分析需覆盖先进制程产能布局。",
+              "source_url": "https://benchmark.local/ca9c9cb21bde",
+              "research_topic": "2026全球半导体供应链风险与产能布局",
+              "confidence": 0.93,
+              "relevance": 0.782,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8334
+            },
+            {
+              "fact": "2026年半导体供应链分析需覆盖先进制程产能布局。",
+              "source_url": "https://benchmark.local/ca9c9cb21bde",
+              "research_topic": "2026全球半导体供应链风险与产能布局",
+              "confidence": 0.89,
+              "relevance": 0.782,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8238
+            },
+            {
+              "fact": "关键设备与材料供应是半导体供应链的风险维度。",
+              "source_url": "https://benchmark.local/2351cb35c4fe",
+              "research_topic": "2026全球半导体供应链风险与产能布局",
+              "confidence": 0.86,
+              "relevance": 0.774,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.809
+            }
+          ]
+        },
+        {
+          "query": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+          "returned": 3,
+          "unique_relevant": 3,
+          "precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "ndcg_at_k": 0.8451593915771352,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "SDD与AGENTS.md结合时应明确验收条件和工程边界。",
+              "source_url": "https://benchmark.local/68f7ba66fbdf",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.82,
+              "relevance": 0.722,
+              "created_at": 1781578603,
+              "age_days": 5.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.759
+            },
+            {
+              "fact": "AGENTS.md可记录面向编码Agent的仓库级执行约束。",
+              "source_url": "https://benchmark.local/4ca640287c61",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.86,
+              "relevance": 0.663,
+              "created_at": 1781665003,
+              "age_days": 4.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7324
+            },
+            {
+              "fact": "SDD通过可验证规范约束需求、实现与验收之间的映射。",
+              "source_url": "https://benchmark.local/ae9f130ee8fe",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.93,
+              "relevance": 0.646,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7452
+            }
+          ]
+        },
+        {
+          "query": "Redis 搜索缓存一致性与失效策略",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.3333333333333333,
+          "hits": [
+            {
+              "fact": "Redis搜索缓存应为查询结果设置明确的过期时间。",
+              "source_url": "https://benchmark.local/57f10044c60d",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.94,
+              "relevance": 0.739,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.813
+            },
+            {
+              "fact": "Redis搜索缓存应为查询结果设置明确的过期时间。",
+              "source_url": "https://benchmark.local/57f10044c60d",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.9,
+              "relevance": 0.739,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8031
+            },
+            {
+              "fact": "缓存键规范化可减少同义查询产生的重复条目。",
+              "source_url": "https://benchmark.local/533cd31c9ea9",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.86,
+              "relevance": 0.608,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7011
+            }
+          ]
+        },
+        {
+          "query": "LangGraph checkpoint 故障恢复与幂等执行",
+          "returned": 2,
+          "unique_relevant": 1,
+          "precision_at_k": 0.3333333333333333,
+          "recall_at_k": 0.3333333333333333,
+          "ndcg_at_k": 0.541942129480027,
+          "slot_fill_rate": 0.6666666666666666,
+          "duplicate_rate": 0.5,
+          "hits": [
+            {
+              "fact": "LangGraph checkpoint可保存图执行中的稳定状态。",
+              "source_url": "https://benchmark.local/b138aa02db55",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.93,
+              "relevance": 0.699,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7796
+            },
+            {
+              "fact": "LangGraph checkpoint可保存图执行中的稳定状态。",
+              "source_url": "https://benchmark.local/b138aa02db55",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.88,
+              "relevance": 0.699,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7675
+            }
+          ]
+        }
+      ]
+    },
+    "optimized": {
+      "aggregate": {
+        "precision_at_k": 0.8333333333333334,
+        "recall_at_k": 0.8333333333333334,
+        "ndcg_at_k": 0.8939625928287214,
+        "slot_fill_rate": 1.0,
+        "duplicate_rate": 0.0
+      },
+      "cases": [
+        {
+          "query": "2026 AI编程助手市场规模与增长率",
+          "returned": 3,
+          "unique_relevant": 3,
+          "precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "ndcg_at_k": 1.0,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "2026年AI编程助手市场规模与同比增长率已发布最新统计。",
+              "source_url": "https://benchmark.local/9dd18ff337de",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.92,
+              "relevance": 0.911,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.9153
+            },
+            {
+              "fact": "AI编程助手市场报告给出了2026年区域份额分布。",
+              "source_url": "https://benchmark.local/faec9165d218",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.84,
+              "relevance": 0.826,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8356
+            },
+            {
+              "fact": "企业级AI编程助手在2026年的付费采用率继续增长。",
+              "source_url": "https://benchmark.local/eab24339cbee",
+              "research_topic": "2026 AI编程助手市场规模与增长率",
+              "confidence": 0.82,
+              "relevance": 0.733,
+              "created_at": 1781578603,
+              "age_days": 5.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7662
+            }
+          ]
+        },
+        {
+          "query": "Milvus 2.6 向量检索与混合搜索能力",
+          "returned": 3,
+          "unique_relevant": 3,
+          "precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "ndcg_at_k": 1.0,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "Milvus 2.6 支持稠密向量与稀疏向量的混合检索流程。",
+              "source_url": "https://benchmark.local/15fd3a0a7039",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.93,
+              "relevance": 0.859,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.884
+            },
+            {
+              "fact": "Milvus 2.6 可对多路检索结果执行重排。",
+              "source_url": "https://benchmark.local/39e755b99786",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.86,
+              "relevance": 0.762,
+              "created_at": 1781665003,
+              "age_days": 4.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7969
+            },
+            {
+              "fact": "Milvus 2.6 的向量索引配置影响召回延迟与精度。",
+              "source_url": "https://benchmark.local/d0884ad45f72",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.85,
+              "relevance": 0.736,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.782
+            }
+          ]
+        },
+        {
+          "query": "特斯拉FSD 2026年监管与产品进展",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8556691603792903,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "2026年特斯拉FSD监管进展需要结合最新公开文件核验。",
+              "source_url": "https://benchmark.local/feb21926f01e",
+              "research_topic": "特斯拉FSD 2026年监管与产品进展",
+              "confidence": 0.94,
+              "relevance": 0.859,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8911
+            },
+            {
+              "fact": "特斯拉FSD在2026年的产品更新包含新的驾驶能力说明。",
+              "source_url": "https://benchmark.local/dffb2a5fa3f4",
+              "research_topic": "特斯拉FSD 2026年监管与产品进展",
+              "confidence": 0.86,
+              "relevance": 0.838,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8507
+            },
+            {
+              "fact": "特斯拉FSD的产品能力会随软件版本更新。",
+              "source_url": "https://benchmark.local/b0b56e605599",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.94,
+              "relevance": 0.713,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7914
+            }
+          ]
+        },
+        {
+          "query": "2026人民币汇率与央行政策变化",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "2026年人民币汇率分析需要结合央行最新公开政策。",
+              "source_url": "https://benchmark.local/37e1c6b2d535",
+              "research_topic": "2026人民币汇率与央行政策变化",
+              "confidence": 0.94,
+              "relevance": 0.836,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8759
+            },
+            {
+              "fact": "人民币汇率受跨境资金流动与利率预期影响。",
+              "source_url": "https://benchmark.local/4d8469a5d801",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.95,
+              "relevance": 0.708,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7955
+            },
+            {
+              "fact": "跨境资金流动是分析2026年人民币汇率的重要维度。",
+              "source_url": "https://benchmark.local/edb657380d8a",
+              "research_topic": "2026人民币汇率与央行政策变化",
+              "confidence": 0.84,
+              "relevance": 0.751,
+              "created_at": 1781665003,
+              "age_days": 4.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7847
+            }
+          ]
+        },
+        {
+          "query": "2026全球半导体供应链风险与产能布局",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8556691603792903,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "2026年半导体供应链分析需覆盖先进制程产能布局。",
+              "source_url": "https://benchmark.local/ca9c9cb21bde",
+              "research_topic": "2026全球半导体供应链风险与产能布局",
+              "confidence": 0.93,
+              "relevance": 0.782,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.8334
+            },
+            {
+              "fact": "关键设备与材料供应是半导体供应链的风险维度。",
+              "source_url": "https://benchmark.local/2351cb35c4fe",
+              "research_topic": "2026全球半导体供应链风险与产能布局",
+              "confidence": 0.86,
+              "relevance": 0.774,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.809
+            },
+            {
+              "fact": "全球半导体供应链包含设备、材料与制造环节。",
+              "source_url": "https://benchmark.local/24db32514862",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.94,
+              "relevance": 0.703,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7845
+            }
+          ]
+        },
+        {
+          "query": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+          "returned": 3,
+          "unique_relevant": 3,
+          "precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "ndcg_at_k": 0.8451593915771352,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "SDD与AGENTS.md结合时应明确验收条件和工程边界。",
+              "source_url": "https://benchmark.local/68f7ba66fbdf",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.82,
+              "relevance": 0.722,
+              "created_at": 1781578603,
+              "age_days": 5.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.759
+            },
+            {
+              "fact": "SDD通过可验证规范约束需求、实现与验收之间的映射。",
+              "source_url": "https://benchmark.local/ae9f130ee8fe",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.93,
+              "relevance": 0.646,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7452
+            },
+            {
+              "fact": "AGENTS.md可记录面向编码Agent的仓库级执行约束。",
+              "source_url": "https://benchmark.local/4ca640287c61",
+              "research_topic": "规范驱动开发 SDD 与 AGENTS.md 最佳实践",
+              "confidence": 0.86,
+              "relevance": 0.663,
+              "created_at": 1781665003,
+              "age_days": 4.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7324
+            }
+          ]
+        },
+        {
+          "query": "Redis 搜索缓存一致性与失效策略",
+          "returned": 3,
+          "unique_relevant": 2,
+          "precision_at_k": 0.6666666666666666,
+          "recall_at_k": 0.6666666666666666,
+          "ndcg_at_k": 0.8178747578506881,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "Redis搜索缓存应为查询结果设置明确的过期时间。",
+              "source_url": "https://benchmark.local/57f10044c60d",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.94,
+              "relevance": 0.739,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.813
+            },
+            {
+              "fact": "Redis有序集合适合实现实时排行榜。",
+              "source_url": "https://benchmark.local/698287bcf59f",
+              "research_topic": "Milvus 2.6 向量检索与混合搜索能力",
+              "confidence": 0.96,
+              "relevance": 0.563,
+              "created_at": 1781924203,
+              "age_days": 1.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7037
+            },
+            {
+              "fact": "缓存键规范化可减少同义查询产生的重复条目。",
+              "source_url": "https://benchmark.local/533cd31c9ea9",
+              "research_topic": "Redis 搜索缓存一致性与失效策略",
+              "confidence": 0.86,
+              "relevance": 0.608,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7011
+            }
+          ]
+        },
+        {
+          "query": "LangGraph checkpoint 故障恢复与幂等执行",
+          "returned": 3,
+          "unique_relevant": 3,
+          "precision_at_k": 1.0,
+          "recall_at_k": 1.0,
+          "ndcg_at_k": 0.9594535145926796,
+          "slot_fill_rate": 1.0,
+          "duplicate_rate": 0.0,
+          "hits": [
+            {
+              "fact": "LangGraph checkpoint可保存图执行中的稳定状态。",
+              "source_url": "https://benchmark.local/b138aa02db55",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.93,
+              "relevance": 0.699,
+              "created_at": 1781837803,
+              "age_days": 2.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.7796
+            },
+            {
+              "fact": "稳定thread_id是关联checkpoint与恢复请求的关键。",
+              "source_url": "https://benchmark.local/433abe6b3541",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.82,
+              "relevance": 0.593,
+              "created_at": 1781578603,
+              "age_days": 5.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.6753
+            },
+            {
+              "fact": "恢复执行时应复用已完成节点结果并避免重复副作用。",
+              "source_url": "https://benchmark.local/64303cc18aee",
+              "research_topic": "LangGraph checkpoint 故障恢复与幂等执行",
+              "confidence": 0.87,
+              "relevance": 0.564,
+              "created_at": 1781751403,
+              "age_days": 3.0,
+              "fact_category": "product_info",
+              "retrieval_score": 0.6753
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

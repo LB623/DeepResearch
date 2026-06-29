@@ -21,28 +21,40 @@ Usage:
 
 from __future__ import annotations
 
-import json
-import os
-import time
 import asyncio
-from datetime import datetime
-from typing import Any, Optional
+import os
+import re
+import time
 
 import requests
 from loguru import logger
 from pymilvus import MilvusClient
+
 from agent.exceptions import (
-    KBConnectionError,
-    KBEmbeddingError,
-    KBEmbeddingFatalError,
     KBConfigError,
+    KBEmbeddingFatalError,
 )
-from pymilvus.milvus_client.index import IndexParams
 
 # ── constants ─────────────────────────────────────────────────────────
 COLLECTION_NAME = "research_facts"
 DEFAULT_EMBEDDING_DIM = 1024
 DEFAULT_EMBEDDING_MODEL = "text-embedding-v3"
+DEFAULT_RERANK_CANDIDATE_MULTIPLIER = 3
+RERANK_RELEVANCE_WEIGHT = 0.65
+RERANK_CONFIDENCE_WEIGHT = 0.25
+RERANK_FRESHNESS_WEIGHT = 0.10
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _normalize_fact(text: str) -> str:
+    """Normalize fact text for deterministic duplicate suppression."""
+    return re.sub(r"[^\w]+", "", text, flags=re.UNICODE).lower()
 
 
 class FactStore:
@@ -78,6 +90,7 @@ class FactStore:
         Optional:
           - research_topic (str): 触发此搜索的研究主题
           - confidence (float): 0.0-1.0
+          - created_at (int): Unix 时间戳；缺省为当前时间
         """
         if not facts:
             return 0
@@ -88,15 +101,17 @@ class FactStore:
         data = []
         now = int(time.time())
         for i, fact in enumerate(facts):
-            data.append({
-                "vector": embeddings[i],
-                "fact_text": fact["fact"],
-                "source_url": fact.get("source_url", ""),
-                "research_topic": fact.get("research_topic", ""),
-                "confidence": float(fact.get("confidence", 1.0)),
-                "fact_category": fact.get("fact_category", "strategy"),
-                "created_at": now,
-            })
+            data.append(
+                {
+                    "vector": embeddings[i],
+                    "fact_text": fact["fact"],
+                    "source_url": fact.get("source_url", ""),
+                    "research_topic": fact.get("research_topic", ""),
+                    "confidence": float(fact.get("confidence", 1.0)),
+                    "fact_category": fact.get("fact_category", "strategy"),
+                    "created_at": int(fact.get("created_at", now)),
+                }
+            )
 
         result = self.client.insert(collection_name=self.collection, data=data)
         inserted = result.get("insert_count", len(data))
@@ -114,6 +129,8 @@ class FactStore:
         max_age_days: int | None = None,
         decay: bool = False,
         lifecycle_mode: bool = False,
+        rerank: bool | None = None,
+        candidate_multiplier: int | None = None,
     ) -> list[dict]:
         """对与研究主题相关的fact进行语义搜索。
 
@@ -126,20 +143,39 @@ class FactStore:
             decay: 如果为 True，则应用基于时间的置信度衰减。
             lifecycle_mode: 如果为 True，则使用按类别划分的 TTL（CATEGORY_TTL），
                 而不是单一的 max_age_days 阈值。
+            rerank: 是否启用质量感知重排。None 时读取 KB_RERANK_ENABLED，默认开启。
+            candidate_multiplier: 重排候选过采样倍数，默认 3。
 
         Returns list of {fact, source_url, confidence, research_topic, relevance,
                           created_at, age_days, fact_category}.
         """
         from agent.kb.lifecycle import CATEGORY_TTL
 
+        rerank_enabled = (
+            _env_flag("KB_RERANK_ENABLED", True) if rerank is None else rerank
+        )
+        if candidate_multiplier is None:
+            candidate_multiplier = int(
+                os.getenv(
+                    "KB_RERANK_CANDIDATE_MULTIPLIER",
+                    str(DEFAULT_RERANK_CANDIDATE_MULTIPLIER),
+                )
+            )
+        candidate_multiplier = max(1, candidate_multiplier)
+        search_limit = top_k * candidate_multiplier if rerank_enabled else top_k
+
         embedding = self._embed([topic])
         results = self.client.search(
             collection_name=self.collection,
             data=[embedding[0]],
-            limit=top_k,
+            limit=search_limit,
             output_fields=[
-                "fact_text", "source_url", "research_topic",
-                "confidence", "created_at", "fact_category",
+                "fact_text",
+                "source_url",
+                "research_topic",
+                "confidence",
+                "created_at",
+                "fact_category",
             ],
         )
 
@@ -151,7 +187,8 @@ class FactStore:
         hits = []
         for hit in results[0]:
             entity = hit.get("entity", {})
-            score = 1.0 - hit.get("distance", 0)  # 余弦距离 → 相似度
+            # Milvus COSINE search returns a similarity score: larger is better.
+            score = float(hit.get("distance", 0.0))
 
             # ── confidence floor check ──
             raw_confidence = entity.get("confidence", 1.0)
@@ -174,32 +211,103 @@ class FactStore:
             # ── confidence decay ──
             confidence = raw_confidence
             if decay:
-                effective_max_age = max_age_days or 30
-                if lifecycle_mode:
-                    category = entity.get("fact_category", "strategy")
-                    effective_max_age = CATEGORY_TTL.get(category)
-                    if effective_max_age is None:
-                        effective_max_age = 180  # no-decay fallback for None TTL
+                effective_max_age = self._effective_max_age(
+                    entity=entity,
+                    max_age_days=max_age_days,
+                    lifecycle_mode=lifecycle_mode,
+                    category_ttl=CATEGORY_TTL,
+                )
                 decay_factor = max(0.3, 1.0 - age_days / (effective_max_age * 2))
                 confidence = raw_confidence * decay_factor
 
-            hits.append({
-                "fact": entity.get("fact_text", ""),
-                "source_url": entity.get("source_url", ""),
-                "research_topic": entity.get("research_topic", ""),
-                "confidence": round(confidence, 2),
-                "relevance": round(score, 3),
-                "created_at": created,
-                "age_days": round(age_days, 1),
-                "fact_category": entity.get("fact_category", "strategy"),
-            })
+            freshness = self._freshness_score(
+                entity=entity,
+                age_days=age_days,
+                max_age_days=max_age_days,
+                lifecycle_mode=lifecycle_mode,
+                category_ttl=CATEGORY_TTL,
+            )
+            retrieval_score = (
+                RERANK_RELEVANCE_WEIGHT * score
+                + RERANK_CONFIDENCE_WEIGHT * confidence
+                + RERANK_FRESHNESS_WEIGHT * freshness
+            )
+
+            hits.append(
+                {
+                    "fact": entity.get("fact_text", ""),
+                    "source_url": entity.get("source_url", ""),
+                    "research_topic": entity.get("research_topic", ""),
+                    "confidence": round(confidence, 2),
+                    "relevance": round(score, 3),
+                    "created_at": created,
+                    "age_days": round(age_days, 1),
+                    "fact_category": entity.get("fact_category", "strategy"),
+                    "retrieval_score": round(retrieval_score, 4),
+                }
+            )
+
+        if rerank_enabled:
+            hits.sort(key=lambda item: item["retrieval_score"], reverse=True)
+            deduplicated = []
+            seen_facts = set()
+            for hit in hits:
+                normalized = _normalize_fact(hit["fact"])
+                if not normalized or normalized in seen_facts:
+                    continue
+                seen_facts.add(normalized)
+                deduplicated.append(hit)
+                if len(deduplicated) >= top_k:
+                    break
+            hits = deduplicated
+        else:
+            hits = hits[:top_k]
 
         logger.info(
             f"[KB] query '{topic[:60]}...' → {len(hits)} hits "
             f"(top score={hits[0]['relevance']:.3f})"
-            if hits else f"[KB] query '{topic[:60]}...' → 0 hits"
+            if hits
+            else f"[KB] query '{topic[:60]}...' → 0 hits"
         )
         return hits
+
+    @staticmethod
+    def _effective_max_age(
+        *,
+        entity: dict,
+        max_age_days: int | None,
+        lifecycle_mode: bool,
+        category_ttl: dict[str, int | None],
+    ) -> int:
+        if lifecycle_mode:
+            category = entity.get("fact_category", "strategy")
+            return category_ttl.get(category) or 180
+        return max_age_days or 30
+
+    @classmethod
+    def _freshness_score(
+        cls,
+        *,
+        entity: dict,
+        age_days: float,
+        max_age_days: int | None,
+        lifecycle_mode: bool,
+        category_ttl: dict[str, int | None],
+    ) -> float:
+        """Return a 0-1 freshness signal without another model call."""
+        if not max_age_days and not lifecycle_mode:
+            return 1.0
+        if lifecycle_mode:
+            category = entity.get("fact_category", "strategy")
+            if category_ttl.get(category) is None:
+                return 1.0
+        horizon = cls._effective_max_age(
+            entity=entity,
+            max_age_days=max_age_days,
+            lifecycle_mode=lifecycle_mode,
+            category_ttl=category_ttl,
+        )
+        return max(0.0, min(1.0, 1.0 - age_days / horizon))
 
     def stats(self) -> dict:
         """Return collection statistics."""
@@ -213,7 +321,9 @@ class FactStore:
             logger.warning(f"[KB] failed to get collection stats (connection): {e}")
             return {"collection": self.collection, "row_count": "unknown"}
         except Exception as e:
-            logger.warning(f"[KB] failed to get collection stats ({type(e).__name__}): {e}")
+            logger.warning(
+                f"[KB] failed to get collection stats ({type(e).__name__}): {e}"
+            )
             return {"collection": self.collection, "row_count": "unknown"}
 
     # ── internal helpers ────────────────────────────────────────────
@@ -237,34 +347,7 @@ class FactStore:
             auto_id=True,
             enable_dynamic_field=True,
         )
-        # 创建 IVF_FLAT 索引以提高搜索效率。
-        # Note: 某些 Milvus 版本会自动创建默认索引。
-        try:
-            index_params = IndexParams()
-            index_params.add_index(
-                field_name="vector",
-                index_type="IVF_FLAT",
-                metric_type="COSINE",
-                params={"nlist": 128},
-            )
-            self.client.create_index(
-                collection_name=self.collection,
-                index_params=index_params,
-            )
-            self.client.load_collection(self.collection)
-        except Exception as exc:
-            # Milvus may raise if index already exists; this is harmless
-            error_msg = str(exc).lower()
-            if (
-                "already exist" in error_msg
-                or "duplicate" in error_msg
-                or "at most one distinct index" in error_msg
-            ):
-                logger.debug(f"[KB] index already exists, skipping creation")
-            else:
-                logger.warning(
-                    f"[KB] index creation skipped ({type(exc).__name__}): {exc}"
-                )
+        # MilvusClient fast-create already installs AUTOINDEX and loads the collection.
         logger.info(
             f"[KB] created collection '{self.collection}' "
             f"(dim={self.embedding_dim}, metric=COSINE)"
@@ -301,15 +384,22 @@ class FactStore:
         last_exc: Exception | None = None
         for attempt in range(3):
             try:
-                logger.debug(f"[KB] embedding {len(texts)} texts via {url} (model={self.embedding_model}, attempt={attempt + 1})")
+                logger.debug(
+                    f"[KB] embedding {len(texts)} texts via {url} (model={self.embedding_model}, attempt={attempt + 1})"
+                )
                 resp = requests.post(url, json=payload, headers=headers, timeout=30)
                 resp.raise_for_status()
 
                 data = resp.json()
                 embeddings = [item["embedding"] for item in data["data"]]
                 # 按索引排序以保持顺序
-                embeddings.sort(key=lambda x: x.get("index", 0) if isinstance(x, dict) else 0)
-                result = [item["embedding"] if isinstance(item, dict) else item for item in embeddings]
+                embeddings.sort(
+                    key=lambda x: x.get("index", 0) if isinstance(x, dict) else 0
+                )
+                result = [
+                    item["embedding"] if isinstance(item, dict) else item
+                    for item in embeddings
+                ]
 
                 # 自动检测实际dim与配置dim的差异
                 if result and len(result[0]) != self.embedding_dim:
@@ -337,17 +427,21 @@ class FactStore:
                         f"[KB] embedding bad request HTTP 400, not retrying: {e}"
                     )
                     raise KBEmbeddingFatalError(
-                        f"Embedding API 参数错误 (HTTP 400)"
+                        "Embedding API 参数错误 (HTTP 400)"
                     ) from e
 
                 # 可恢复：429 / 5xx — 重试
                 if status == 429 and attempt < 2:
                     wait = 3 * (attempt + 1)
-                    logger.warning(f"[KB] embedding 429 rate-limited, retrying in {wait}s (attempt {attempt + 1}/3)")
+                    logger.warning(
+                        f"[KB] embedding 429 rate-limited, retrying in {wait}s (attempt {attempt + 1}/3)"
+                    )
                     time.sleep(wait)
                 elif status >= 500 and attempt < 2:
                     wait = 2 * (attempt + 1)
-                    logger.warning(f"[KB] embedding server error {status}, retrying in {wait}s (attempt {attempt + 1}/3)")
+                    logger.warning(
+                        f"[KB] embedding server error {status}, retrying in {wait}s (attempt {attempt + 1}/3)"
+                    )
                     time.sleep(wait)
                 else:
                     logger.error(f"[KB] embedding HTTP {status}, no more retries: {e}")
@@ -356,7 +450,9 @@ class FactStore:
                 last_exc = e
                 if attempt < 2:
                     wait = 1.5 * (attempt + 1)
-                    logger.warning(f"[KB] embedding network error, retrying in {wait:.1f}s (attempt {attempt + 1}/3): {e}")
+                    logger.warning(
+                        f"[KB] embedding network error, retrying in {wait:.1f}s (attempt {attempt + 1}/3): {e}"
+                    )
                     time.sleep(wait)
                 else:
                     logger.error(f"[KB] embedding network error, no more retries: {e}")
@@ -367,9 +463,7 @@ class FactStore:
                     f"[KB] embedding response parse error ({type(e).__name__}), "
                     f"not retrying: {e}"
                 )
-                raise KBEmbeddingFatalError(
-                    f"Embedding 响应解析失败: {e}"
-                ) from e
+                raise KBEmbeddingFatalError(f"Embedding 响应解析失败: {e}") from e
 
             except Exception as e:
                 # 未知异常 — 保守重试

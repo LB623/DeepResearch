@@ -20,6 +20,7 @@ backend/eval/
 ├── judge.py             # LLM Judge 封装 + Pydantic 评分数据模型
 ├── evaluator.py         # 评估执行器：端到端 + 组件级评估
 ├── run_eval.py          # CLI 命令行入口
+├── run_retrieval_benchmark.py # Milvus 检索组件确定性 A/B
 ├── test_set.json        # 测试用例集（5 个 topic）
 └── README.md            # 本文档
 ```
@@ -123,6 +124,21 @@ python -m eval.run_eval --mode comp --topic "2025年AI芯片市场趋势" \
 python -m eval.run_eval --mode comp --topic "..." \
   --feedback "看起来很全面，可以开始了" --expected-intent proceed
 ```
+
+### Milvus 检索组件 A/B
+
+该 benchmark 使用隔离 Milvus collection、真实 embedding 和带人工相关性标签的
+受控固定集，对比原始 Top-K 与质量感知重排。它不调用 Judge，指标不受 LLM 评分随机性影响。
+
+```bash
+cd backend
+../.venv/bin/python -m eval.run_retrieval_benchmark \
+  --collection eval_retrieval_rerank \
+  --output eval_runs/retrieval_rerank.json \
+  --report ../docs/reviews/milvus-retrieval-rerank-ab.md
+```
+
+默认在结束时删除隔离 collection；调试时可追加 `--keep-collection`。
 
 ### `test_set.json` — 测试用例集
 
