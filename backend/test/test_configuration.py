@@ -1,12 +1,12 @@
 """Tests for Configuration model — default values, env var overrides, etc."""
 
-import os
 import pytest
+
 from agent.configuration import (
     Configuration,
     ModelConfig,
-    load_available_models_from_env,
     get_default_model_id,
+    load_available_models_from_env,
 )
 
 
@@ -69,6 +69,7 @@ class TestConfigurationDefaults:
         cfg = Configuration()
         assert cfg.number_of_initial_queries == 2
         assert cfg.max_research_loops == 2
+        assert cfg.max_writer_revisions == 3
         assert isinstance(cfg.query_generator_model, str)
         assert isinstance(cfg.reflection_model, str)
         assert isinstance(cfg.answer_model, str)
@@ -87,10 +88,17 @@ class TestFromRunnableConfig:
 
     def test_configurable_overrides(self):
         cfg = Configuration.from_runnable_config(
-            {"configurable": {"number_of_initial_queries": 5, "max_research_loops": 10}}
+            {
+                "configurable": {
+                    "number_of_initial_queries": 1,
+                    "max_research_loops": 1,
+                    "max_writer_revisions": 1,
+                }
+            }
         )
-        assert cfg.number_of_initial_queries == 5
-        assert cfg.max_research_loops == 10
+        assert cfg.number_of_initial_queries == 1
+        assert cfg.max_research_loops == 1
+        assert cfg.max_writer_revisions == 1
 
     def test_env_var_takes_precedence(self, monkeypatch):
         monkeypatch.setenv("NUMBER_OF_INITIAL_QUERIES", "8")
@@ -115,10 +123,33 @@ class TestFromRunnableConfig:
 
     def test_partial_override(self):
         cfg = Configuration.from_runnable_config(
-            {"configurable": {"max_research_loops": 7}}
+            {"configurable": {"max_research_loops": 1}}
         )
-        assert cfg.max_research_loops == 7
+        assert cfg.max_research_loops == 1
         assert cfg.number_of_initial_queries == 2  # default
+
+    def test_caller_cannot_raise_server_budget_defaults(self):
+        cfg = Configuration.from_runnable_config(
+            {
+                "configurable": {
+                    "number_of_initial_queries": 20,
+                    "max_research_loops": 20,
+                    "max_writer_revisions": 20,
+                    "max_web_search_calls": 100,
+                    "max_elapsed_seconds": 86_400,
+                    "max_no_progress_rounds": 20,
+                    "max_total_tokens": 2_000_000,
+                }
+            }
+        )
+
+        assert cfg.number_of_initial_queries == 2
+        assert cfg.max_research_loops == 2
+        assert cfg.max_writer_revisions == 3
+        assert cfg.max_web_search_calls == 20
+        assert cfg.max_elapsed_seconds == 900
+        assert cfg.max_no_progress_rounds == 2
+        assert cfg.max_total_tokens == 120_000
 
     def test_available_models_not_overridable_by_configurable(self):
         """available_models should always come from env, not configurable."""

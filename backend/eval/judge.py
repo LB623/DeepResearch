@@ -7,7 +7,10 @@ import os
 import traceback
 from typing import Any
 
-from agent.base_agent import Agent, JsonAgent
+from loguru import logger
+from pydantic import BaseModel, Field, ValidationError
+
+from agent.base_agent import Agent
 from agent.post import Post
 from eval.prompts import (
     CITATION_JUDGE_INSTRUCTIONS,
@@ -19,9 +22,6 @@ from eval.prompts import (
     QUERY_JUDGE_INSTRUCTIONS,
     SUMMARIZATION_JUDGE_INSTRUCTIONS,
 )
-from loguru import logger
-from pydantic import BaseModel, Field
-
 
 # ---------- 结构化 Judge 输出的 Pydantic 模式 ----------
 
@@ -152,6 +152,8 @@ class Judge:
             # 回退到可用模型列表中的最后一个模型
             from agent.configuration import get_judge_model_id
             self.model_id = get_judge_model_id()
+        self.last_call_tokens = 0
+        self.total_tokens = 0
         logger.info(f"Judge 已初始化，模型={self.model_id}")
 
     def _call(self, prompt: str) -> dict[str, Any]:
@@ -159,10 +161,20 @@ class Judge:
         import sys as _sys
 
         agent = Agent(model_id=self.model_id)
+        self.last_call_tokens = 0
         last_raw = ""
         for attempt in range(3):
             try:
                 raw = agent(prompt)
+                usage = getattr(getattr(agent, "llm", None), "last_usage", {})
+                tokens = (
+                    usage.get("total_tokens", 0)
+                    if isinstance(usage, dict)
+                    else 0
+                )
+                if isinstance(tokens, (int, float)):
+                    self.last_call_tokens += int(tokens)
+                    self.total_tokens += int(tokens)
                 last_raw = raw
                 json_str = Post.extract_pattern(raw, pattern="json")
                 result = json.loads(json_str)
@@ -189,8 +201,23 @@ class Judge:
             search_sources=search_sources,
             report=report,
         )
-        result = self._call(prompt)
-        return E2EScore(**result) if result else None
+        for attempt in range(2):
+            result = self._call(prompt)
+            if not result:
+                return None
+            try:
+                return E2EScore(**result)
+            except ValidationError as exc:
+                if attempt == 1:
+                    raise
+                prompt = (
+                    f"{prompt}\n\n"
+                    "# 结构校验纠正\n"
+                    "上一次输出未通过结构校验。请重新输出完整 JSON，"
+                    "不要省略任何字段，尤其是 hallucination_check。\n"
+                    f"校验错误：{exc}"
+                )
+        raise AssertionError("unreachable")
 
     # -- 组件级 --
 

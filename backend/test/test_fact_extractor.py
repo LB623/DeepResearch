@@ -1,7 +1,6 @@
 """Tests for FactExtractor — LLM-based fact extraction from summaries."""
 
 import json
-import pytest
 from unittest.mock import MagicMock, patch
 
 
@@ -30,12 +29,43 @@ class TestFactExtractor:
             assert result[0]["confidence"] == 0.9
             assert result[1]["confidence"] == 0.85
 
+    def test_extract_accepts_facts_wrapper_and_tracks_tokens(self):
+        from agent.kb.extractor import FactExtractor
+
+        payload = {
+            "facts": [
+                {
+                    "fact": "企业级 Agent 应将持久状态与搜索缓存分离管理",
+                    "source_url": "https://example.com/agent-state",
+                    "confidence": 0.9,
+                    "fact_category": "technology",
+                }
+            ]
+        }
+
+        with patch("agent.kb.extractor.Agent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.step.return_value = f"```json\n{json.dumps(payload)}\n```"
+            mock_agent.llm.last_usage = {"total_tokens": 37}
+            mock_agent_cls.return_value = mock_agent
+
+            extractor = FactExtractor()
+            result = extractor.extract(
+                summary="企业级 Agent 的持久化状态与搜索缓存具有不同可靠性语义。" * 5,
+                research_topic="Agent 工程实践",
+            )
+
+        assert len(result) == 1
+        assert result[0]["fact_category"] == "technology"
+        assert extractor.last_token_count == 37
+
     def test_extract_short_summary_skipped(self):
         from agent.kb.extractor import FactExtractor
 
         extractor = FactExtractor()
         result = extractor.extract(summary="short", research_topic="test")
         assert result == []
+        assert extractor.last_token_count == 0
 
     def test_extract_empty_summary_skipped(self):
         from agent.kb.extractor import FactExtractor

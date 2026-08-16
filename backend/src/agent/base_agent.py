@@ -1,25 +1,27 @@
-import os
-import copy
-import traceback
-import time
-import threading
 import asyncio
-from loguru import logger
-from agent.llm.llm import OpenAICompatibleLLM
-from dashscope import Application
-from agent.post import Post
+import copy
 import json
-from agent.search_cache import get_cached, set_cached
+import os
+import threading
+import time
+import traceback
+
+from dashscope import Application
+from loguru import logger
+
 from agent.exceptions import (
-    TransientError,
-    PermanentError,
-    MCPRateLimitError,
-    MCPAuthError,
     MCPAccessDeniedError,
-    MCPParseError,
+    MCPAuthError,
     MCPEmptyResultError,
+    MCPParseError,
+    MCPRateLimitError,
     MCPServerError,
+    PermanentError,
+    TransientError,
 )
+from agent.llm.llm import OpenAICompatibleLLM
+from agent.post import Post
+from agent.search_cache import get_cached, set_cached
 
 
 def _get_mcp_api_key() -> str | None:
@@ -92,7 +94,7 @@ class RateLimiter:
 # 全局速率限制器实例（单例模式）
 _web_search_rate_limiter = None
 
-def get_web_search_rate_limiter(max_qps: float = None) -> RateLimiter:
+def get_web_search_rate_limiter(max_qps: float | None = None) -> RateLimiter:
     """
     获取全局Web搜索速率限制器实例
 
@@ -498,19 +500,19 @@ class WebSearchAgent(MCPAgent):
                         if status == 429:
                             logger.error(f"API速率限制(429)，请求ID: {request_id}。建议增加请求间隔或联系API提供商提高配额")
                             raise MCPRateLimitError(
-                                f"API请求频率超限(429)，请稍后重试",
+                                "API请求频率超限(429)，请稍后重试",
                                 request_id=request_id,
                             )
                         elif status == 401:
                             logger.error(f"API认证失败(401)，请求ID: {request_id}")
                             raise MCPAuthError(
-                                f"API认证失败，请检查APP_TOKEN配置",
+                                "API认证失败，请检查APP_TOKEN配置",
                                 request_id=request_id,
                             )
                         elif status == 403:
                             logger.error(f"API访问被拒绝(403)，请求ID: {request_id}")
                             raise MCPAccessDeniedError(
-                                f"API访问被拒绝，请检查权限配置",
+                                "API访问被拒绝，请检查权限配置",
                                 request_id=request_id,
                             )
                         else:

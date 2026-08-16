@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from langchain_core.messages import HumanMessage
 
@@ -32,4 +32,5 @@ async def resume_task(
         if user_message is None
         else {"messages": [HumanMessage(content=user_message)]}
     )
-    return await graph.ainvoke(graph_input, config=config)
+    result = await graph.ainvoke(cast(Any, graph_input), config=config)
+    return dict(result)

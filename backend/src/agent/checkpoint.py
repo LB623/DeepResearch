@@ -11,6 +11,7 @@ import os
 from functools import lru_cache
 from typing import Any
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
 from loguru import logger
 
@@ -63,10 +64,10 @@ def get_checkpointer() -> Any | None:
             checkpoint_write_prefix=checkpoint_write_prefix,
         )
         saver.setup()
-        logger.info(f"[Checkpoint] Redis checkpointer ready: {redis_url}")
+        logger.info("[Checkpoint] Redis checkpointer ready")
         return saver
     except Exception as exc:
-        if _enabled(os.getenv("CHECKPOINT_FALLBACK_TO_MEMORY"), default=True):
+        if _enabled(os.getenv("CHECKPOINT_FALLBACK_TO_MEMORY"), default=False):
             logger.warning(
                 "[Checkpoint] Redis unavailable "
                 f"({type(exc).__name__}: {exc}); falling back to memory"
@@ -75,7 +76,7 @@ def get_checkpointer() -> Any | None:
         raise
 
 
-def make_thread_config(thread_id: str, **configurable: Any) -> dict:
+def make_thread_config(thread_id: str, **configurable: Any) -> RunnableConfig:
     """Build a LangGraph config with a stable task/thread id."""
     if not thread_id or not thread_id.strip():
         raise ValueError("thread_id is required for checkpoint resume")

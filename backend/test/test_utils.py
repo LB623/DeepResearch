@@ -1,8 +1,8 @@
 """Tests for utility functions: resolve_urls, get_research_topic, etc."""
 
-import pytest
-from langchain_core.messages import HumanMessage, AIMessage
-from agent.utils import resolve_urls, get_research_topic, get_last_user_response
+from langchain_core.messages import AIMessage, HumanMessage
+
+from agent.utils import get_last_user_response, get_research_topic, resolve_urls
 
 
 class TestResolveUrls:

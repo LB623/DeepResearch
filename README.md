@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black" alt="React 19">
   <img src="https://img.shields.io/badge/Memory-Milvus-00A1EA" alt="Milvus Fact Memory">
   <img src="https://img.shields.io/badge/Recovery-Redis%20Checkpoint-DC382D?logo=redis&logoColor=white" alt="Redis Checkpoint">
-  <img src="https://img.shields.io/badge/Tests-270%20passed-brightgreen" alt="270 tests passed">
+  <img src="https://img.shields.io/badge/Quality-make%20verify-brightgreen" alt="make verify">
 </p>
 
 <p align="center">
@@ -69,6 +69,17 @@
 - **Redis Search Cache**：短期缓存网页搜索结果，减少重复外部调用。
 - **LangGraph Checkpoint**：保存任务图状态，用于失败恢复和任务续跑。
 
+### 失败与降级语义
+
+| 依赖 | 失败时行为 |
+|---|---|
+| Redis Search Cache | 自动降级为进程内缓存；只影响跨进程复用和重启后命中率。 |
+| Redis Checkpoint | 默认失败关闭（fail closed），避免把不可恢复的任务误报为可恢复。仅本地开发可显式设置 `CHECKPOINT_FALLBACK_TO_MEMORY=1`。 |
+| Milvus 事实记忆 | 不中断当前研究；暂停长期记忆读写，并按 `KB_RECONNECT_INTERVAL_SECONDS` 定期重连。 |
+
+Web Search 次数、LLM token、墙钟时间和无进展轮数等单任务预算记录在 LangGraph state 中，因此从 Checkpoint 恢复不会重置预算。
+环境变量中的预算值同时是服务端上限：请求可通过 `configurable` 降低预算，但不能将其提高到服务端上限之上。
+
 ---
 
 ## 🧰 技术栈
@@ -90,7 +101,7 @@
 ### 环境要求
 
 - Python `3.11+`
-- Node.js `18+`
+- Node.js `22`
 - Docker 与 Docker Compose
 - OpenAI-compatible LLM 和 Embedding 服务
 - DashScope Application/MCP Web Search 配置
@@ -100,10 +111,9 @@
 进入项目根目录后执行：
 
 ```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e "backend[dev]"
+python3.11 -m pip install uv==0.11.1
+UV_PROJECT_ENVIRONMENT="$PWD/.venv" \
+  uv sync --project backend --extra dev --frozen
 
 cd frontend
 npm ci
@@ -114,14 +124,22 @@ cd ..
 
 ```bash
 docker compose -f infrastructure/milvus/docker-compose.yml up -d
-docker run -d --name deepresearch-redis -p 6379:6379 redis:7-alpine
+docker compose -f infrastructure/redis/docker-compose.yml up -d
 ```
 
-如果本机已有 Redis，可跳过第二条命令。
+Checkpoint 使用 Redis Search 索引，因此必须使用 Redis Stack；普通
+`redis:7-alpine` 不支持 `FT._LIST`，不能用于 `CHECKPOINT_BACKEND=redis`。
+如果本机已有启用 Redis Search 的兼容服务，可跳过第二条命令。
 
 ### 3. 配置环境变量
 
-创建 `backend/.env`，并替换以下配置：
+以仓库中的完整模板创建 `backend/.env`：
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+然后至少替换以下模型、搜索与存储配置：
 
 ```dotenv
 # 研究模型 / 推理模型
@@ -141,6 +159,7 @@ MCP_APP_ID=your-web-search-application-id
 REDIS_URL=redis://localhost:6379/0
 CHECKPOINT_BACKEND=redis
 CHECKPOINT_REDIS_URL=redis://localhost:6379/0
+CHECKPOINT_FALLBACK_TO_MEMORY=0
 
 # Milvus 事实记忆
 MILVUS_URI=http://localhost:19530
@@ -151,9 +170,38 @@ EMBEDDING_BASE_URL=https://your-embedding-endpoint/v1
 EMBEDDING_API_KEY=your-embedding-api-key
 EMBEDDING_MODEL=text-embedding-v3
 EMBEDDING_DIM=1024
+
+# 单任务研究预算
+NUMBER_OF_INITIAL_QUERIES=2
+MAX_RESEARCH_LOOPS=2
+MAX_WEB_SEARCH_CALLS=20
+MAX_TOTAL_TOKENS=120000
+MAX_ELAPSED_SECONDS=900
+MAX_NO_PROGRESS_ROUNDS=2
+MAX_WRITER_REVISIONS=3
+
+# 事实记忆生命周期与重连
+KB_RECONNECT_INTERVAL_SECONDS=30
+KB_LIFECYCLE_MODE=freshness
+KB_RERANK_ENABLED=1
+KB_RERANK_CANDIDATE_MULTIPLIER=3
+
+# 默认不记录请求正文
+LOG_REQUEST_BODY=0
 ```
 
 > `EMBEDDING_DIM` 必须与 Embedding 模型的实际输出维度及 Milvus Collection 维度一致。
+> `backend/.env.example` 是配置项的唯一完整清单，其中还包含可选模型列表、Web Search 限流和生命周期模式说明。
+
+生产部署验收或排查连通性时，可执行 KB 就绪检查：
+
+```bash
+cd backend
+../.venv/bin/python -m agent.kb.preflight
+cd ..
+```
+
+命令会分别检查 Milvus 与 Embedding，并在任一依赖不可用时返回非零退出码。这是部署就绪探针，不是运行时的强制启动门禁：Milvus 暂时不可用时，Agent 仍可继续研究并在冷却期后重连。Embedding 检查会发送一条固定探针文本，可能产生一次极小的 API 调用费用。
 
 ### 4. 启动应用
 
@@ -196,12 +244,14 @@ EMBEDDING_DIM=1024
 ### 运行测试与评测
 
 ```bash
-cd backend
+# 默认交付门禁：锁文件、后端测试/lint/typecheck、前端 lint/test/build
+make verify
 
-# 单元测试与回归测试
-../.venv/bin/python -m pytest
+# 单独运行后端单元测试与回归测试
+make backend-test
 
 # 固定题集端到端与组件级评测
+cd backend
 ../.venv/bin/python -m eval.run_eval \
   --mode all \
   --test-set test_set_basic_5.json \
@@ -215,6 +265,7 @@ cd backend
 ```
 
 > 端到端评测会调用真实 LLM、Web Search 和 Milvus。运行前请检查服务连通性、API 配额，并为评测使用独立的 Milvus Collection。
+> `make verify` 不调用上述付费外部服务；CI 使用 `backend/uv.lock` 的 frozen 环境。
 
 ---
 
@@ -225,22 +276,27 @@ DeepResearch/
 ├── backend/
 │   ├── src/agent/
 │   │   ├── graph.py                 # 主图：计划、研究、写作
+│   │   ├── budget.py                # 单任务搜索/token/时间预算
 │   │   ├── checkpoint.py            # Redis/Memory Checkpoint
 │   │   ├── resume.py                # 任务恢复辅助接口
 │   │   ├── sub_agents/
 │   │   │   ├── research_agent.py    # 查询、检索、事实记忆、反思
 │   │   │   └── writer_agent.py      # 大纲、草稿、审查、终稿
-│   │   ├── kb/                       # Milvus 事实存储与生命周期
+│   │   ├── kb/                       # Milvus 事实存储、就绪检查与重连
 │   │   ├── search_cache.py          # Redis 搜索缓存
 │   │   └── llm/llm.py               # OpenAI-compatible LLM
 │   ├── eval/                         # 评测框架与 Benchmark
 │   ├── eval_runs/                    # 固定集原始结果
 │   └── test/                         # 单元与回归测试
 ├── frontend/                         # React + Vite Web UI
-├── infrastructure/milvus/            # Milvus Docker Compose
+├── infrastructure/
+│   ├── milvus/                    # Milvus Docker Compose
+│   └── redis/                     # Redis Stack Docker Compose
 ├── docs/
 │   ├── assets/                       # README 图片与架构图
+│   ├── plans/                        # 已接受的工程设计与测试缝
 │   └── reviews/                      # 工程验证报告
+├── Makefile                         # 非付费交付门禁
 ├── run_backend.sh
 └── run_frontend.sh
 ```

@@ -61,6 +61,86 @@ def test_get_checkpointer_disabled_under_langgraph_api(monkeypatch):
         get_checkpointer.cache_clear()
 
 
+def test_redis_backend_fails_closed_by_default(monkeypatch):
+    """Redis Checkpoint 不可用时，默认不得伪装成持久化恢复。"""
+    import langgraph.checkpoint.redis as redis_module
+
+    from agent.checkpoint import get_checkpointer
+
+    class BrokenRedisSaver:
+        def __init__(self, **kwargs):
+            raise ConnectionError("redis unavailable")
+
+    get_checkpointer.cache_clear()
+    monkeypatch.setenv("CHECKPOINT_BACKEND", "redis")
+    monkeypatch.delenv("CHECKPOINT_FALLBACK_TO_MEMORY", raising=False)
+    monkeypatch.delenv("LANGSMITH_LANGGRAPH_API_VARIANT", raising=False)
+    monkeypatch.setattr(redis_module, "RedisSaver", BrokenRedisSaver)
+
+    try:
+        with pytest.raises(ConnectionError, match="redis unavailable"):
+            get_checkpointer()
+    finally:
+        get_checkpointer.cache_clear()
+
+
+def test_redis_backend_allows_explicit_memory_fallback(monkeypatch):
+    """开发环境显式开启后，Redis 故障可以降级为内存 Checkpoint。"""
+    import langgraph.checkpoint.redis as redis_module
+
+    from agent.checkpoint import get_checkpointer
+
+    class BrokenRedisSaver:
+        def __init__(self, **kwargs):
+            raise ConnectionError("redis unavailable")
+
+    get_checkpointer.cache_clear()
+    monkeypatch.setenv("CHECKPOINT_BACKEND", "redis")
+    monkeypatch.setenv("CHECKPOINT_FALLBACK_TO_MEMORY", "1")
+    monkeypatch.delenv("LANGSMITH_LANGGRAPH_API_VARIANT", raising=False)
+    monkeypatch.setattr(redis_module, "RedisSaver", BrokenRedisSaver)
+
+    try:
+        assert isinstance(get_checkpointer(), InMemorySaver)
+    finally:
+        get_checkpointer.cache_clear()
+
+
+def test_redis_credentials_are_not_logged(monkeypatch):
+    import io
+
+    import langgraph.checkpoint.redis as redis_module
+    from loguru import logger
+
+    from agent.checkpoint import get_checkpointer
+
+    class ReadyRedisSaver:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+        def setup(self):
+            return None
+
+    get_checkpointer.cache_clear()
+    monkeypatch.setenv("CHECKPOINT_BACKEND", "redis")
+    monkeypatch.setenv(
+        "CHECKPOINT_REDIS_URL",
+        "redis://user:super-secret-password@localhost:6379/0",
+    )
+    monkeypatch.delenv("LANGSMITH_LANGGRAPH_API_VARIANT", raising=False)
+    monkeypatch.setattr(redis_module, "RedisSaver", ReadyRedisSaver)
+    sink = io.StringIO()
+    handler_id = logger.add(sink, format="{message}")
+
+    try:
+        assert get_checkpointer() is not None
+    finally:
+        logger.remove(handler_id)
+        get_checkpointer.cache_clear()
+
+    assert "super-secret-password" not in sink.getvalue()
+
+
 def test_main_graph_uses_configured_checkpointer(monkeypatch):
     import agent.graph as graph_mod
     from agent.checkpoint import get_checkpointer

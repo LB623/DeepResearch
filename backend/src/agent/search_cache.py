@@ -20,14 +20,15 @@ import json
 import os
 import threading
 import time
-from typing import Optional
+from typing import cast
 
 import redis
 from loguru import logger
 
+from agent.logger import content_metadata
+
 # ── configuration ─────────────────────────────────────────────────────
 DEFAULT_TTL = 3600  # 秒（1 小时）
-TRUNCATE_LEN = 80   # 日志中截断 query / title 时的最大字符数
 REDIS_KEY_PREFIX = "search_cache"
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
@@ -48,7 +49,10 @@ def _get_redis() -> redis.Redis | None:
     if _redis_client is not None:
         return _redis_client
     try:
-        _redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+        _redis_client = cast(
+            redis.Redis,
+            redis.from_url(REDIS_URL, decode_responses=True),
+        )
         _redis_client.ping()
         _redis_available = True
         logger.info("[Cache] Redis 连接成功，缓存跨实例共享")
@@ -66,32 +70,28 @@ def _make_key(prompt: str, count: int) -> str:
     return f"{REDIS_KEY_PREFIX}:{hashlib.md5(payload.encode('utf-8')).hexdigest()}"
 
 
-def get_cached(prompt: str, count: int = 10) -> Optional[list[dict]]:
+def get_cached(prompt: str, count: int = 10) -> list[dict] | None:
     """返回缓存的搜索结果（如果存在且未过期），否则返回 None。
 
     命中时打印前 3 条结果的标题，未命中时打印简要日志。
     """
     key = _make_key(prompt, count)
+    query_meta = content_metadata(prompt, label="query")
     r = _get_redis()
 
     if r is not None:
         # ── Redis 路径 ────────────────────────────────────────────
         try:
-            raw = r.get(key)
+            raw = cast(str | bytes | bytearray | None, r.get(key))
             if raw is None:
-                logger.info(f"[Cache] ✗ MISS — '{prompt[:TRUNCATE_LEN]}' 未命中，将通过MCP搜索")
+                logger.info(f"[Cache] MISS {query_meta}; MCP search required")
                 return None
             result = json.loads(raw)
-            remaining_ttl = r.ttl(key)
-            titles = [
-                r.get("title", r.get("snippet", "?"))[:TRUNCATE_LEN]
-                for r in result[:3]
-            ]
+            remaining_ttl = cast(int, r.ttl(key))
             logger.info(
-                f"[Cache] ✓ HIT — '{prompt[:TRUNCATE_LEN]}' 命中缓存 "
-                f"（{len(result)} 条结果, 剩余TTL={remaining_ttl}s）"
+                f"[Cache] HIT {query_meta}; "
+                f"items={len(result)} ttl_seconds={remaining_ttl}"
             )
-            logger.info(f"[Cache]   Top results: {', '.join(titles)}")
             return result
         except Exception as exc:
             logger.warning(f"[Cache] Redis 读取失败 ({type(exc).__name__}): {exc}")
@@ -100,7 +100,7 @@ def get_cached(prompt: str, count: int = 10) -> Optional[list[dict]]:
     # ── 降级：内存缓存路径 ─────────────────────────────────────────
     with _fallback_lock:
         if key not in _fallback_cache:
-            logger.info(f"[Cache] ✗ MISS — '{prompt[:TRUNCATE_LEN]}' 未命中，将通过MCP搜索")
+            logger.info(f"[Cache] MISS {query_meta}; MCP search required")
             return None
 
         ts, result = _fallback_cache[key]
@@ -108,26 +108,22 @@ def get_cached(prompt: str, count: int = 10) -> Optional[list[dict]]:
 
         if remaining <= 0:
             logger.info(
-                f"[Cache] ✗ EXPIRED — '{prompt[:TRUNCATE_LEN]}' 缓存已过期（TTL={DEFAULT_TTL}s），将重新搜索"
+                f"[Cache] EXPIRED {query_meta}; ttl_seconds={DEFAULT_TTL}"
             )
             del _fallback_cache[key]
             return None
 
-    titles = [
-        r.get("title", r.get("snippet", "?"))[:TRUNCATE_LEN]
-        for r in result[:3]
-    ]
     logger.info(
-        f"[Cache] ✓ HIT — '{prompt[:TRUNCATE_LEN]}' 命中缓存 "
-        f"（{len(result)} 条结果, 剩余TTL={remaining:.0f}s）"
+        f"[Cache] HIT {query_meta}; "
+        f"items={len(result)} ttl_seconds={remaining:.0f}"
     )
-    logger.info(f"[Cache]   Top results: {', '.join(titles)}")
     return result
 
 
 def set_cached(prompt: str, count: int, result: list[dict]) -> None:
     """将搜索结果存入缓存。"""
     key = _make_key(prompt, count)
+    query_meta = content_metadata(prompt, label="query")
     r = _get_redis()
 
     if r is not None:
@@ -135,8 +131,8 @@ def set_cached(prompt: str, count: int, result: list[dict]) -> None:
         try:
             r.setex(key, DEFAULT_TTL, json.dumps(result, ensure_ascii=False))
             logger.info(
-                f"[Cache] stored — '{prompt[:TRUNCATE_LEN]}' "
-                f"（{len(result)} items, TTL={DEFAULT_TTL}s）→ Redis"
+                f"[Cache] stored {query_meta}; "
+                f"items={len(result)} ttl_seconds={DEFAULT_TTL} backend=redis"
             )
         except Exception as exc:
             logger.warning(f"[Cache] Redis 写入失败 ({type(exc).__name__}): {exc}")
@@ -146,8 +142,8 @@ def set_cached(prompt: str, count: int, result: list[dict]) -> None:
     with _fallback_lock:
         _fallback_cache[key] = (time.time(), result)
     logger.info(
-        f"[Cache] stored — '{prompt[:TRUNCATE_LEN]}' "
-        f"（{len(result)} items, TTL={DEFAULT_TTL}s）→ 内存"
+        f"[Cache] stored {query_meta}; "
+        f"items={len(result)} ttl_seconds={DEFAULT_TTL} backend=memory"
     )
 
 
@@ -160,9 +156,12 @@ def clear_cache() -> None:
             cursor = 0
             deleted = 0
             while True:
-                cursor, keys = r.scan(cursor, match=f"{REDIS_KEY_PREFIX}:*", count=100)
+                cursor, keys = cast(
+                    tuple[int, list[str]],
+                    r.scan(cursor, match=f"{REDIS_KEY_PREFIX}:*", count=100),
+                )
                 if keys:
-                    deleted += r.delete(*keys)
+                    deleted += cast(int, r.delete(*keys))
                 if cursor == 0:
                     break
             logger.info(f"[Cache] cleared all {deleted} entries (Redis)")
@@ -185,7 +184,10 @@ def cache_stats() -> dict:
             count = 0
             cursor = 0
             while True:
-                cursor, keys = r.scan(cursor, match=f"{REDIS_KEY_PREFIX}:*", count=100)
+                cursor, keys = cast(
+                    tuple[int, list[str]],
+                    r.scan(cursor, match=f"{REDIS_KEY_PREFIX}:*", count=100),
+                )
                 count += len(keys)
                 if cursor == 0:
                     break

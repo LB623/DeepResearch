@@ -1,12 +1,38 @@
 import { useStream } from "@langchain/langgraph-sdk/react";
 import type { Message } from "@langchain/langgraph-sdk";
-import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ProcessedEvent } from "@/components/ActivityTimeline";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
-import { ChatMessagesView } from "@/components/ChatMessagesView";
 import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
+
+const ChatMessagesView = lazy(() =>
+  import("@/components/ChatMessagesView").then((module) => ({
+    default: module.ChatMessagesView,
+  })),
+);
+
+interface StreamSource {
+  label?: string;
+}
+
+interface StreamUpdateEvent {
+  generate_plan?: { plan?: string };
+  generate_query?: { search_query?: string[] };
+  web_research?: { sources_gathered?: StreamSource[] };
+  reflection?: unknown;
+  finalize_answer?: unknown;
+}
 
 export default function App() {
+  const brandIconUrl = `${import.meta.env.BASE_URL}research-mark.svg`;
   const [processedEventsTimeline, setProcessedEventsTimeline] = useState<
     ProcessedEvent[]
   >([]);
@@ -29,12 +55,12 @@ export default function App() {
     apiUrl: import.meta.env.DEV ? "http://localhost:2024" : "",
     assistantId: "agent",
     messagesKey: "messages",
-    onUpdateEvent: (event: any) => {
+    onUpdateEvent: (event: StreamUpdateEvent) => {
       let processedEvent: ProcessedEvent | null = null;
       if (event.generate_plan){
         processedEvent = {
           title: "生成计划",
-          data: event.generate_plan?.plan || "No Plan to generate"
+          data: event.generate_plan?.plan || "暂未生成研究计划"
         }
         setAwaitingPlanConfirmation("confirmed");
         hasFinalizeEventOccurredRef.current = true;
@@ -48,24 +74,28 @@ export default function App() {
         const sources = event.web_research.sources_gathered || [];
         const numSources = sources.length;
         const uniqueLabels = [
-          ...new Set(sources.map((s: any) => s.label).filter(Boolean)),
+          ...new Set(
+            sources
+              .map((source) => source.label)
+              .filter((label): label is string => Boolean(label)),
+          ),
         ];
         const exampleLabels = uniqueLabels.slice(0, 3).join(", ");
         processedEvent = {
           title: "网络研究",
-          data: `Gathered ${numSources} sources. Related to: ${
-            exampleLabels || "N/A"
-          }.`,
+          data: `已汇集 ${numSources} 个来源${
+            exampleLabels ? `，涉及：${exampleLabels}` : ""
+          }。`,
         };
       } else if (event.reflection) {
         processedEvent = {
           title: "反思和分析",
-          data: "Analysing Web Research Results",
+          data: "正在比较检索结果并核对分歧",
         };
       } else if (event.finalize_answer) {
         processedEvent = {
           title: "最终确定答案",
-          data: "Composing and presenting the final answer.",
+          data: "正在整理证据并生成最终报告",
         };
         hasFinalizeEventOccurredRef.current = true;
       }
@@ -76,8 +106,10 @@ export default function App() {
         ]);
       }
     },
-    onError: (error: any) => {
-      setError(error.message);
+    onError: (streamError: unknown) => {
+      setError(
+        streamError instanceof Error ? streamError.message : "研究任务暂时不可用",
+      );
     },
   });
 
@@ -111,7 +143,6 @@ export default function App() {
 
   const handleSubmit = useCallback(
     (submittedInputValue: string, effort: string, model: string) => {
-      console.log('handleSubmit exectued.....', submittedInputValue, effort, model);
       if (!submittedInputValue.trim()) return;
       setProcessedEventsTimeline([]);
       hasFinalizeEventOccurredRef.current = false;
@@ -155,47 +186,96 @@ export default function App() {
           id: Date.now().toString(),
         },
       ];
-      console.log('handleSubmit submit:', newMessages);
       thread.submit({
         messages: newMessages,
         initial_search_query_count: initial_search_query_count,
         max_research_loops: max_research_loops,
         reasoning_model: currentModel,
         plan_status: awaitingPlanConfirmation,
-      } as any);
+      });
     },
-    [thread, savedEffort, savedModel]
+    [awaitingPlanConfirmation, thread, savedEffort, savedModel]
   );
 
   const handleCancel = useCallback(() => {
     thread.stop();
-    window.location.reload();
+    setError(null);
   }, [thread]);
 
   return (
-    <div className="flex h-screen bg-neutral-800 text-neutral-100 font-sans antialiased">
-      <main className="h-full w-full max-w-4xl mx-auto">
-          {thread.messages.length === 0 ? (
+    <div className="app-shell flex h-dvh min-h-[36rem] flex-col overflow-hidden bg-background text-foreground antialiased">
+      <header className="app-header shrink-0 border-b border-border/80 bg-background/90">
+        <div className="mx-auto flex h-[4.25rem] w-full max-w-[1080px] items-center justify-between px-5 md:px-8">
+          <div className="flex items-center gap-3" aria-label="DeepResearch">
+            <img
+              className="brand-mark"
+              src={brandIconUrl}
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span className="text-[0.96rem] font-semibold tracking-[-0.025em]">
+              DeepResearch
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span
+              className={`size-1.5 rounded-full ${
+                error
+                  ? "bg-destructive"
+                  : thread.isLoading
+                    ? "animate-pulse bg-primary"
+                    : "bg-primary"
+              }`}
+              aria-hidden="true"
+            />
+            <span>{error ? "连接中断" : thread.isLoading ? "研究进行中" : "就绪"}</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="min-h-0 w-full flex-1">
+        {error ? (
+          <div className="mx-auto flex h-full max-w-xl items-center justify-center px-6">
+            <section className="w-full rounded-2xl border border-border bg-card p-7 shadow-[0_24px_70px_-42px_rgba(15,28,24,0.35)] md:p-9">
+              <div className="mb-6 flex size-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                <AlertCircle className="size-5" strokeWidth={1.7} />
+              </div>
+              <p className="mb-2 text-xs text-muted-foreground">服务状态</p>
+              <h1 className="text-2xl font-semibold tracking-[-0.035em]">
+                研究连接暂时中断
+              </h1>
+              <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
+                {error}
+              </p>
+              <Button
+                className="mt-7 rounded-lg bg-foreground px-5 text-background hover:bg-foreground/88 active:translate-y-px"
+                onClick={() => setError(null)}
+              >
+                重试
+              </Button>
+            </section>
+          </div>
+        ) : thread.messages.length === 0 ? (
             <WelcomeScreen
               handleSubmit={handleSubmit}
               isLoading={thread.isLoading}
               onCancel={handleCancel}
             />
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center h-full">
-              <div className="flex flex-col items-center justify-center gap-4">
-                <h1 className="text-2xl text-red-400 font-bold">错误：</h1>
-                <p className="text-red-400">{JSON.stringify(error)}</p>
-
-                <Button
-                  variant="destructive"
-                  onClick={() => window.location.reload()}
-                >
-                  重试，或请联系你的系统管理员
-                </Button>
+        ) : (
+          <Suspense
+            fallback={
+              <div className="mx-auto flex h-full max-w-5xl items-center px-6">
+                <div className="w-full space-y-4" aria-label="正在加载研究报告">
+                  <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
+                  <div className="h-8 w-2/3 animate-pulse rounded-lg bg-muted" />
+                  <div className="h-3 w-full animate-pulse rounded-full bg-muted" />
+                  <div className="h-3 w-5/6 animate-pulse rounded-full bg-muted" />
+                </div>
               </div>
-            </div>
-          ) : (
+            }
+          >
             <ChatMessagesView
               messages={thread.messages}
               isLoading={thread.isLoading}
@@ -205,7 +285,8 @@ export default function App() {
               liveActivityEvents={processedEventsTimeline}
               historicalActivities={historicalActivities}
             />
-          )}
+          </Suspense>
+        )}
       </main>
     </div>
   );

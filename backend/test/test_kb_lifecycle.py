@@ -2,9 +2,8 @@
 and mode-switching behaviour.
 """
 
-import os
 import time
-import pytest
+
 from agent.kb.lifecycle import (
     CATEGORY_TTL,
     FRESHNESS_MAX_AGE,
@@ -15,7 +14,6 @@ from agent.kb.lifecycle import (
     should_tag,
     should_warn,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # Mode resolution
@@ -135,7 +133,6 @@ class TestFactStoreFreshnessFilter:
     """Test that query() with max_age_days excludes stale facts."""
 
     def test_filters_expired_fact(self):
-        from agent.kb.fact_store import FactStore
 
         # Build a hit with a fake created_at that is 100 days old
         old_ts = time.time() - 100 * 86400
@@ -152,7 +149,6 @@ class TestFactStoreFreshnessFilter:
         )
 
     def test_keeps_fresh_fact(self):
-        from agent.kb.fact_store import FactStore
 
         recent_ts = time.time() - 5 * 86400
         mock_entity = {
@@ -168,7 +164,6 @@ class TestFactStoreFreshnessFilter:
         )
 
     def test_confidence_decay_over_time(self):
-        from agent.kb.fact_store import FactStore
 
         # 25 days old — passes max_age=30 filter, but old enough for visible decay
         old_ts = time.time() - 25 * 86400
@@ -192,8 +187,9 @@ class TestFactStoreFreshnessFilter:
         )
 
     def _patch_and_assert_filtered(self, entity, max_age_days, expected_count, reason=""):
-        from agent.kb.fact_store import FactStore
         from unittest.mock import MagicMock, patch
+
+        from agent.kb.fact_store import FactStore
 
         with patch("agent.kb.fact_store.MilvusClient") as mc, \
              patch("agent.kb.fact_store.requests.post") as mp:
@@ -216,8 +212,9 @@ class TestFactStoreFreshnessFilter:
             assert len(results) == expected_count, reason
 
     def _patch_and_assert_decay(self, entity, max_age_days, decay, expected_confidence, reason=""):
-        from agent.kb.fact_store import FactStore
         from unittest.mock import MagicMock, patch
+
+        from agent.kb.fact_store import FactStore
 
         with patch("agent.kb.fact_store.MilvusClient") as mc, \
              patch("agent.kb.fact_store.requests.post") as mp:
@@ -292,8 +289,9 @@ class TestFactStoreLifecycleFilter:
         )
 
     def _patch_and_assert_count(self, entity, lifecycle_mode, expected_count, reason=""):
-        from agent.kb.fact_store import FactStore
         from unittest.mock import MagicMock, patch
+
+        from agent.kb.fact_store import FactStore
 
         with patch("agent.kb.fact_store.MilvusClient") as mc, \
              patch("agent.kb.fact_store.requests.post") as mp:
@@ -323,8 +321,9 @@ class TestFactStoreLifecycleFilter:
 class TestFactStoreAddFactsCategory:
     def test_fact_category_stored(self):
         """Verify fact_category is passed through to Milvus insert."""
-        from agent.kb.fact_store import FactStore
         from unittest.mock import MagicMock, patch
+
+        from agent.kb.fact_store import FactStore
 
         with patch("agent.kb.fact_store.MilvusClient") as mc, \
              patch("agent.kb.fact_store.requests.post") as mp:

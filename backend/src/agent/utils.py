@@ -1,9 +1,13 @@
 from typing import Any, Dict, List
-from langchain_core.messages import AnyMessage, AIMessage, HumanMessage
+
+from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from loguru import logger
 
 
-def get_research_topic(messages: List[AnyMessage], ignore_contexts: List[str]=None) -> str:
+def get_research_topic(
+    messages: List[AnyMessage],
+    ignore_contexts: List[str] | None = None,
+) -> str:
     """
     从messages中获取research主题。
     """
@@ -11,7 +15,7 @@ def get_research_topic(messages: List[AnyMessage], ignore_contexts: List[str]=No
     if not ignore_contexts:
         ignore_contexts = []
     if len(messages) == 1:
-        research_topic = messages[-1].content
+        research_topic = str(messages[-1].content)
     else:
         research_topic = ""
         for message in messages:
@@ -32,21 +36,21 @@ def resolve_urls(urls_to_resolve: List[Any], id: int) -> Dict[str, str]:
     创建一个ai搜索url(可能非常长)到一个短url的映射，每个URL有一个唯一的id.
     每个原始URL获得一致的缩写形式，同时保持唯一性.
     """
-    prefix = f"https://search.com/id/"
-    
+    prefix = "https://search.com/id/"
+
     # 检查urls_to_resolve是否为None或空列表
     if urls_to_resolve is None:
-        logger.warning(f"urls_to_resolve为None，返回空映射")
+        logger.warning("urls_to_resolve为None，返回空映射")
         return {}
-    
+
     if not isinstance(urls_to_resolve, list):
         logger.warning(f"urls_to_resolve不是列表类型: {type(urls_to_resolve)}，返回空映射")
         return {}
-    
+
     if len(urls_to_resolve) == 0:
-        logger.warning(f"urls_to_resolve为空列表，返回空映射")
+        logger.warning("urls_to_resolve为空列表，返回空映射")
         return {}
-    
+
     urls = [site["url"] for site in urls_to_resolve if isinstance(site, dict) and "url" in site]
 
     # Create a dictionary that maps each unique URL to its first occurrence index

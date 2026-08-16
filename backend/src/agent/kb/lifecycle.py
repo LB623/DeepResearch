@@ -13,10 +13,10 @@
 from __future__ import annotations
 
 import os
-from enum import Enum
+from enum import StrEnum
 
 
-class KBLifecycleMode(str, Enum):
+class KBLifecycleMode(StrEnum):
     OFF = "off"
     INFORM = "inform"
     FRESHNESS = "freshness"

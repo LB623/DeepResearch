@@ -5,8 +5,9 @@
   - agenerate_response() 异步路径
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from agent.exceptions import LLMUnexpectedError
 
@@ -57,6 +58,25 @@ class TestOpenAICompatibleLLMGenerateResponse:
 
         assert result == "DeepSeek 成立于 2023 年"
         mock_openai_client.chat.completions.create.assert_called_once()
+
+    def test_exposes_last_call_token_usage(self, mock_openai_client):
+        from agent.llm.llm import OpenAICompatibleLLM
+
+        response = MagicMock()
+        response.choices[0].message.content = "ok"
+        response.usage.prompt_tokens = 7
+        response.usage.completion_tokens = 5
+        response.usage.total_tokens = 12
+        mock_openai_client.chat.completions.create.return_value = response
+
+        llm = OpenAICompatibleLLM(model_id="deepseek-v4-flash")
+        llm.generate_response("test")
+
+        assert llm.last_usage == {
+            "prompt_tokens": 7,
+            "completion_tokens": 5,
+            "total_tokens": 12,
+        }
 
     def test_none_content_raises_unexpected_error(self, mock_openai_client, mock_openai_response):
         """API 返回 content=None → 抛 LLMUnexpectedError。"""

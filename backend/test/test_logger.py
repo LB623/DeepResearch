@@ -7,12 +7,9 @@
 
 import io
 import os
-import sys
-import tempfile
 
 import pytest
 from loguru import logger
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # 辅助函数
@@ -128,3 +125,44 @@ class TestLogRequestDetails:
         from agent.logger import log_request_details
 
         log_request_details(b"\x00\x01")
+
+    def test_sensitive_fields_and_message_bodies_are_redacted(self):
+        """日志事件不得暴露凭据或研究正文。"""
+        from agent.logger import log_request_details
+
+        sink = io.StringIO()
+        logger.add(sink, format="{message}")
+
+        log_request_details(
+            {
+                "api_key": "super-secret-key",
+                "nested": {"Authorization": "Bearer private-token"},
+                "messages": [{"content": "confidential research topic"}],
+                "count": 3,
+            }
+        )
+
+        output = sink.getvalue()
+        assert "super-secret-key" not in output
+        assert "private-token" not in output
+        assert "confidential research topic" not in output
+        assert "[REDACTED]" in output
+        assert "'count': 3" in output
+
+    def test_unknown_business_text_fields_are_redacted(self):
+        from agent.logger import log_request_details
+
+        sink = io.StringIO()
+        logger.add(sink, format="{message}")
+        log_request_details(
+            {
+                "question": "confidential-acquisition-plan",
+                "input": {"research_topic": "private roadmap"},
+                "count": 2,
+            }
+        )
+
+        output = sink.getvalue()
+        assert "confidential-acquisition-plan" not in output
+        assert "private roadmap" not in output
+        assert "'count': 2" in output

@@ -1,17 +1,13 @@
 """Async Agent tests — validates astep(), aacquire(), and async retry behavior."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from agent.exceptions import (
     LLMAuthError,
     LLMRateLimitError,
-    MCPAuthError,
-    MCPRateLimitError,
-    TransientError,
-    PermanentError,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # RateLimiter.aacquire()
@@ -38,6 +34,7 @@ class TestAsyncRateLimiter:
     @pytest.mark.asyncio
     async def test_aacquire_after_interval_no_wait(self):
         import time
+
         from agent.base_agent import RateLimiter
 
         rl = RateLimiter(max_qps=2.0)
@@ -124,8 +121,9 @@ class TestAsyncAgent:
 class TestAsyncWebSearchAgent:
     @pytest.mark.asyncio
     async def test_astep_returns_processed_pages(self):
-        from agent.base_agent import WebSearchAgent
         import json
+
+        from agent.base_agent import WebSearchAgent
 
         with patch("agent.base_agent.Application") as mock_app:
             success_resp = MagicMock()
@@ -147,9 +145,10 @@ class TestAsyncWebSearchAgent:
 
     @pytest.mark.asyncio
     async def test_astep_retries_on_rate_limit(self):
-        from agent.base_agent import WebSearchAgent
         import json
+
         from agent import search_cache
+        from agent.base_agent import WebSearchAgent
 
         # 确保缓存已清空，防止 Redis 缓存泄漏导致 mock.call 未被触发
         search_cache.clear_cache()

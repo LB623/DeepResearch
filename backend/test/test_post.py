@@ -1,6 +1,5 @@
 """Tests for Post.extract_pattern — regex extraction utility."""
 
-import pytest
 from agent.post import Post
 
 

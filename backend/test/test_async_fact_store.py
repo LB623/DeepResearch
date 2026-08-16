@@ -1,7 +1,8 @@
 """Async FactStore tests — validates _aembed() async wrapper."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestAsyncFactStore:
@@ -34,8 +35,8 @@ class TestAsyncFactStore:
     @pytest.mark.asyncio
     async def test_aembed_propagates_errors(self):
         """Errors from _embed should propagate through _aembed."""
-        from agent.kb.fact_store import FactStore
         from agent.exceptions import KBEmbeddingFatalError
+        from agent.kb.fact_store import FactStore
 
         with patch("agent.kb.fact_store.MilvusClient") as mock_client_cls, \
              patch("agent.kb.fact_store.requests.post") as mock_post, \

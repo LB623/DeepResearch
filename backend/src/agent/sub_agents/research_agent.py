@@ -13,10 +13,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import time
+from collections.abc import Sequence
+from typing import Any, cast
 
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
@@ -27,7 +30,7 @@ from loguru import logger
 from agent.base_agent import Agent, JsonAgent, WebSearchAgent
 from agent.checkpoint import get_checkpointer
 from agent.configuration import Configuration
-from agent.kb import FactExtractor, FactStore
+from agent.kb import FactExtractor, FactStore, FactStoreProvider
 from agent.kb.lifecycle import (
     FRESHNESS_MAX_AGE,
     KBLifecycleMode,
@@ -37,6 +40,7 @@ from agent.kb.lifecycle import (
     should_tag,
     should_warn,
 )
+from agent.logger import content_metadata
 from agent.post import Post
 from agent.prompts import (
     get_current_date,
@@ -54,20 +58,12 @@ from agent.utils import get_research_topic, resolve_urls
 load_dotenv()
 
 # ── KB 单例（延迟初始化，在代理运行之间共享） ──────────────
-_kb_store: FactStore | None = None
+_kb_store_provider = FactStoreProvider()
 _kb_extractor: FactExtractor | None = None
 
 
 def _get_kb_store() -> FactStore | None:
-    global _kb_store
-    if _kb_store is None:
-        try:
-            _kb_store = FactStore()
-            logger.info("[KB] FactStor 连接到 Milvus")
-        except Exception as exc:
-            logger.warning(f"[KB] FactStore 初始化失败（Milvus 可能已关闭）: {exc}")
-            _kb_store = False  # type: ignore — sentinel
-    return _kb_store if _kb_store is not False else None  # type: ignore[return-value]
+    return _kb_store_provider.get()
 
 
 def _get_kb_extractor() -> FactExtractor:
@@ -79,6 +75,53 @@ def _get_kb_extractor() -> FactExtractor:
 _GENERATE_QUERIES = "generate_queries"
 _WEB_SEARCH = "web_search"
 _CRITIQUE = "critique"
+_BUDGET_GUARD = "budget_guard"
+
+SEARCH_CALL_LIMIT = "search_call_limit"
+ELAPSED_TIME_LIMIT = "elapsed_time_limit"
+NO_PROGRESS = "no_progress"
+TOKEN_LIMIT = "token_limit"
+
+
+def _agent_total_tokens(agent: Agent) -> int:
+    usage = getattr(getattr(agent, "llm", None), "last_usage", {})
+    total = usage.get("total_tokens", 0) if isinstance(usage, dict) else 0
+    return int(total) if isinstance(total, (int, float)) else 0
+
+
+def _budget_stop_reason(
+    state: OverallState,
+    configurable: Configuration,
+) -> str:
+    started_at = state.get("run_started_at") or time.time()
+    if time.time() - started_at >= configurable.max_elapsed_seconds:
+        return ELAPSED_TIME_LIMIT
+    if state.get("no_progress_rounds", 0) >= configurable.max_no_progress_rounds:
+        return NO_PROGRESS
+    if state.get("llm_token_count", 0) >= configurable.max_total_tokens:
+        return TOKEN_LIMIT
+    if state.get("web_search_call_count", 0) >= configurable.max_web_search_calls:
+        return SEARCH_CALL_LIMIT
+    return ""
+
+
+def _budget_guard(state: OverallState, config: RunnableConfig) -> dict:
+    """Stop before external work when the persisted search budget is exhausted."""
+    configurable = Configuration.from_runnable_config(config)
+    started_at = state.get("run_started_at") or time.time()
+    reason = _budget_stop_reason(state, configurable)
+    if reason:
+        return {
+            "run_started_at": started_at,
+            "budget_stop_reason": reason,
+        }
+    return {"run_started_at": started_at}
+
+
+def _route_after_budget_guard(state: OverallState):
+    if state.get("budget_stop_reason"):
+        return END
+    return _GENERATE_QUERIES
 
 
 def _query_dedupe_enabled() -> bool:
@@ -101,8 +144,8 @@ def _normalize_query(query: object) -> str:
 
 
 def _dedupe_queries(
-    queries: list[object],
-    executed_queries: list[object] | None = None,
+    queries: Sequence[object],
+    executed_queries: Sequence[object] | None = None,
 ) -> tuple[list[str], list[str]]:
     """Deduplicate queries while preserving order.
 
@@ -203,24 +246,63 @@ def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
         result.query,
         state.get("executed_queries", []),
     )
+    requested_count = max(
+        0,
+        int(
+            state.get(
+                "initial_search_query_count",
+                configurable.number_of_initial_queries,
+            )
+        ),
+    )
+    queries = queries[:requested_count]
     logger.info(
         f"[ResearchAgent] 生成 {len(result.query)} 个查询，"
-        f"保留 {len(queries)} 个，跳过重复 {len(skipped)} 个: {queries}"
+        f"保留 {len(queries)} 个，跳过重复 {len(skipped)} 个"
     )
-    return {
+    llm_token_delta = _agent_total_tokens(agent)
+    updates = {
         "search_query": queries,
         "generated_queries": queries,
         "skipped_duplicate_queries": skipped,
         "initial_search_query_count": state["initial_search_query_count"],
+        "llm_token_count": llm_token_delta,
     }
+    reason = _budget_stop_reason(
+        {
+            **state,
+            "llm_token_count": state.get("llm_token_count", 0) + llm_token_delta,
+        },
+        configurable,
+    )
+    if reason:
+        updates["budget_stop_reason"] = reason
+    return updates
 
 
-def _fan_out_to_web_search(state: QueryGenerationState) -> list[Send]:
+def _fan_out_to_web_search(
+    state: QueryGenerationState,
+    config: RunnableConfig,
+) -> list[Send] | str:
     """Fan-out: 每个查询调用一次 web_search。"""
+    configurable = Configuration.from_runnable_config(config)
+    if state.get("budget_stop_reason") or _budget_stop_reason(
+        cast(OverallState, state),
+        configurable,
+    ):
+        return END
     queries = state.get("generated_queries") or state.get("search_query", [])
     queries, skipped = _dedupe_queries(queries, state.get("executed_queries", []))
+    remaining = max(
+        0,
+        configurable.max_web_search_calls
+        - state.get("web_search_call_count", 0),
+    )
+    queries = queries[:remaining]
     if skipped:
-        logger.info(f"[ResearchAgent] fan-out 跳过 {len(skipped)} 个重复查询: {skipped}")
+        logger.info(f"[ResearchAgent] fan-out 跳过 {len(skipped)} 个重复查询")
+    if not queries:
+        return END
     return [
         Send(_WEB_SEARCH, {"search_query": q, "id": int(idx)})
         for idx, q in enumerate(queries)
@@ -232,13 +314,18 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     configurable = Configuration.from_runnable_config(config)
     searcher = WebSearchAgent()
     response = searcher.step(prompt=state["search_query"], count=10)
+    result: dict[str, Any]
 
     if not response:
-        logger.error(f"[ResearchAgent] 搜索结果为空： '{state['search_query']}'")
+        logger.error(
+            "[ResearchAgent] 搜索结果为空: {}",
+            content_metadata(state["search_query"], label="query"),
+        )
         result = {
             "sources_gathered": [],
             "executed_queries": [state["search_query"]],
             "web_search_result": [f"未找到关于 '{state['search_query']}' 的搜索结果"],
+            "web_search_call_count": 1,
         }
         if not _query_dedupe_enabled():
             result["search_query"] = [state["search_query"]]
@@ -264,15 +351,23 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
         web_search_result=raw_results,
     )
     summary = Post.extract_pattern(summary, pattern="text")
-    logger.info(f"[ResearchAgent] 已搜索： '{state['search_query']}'")
+    logger.info(
+        "[ResearchAgent] 搜索完成: {}",
+        content_metadata(state["search_query"], label="query"),
+    )
 
     # ── KB/知识库 存储 ────────────────────────────────────────────────
+    extractor_tokens = 0
     try:
         store = _get_kb_store()
         if store:
             extractor = _get_kb_extractor()
-            topic = get_research_topic(state.get("messages", []))
+            topic = state["search_query"]
             facts = extractor.extract(summary, research_topic=topic)
+            extractor_tokens = max(
+                0,
+                int(getattr(extractor, "last_token_count", 0) or 0),
+            )
             if facts:
                 # 将短链接还原为真实 URL，避免 KB 中存储不可解析的过期引用
                 short2long = {v: k for k, v in long2short.items()}
@@ -281,12 +376,17 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
                     f["research_topic"] = topic
                 store.add_facts(facts)
     except Exception as exc:
-        logger.warning(f"[KB] 跳过存储: {exc}")
+        logger.warning(
+            "[KB] skip storage error_type={}",
+            type(exc).__name__,
+        )
 
     result = {
         "sources_gathered": sources,
         "executed_queries": [state["search_query"]],
         "web_search_result": [summary],
+        "web_search_call_count": 1,
+        "llm_token_count": _agent_total_tokens(agent) + extractor_tokens,
     }
     if not _query_dedupe_enabled():
         result["search_query"] = [state["search_query"]]
@@ -309,33 +409,82 @@ def _critique(state: OverallState, config: RunnableConfig) -> dict:
         summaries="\n\n---\n\n".join(state["web_search_result"]),
         research_proposal=state.get("plan", ""),
     )
+    llm_token_delta = _agent_total_tokens(agent)
     # 防护：LLM 调用全部失败时，step() 返回空字符串
     if not isinstance(result, Reflection):
         logger.warning(
             f"[ResearchAgent] 评估模型调用失败（返回类型={type(result).__name__}），"
             f"视为信息不足，继续搜索"
         )
-        return {
+        updates: dict[str, Any] = {
             "is_sufficient": False,
             "knowledge_gap": "评估模型暂时不可用，需要继续搜索以补充信息",
             "follow_up_queries": [],
             "research_loop_count": state["research_loop_count"],
             "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
             "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
+            "llm_token_count": llm_token_delta,
         }
+        reason = _budget_stop_reason(
+            {
+                **state,
+                "llm_token_count": state.get("llm_token_count", 0) + llm_token_delta,
+            },
+            configurable,
+        )
+        if reason:
+            updates["budget_stop_reason"] = reason
+        return updates
 
     logger.info(
         f"[ResearchAgent] 评估是否充足结果：{result.is_sufficient}, "
-        f"gap='{result.knowledge_gap[:80]}...'"
+        f"{content_metadata(result.knowledge_gap, label='gap')}"
     )
-    return {
+    evidence_payload = {
+        "sources": state.get("sources_gathered", []),
+        "summaries": [
+            summary
+            for summary in state.get("web_search_result", [])
+            if not str(summary).startswith("未找到关于 '")
+        ],
+    }
+    evidence_fingerprint = hashlib.sha256(
+        json.dumps(
+            evidence_payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+        ).encode(),
+    ).hexdigest()
+    previous_fingerprint = state.get("evidence_fingerprint", "")
+    no_progress_rounds = (
+        state.get("no_progress_rounds", 0) + 1
+        if previous_fingerprint == evidence_fingerprint
+        else 0
+    )
+    updates = {
         "is_sufficient": result.is_sufficient,
         "knowledge_gap": result.knowledge_gap,
         "follow_up_queries": result.follow_up_queries,
         "research_loop_count": state["research_loop_count"],
         "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
         "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
+        "no_progress_rounds": no_progress_rounds,
+        "evidence_fingerprint": evidence_fingerprint,
+        "llm_token_count": llm_token_delta,
     }
+    candidate_state = cast(
+        OverallState,
+        {
+            **dict(state),
+            **updates,
+            "llm_token_count": state.get("llm_token_count", 0) + llm_token_delta,
+        },
+    )
+    reason = _budget_stop_reason(candidate_state, configurable)
+    if reason:
+        updates["budget_stop_reason"] = reason
+    return updates
 
 
 def _route_after_critique(state: OverallState, config: RunnableConfig):
@@ -343,7 +492,11 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
     max_loops = state.get("max_research_loops") or configurable.max_research_loops
 
-    if state["is_sufficient"] or state["research_loop_count"] >= max_loops:
+    if (
+        state["is_sufficient"]
+        or state["research_loop_count"] >= max_loops
+        or state.get("budget_stop_reason")
+    ):
         logger.info(f"[ResearchAgent] 退出循环，已执行 {state['research_loop_count']} 次")
         return END  # ← exits sub-graph, parent takes over
     else:
@@ -352,8 +505,16 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
             state.get("follow_up_queries", []),
             state.get("executed_queries", []),
         )
+        remaining = max(
+            0,
+            configurable.max_web_search_calls
+            - state.get("web_search_call_count", 0),
+        )
+        queries = queries[:remaining]
         if skipped:
             logger.info(f"[ResearchAgent] 跳过 {len(skipped)} 个已执行 follow-up 查询: {skipped}")
+        if not queries:
+            return END
         return [
             Send(_WEB_SEARCH,
                  {"search_query": q, "id": state["number_of_ran_queries"] + int(idx)})
@@ -361,14 +522,24 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
         ]
 
 
-_builder = StateGraph(OverallState, config_schema=Configuration)
+_builder = StateGraph(OverallState, context_schema=Configuration)
 
+_builder.add_node(_BUDGET_GUARD, _budget_guard)
 _builder.add_node(_GENERATE_QUERIES, _generate_queries)
 _builder.add_node(_WEB_SEARCH, _web_search)
 _builder.add_node(_CRITIQUE, _critique)
 
-_builder.add_edge(START, _GENERATE_QUERIES)
-_builder.add_conditional_edges(_GENERATE_QUERIES, _fan_out_to_web_search, [_WEB_SEARCH])
+_builder.add_edge(START, _BUDGET_GUARD)
+_builder.add_conditional_edges(
+    _BUDGET_GUARD,
+    _route_after_budget_guard,
+    [_GENERATE_QUERIES, END],
+)
+_builder.add_conditional_edges(
+    _GENERATE_QUERIES,
+    _fan_out_to_web_search,
+    [_WEB_SEARCH, END],
+)
 _builder.add_edge(_WEB_SEARCH, _CRITIQUE)
 _builder.add_conditional_edges(_CRITIQUE, _route_after_critique, [_WEB_SEARCH, END])
 

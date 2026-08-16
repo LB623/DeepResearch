@@ -44,14 +44,19 @@ def get_usage_totals() -> dict:
     return dict(_USAGE_TOTALS)
 
 
-def _record_usage(response, prompt: str) -> None:
+def _record_usage(response, prompt: str) -> dict[str, int]:
     """Record token usage when the provider returns it."""
+    call_usage = {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+    }
     _USAGE_TOTALS["calls"] += 1
     _USAGE_TOTALS["prompt_chars"] += len(prompt or "")
 
     usage = getattr(response, "usage", None)
     if not usage:
-        return
+        return call_usage
 
     for source_attr, target_key in (
         ("prompt_tokens", "prompt_tokens"),
@@ -59,8 +64,10 @@ def _record_usage(response, prompt: str) -> None:
         ("total_tokens", "total_tokens"),
     ):
         value = getattr(usage, source_attr, None)
-        if value is not None:
+        if isinstance(value, (int, float)):
+            call_usage[target_key] = int(value)
             _USAGE_TOTALS[target_key] += int(value)
+    return call_usage
 
 
 def _resolve_credentials(model_id: str) -> tuple[str | None, str | None]:
@@ -104,7 +111,7 @@ def _translate_openai_error(exc: APIError) -> Exception:
     # status_code 是 OpenAI SDK 异常的 property，部分子类（如 APIConnectionError）
     # 没有 response 属性，status_code 访问可能失败，需要安全读取
     try:
-        status_code = exc.status_code
+        status_code = getattr(exc, "status_code", None)
     except Exception:
         status_code = None
 
@@ -131,6 +138,11 @@ class OpenAICompatibleLLM:
 
     def __init__(self, model_id=""):
         self.model_id = model_id
+        self.last_usage = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
 
     def generate_response(self, query):
         api_key, base_url = _resolve_credentials(self.model_id)
@@ -156,7 +168,7 @@ class OpenAICompatibleLLM:
         except APIError as e:
             raise _translate_openai_error(e) from e
 
-        _record_usage(response, query)
+        self.last_usage = _record_usage(response, query)
         content = response.choices[0].message.content
         if content is None:
             raise LLMUnexpectedError("LLM returned empty content (None)")
@@ -187,7 +199,7 @@ class OpenAICompatibleLLM:
         except APIError as e:
             raise _translate_openai_error(e) from e
 
-        _record_usage(response, query)
+        self.last_usage = _record_usage(response, query)
         content = response.choices[0].message.content
         if content is None:
             raise LLMUnexpectedError("LLM returned empty content (None)")

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
+import operator
 from dataclasses import dataclass, field
 from typing import TypedDict
 
 from langgraph.graph import add_messages
 from typing_extensions import Annotated
-
-
-import operator
 
 
 class OverallState(TypedDict):
@@ -41,6 +39,13 @@ class OverallState(TypedDict):
     max_revisions: int
     # KB lifecycle — set by Plan phase
     fresh_level: str     # "high" | "medium" | "low"
+    # Per-run cost budget
+    run_started_at: float
+    web_search_call_count: Annotated[int, operator.add]
+    llm_token_count: Annotated[int, operator.add]
+    no_progress_rounds: int
+    evidence_fingerprint: str
+    budget_stop_reason: str
 
 
 class ReflectionState(TypedDict):
@@ -62,11 +67,14 @@ class QueryGenerationState(TypedDict):
     generated_queries: list[str]
     executed_queries: list[str]
     skipped_duplicate_queries: list[str]
+    web_search_call_count: int
+    llm_token_count: int
+    budget_stop_reason: str
 
 
 class WebSearchState(TypedDict):
     search_query: str
-    id: str
+    id: int
 
 class PlanState(TypedDict):
     plan: str
@@ -74,4 +82,4 @@ class PlanState(TypedDict):
 
 @dataclass(kw_only=True)
 class SearchStateOutput:
-    running_summary: str = field(default=None)  # Final report
+    running_summary: str | None = field(default=None)  # Final report

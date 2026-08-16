@@ -1,11 +1,18 @@
 """Tests for search cache: get_cached, set_cached, clear_cache, cache_stats."""
 
-import time
+import io
 import threading
+
 import pytest
+from loguru import logger
+
 from agent.search_cache import (
-    get_cached, set_cached, clear_cache, cache_stats,
-    _fallback_cache, _fallback_lock,
+    _fallback_cache,
+    _fallback_lock,
+    cache_stats,
+    clear_cache,
+    get_cached,
+    set_cached,
 )
 
 
@@ -34,6 +41,29 @@ class TestCacheMiss:
 
 
 class TestCacheHit:
+    def test_cache_logs_do_not_include_query_or_result_content(self, monkeypatch):
+        from agent import search_cache
+
+        monkeypatch.setattr(search_cache, "_redis_available", False)
+        search_cache._redis_client = None
+        sink = io.StringIO()
+        handler_id = logger.add(sink, format="{message}")
+        try:
+            set_cached(
+                "confidential acquisition query",
+                count=10,
+                result=[{"title": "private result title"}],
+            )
+            get_cached("confidential acquisition query", count=10)
+        finally:
+            logger.remove(handler_id)
+
+        output = sink.getvalue()
+        assert "confidential acquisition query" not in output
+        assert "private result title" not in output
+        assert "query_id=" in output
+        assert "query_chars=30" in output
+
     def test_set_and_get(self):
         data = [{"title": "Result 1", "snippet": "S1"}, {"title": "Result 2", "snippet": "S2"}]
         set_cached("AI芯片市场", count=10, result=data)

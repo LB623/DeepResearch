@@ -12,20 +12,16 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import re
-import sys
-import textwrap
 import uuid
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 from loguru import logger
 
-from agent.configuration import Configuration
+from agent.budget import GLOBAL_BUDGET_STOP_REASONS
 from agent.graph import graph
 from eval.judge import (
     CitationScore,
@@ -95,6 +91,19 @@ def _stable_unique_queries(values: list[object]) -> list[str]:
     return unique
 
 
+def _budget_resume_state(state: dict) -> dict:
+    """Carry persisted task-budget fields across manual HITL eval phases."""
+    keys = (
+        "run_started_at",
+        "web_search_call_count",
+        "llm_token_count",
+        "no_progress_rounds",
+        "evidence_fingerprint",
+        "budget_stop_reason",
+    )
+    return {key: state[key] for key in keys if key in state}
+
+
 # ============================================================
 # 数据类型
 # ============================================================
@@ -115,6 +124,9 @@ class E2EResult:
     report: str = ""
     sources: str = ""  # JSON 序列化的 sources_gathered
     score: E2EScore | None = None
+    llm_token_count: int = 0
+    judge_token_count: int = 0
+    budget_stop_reason: str = ""
     error: str | None = None
 
 
@@ -166,24 +178,47 @@ class Evaluator:
         results: list[E2EResult] = []
         for i, cfg in enumerate(topics):
             logger.info(f"端到端 [{i + 1}/{len(topics)}] 主题={cfg.topic[:80]}...")
+            result: E2EResult | None = None
             try:
                 result = self._invoke_agent(cfg)
                 if result.error:
                     results.append(result)
                     continue
+                if result.budget_stop_reason in GLOBAL_BUDGET_STOP_REASONS:
+                    result.error = (
+                        "Budget exhausted before Judge: "
+                        f"{result.budget_stop_reason}"
+                    )
+                    results.append(result)
+                    continue
 
-                result.score = self.judge.evaluate_report(
-                    research_topic=cfg.topic,
-                    search_sources=result.sources,
-                    report=result.report,
+                judge_tokens_before = int(
+                    getattr(self.judge, "total_tokens", 0)
                 )
+                try:
+                    result.score = self.judge.evaluate_report(
+                        research_topic=cfg.topic,
+                        search_sources=result.sources,
+                        report=result.report,
+                    )
+                finally:
+                    judge_tokens_after = int(
+                        getattr(self.judge, "total_tokens", judge_tokens_before)
+                    )
+                    judge_delta = max(0, judge_tokens_after - judge_tokens_before)
+                    result.judge_token_count += judge_delta
+                    result.llm_token_count += judge_delta
                 results.append(result)
                 logger.info(
                     f"  总评分={result.score.overall_score if result.score else '无'}"
                 )
             except Exception as exc:
                 logger.error(f"端到端评估失败 '{cfg.topic[:60]}': {exc}")
-                results.append(E2EResult(topic=cfg.topic, error=str(exc)))
+                error = f"{type(exc).__name__}: {exc}"
+                if result is None:
+                    result = E2EResult(topic=cfg.topic)
+                result.error = error
+                results.append(result)
         return results
 
     # --------------------------------------------------------
@@ -239,6 +274,7 @@ class Evaluator:
             try:
                 phase2_state = self._invoke_graph(
                     {
+                        **_budget_resume_state(phase1_state),
                         "messages": [
                             HumanMessage(content=cfg.topic),
                             *(phase1_state.get("plan_messages", [])),
@@ -261,6 +297,7 @@ class Evaluator:
             # ---- 阶段 2：发送用户反馈 ----
             phase2_state = self._invoke_graph(
                 {
+                    **_budget_resume_state(phase1_state),
                     "messages": [
                         HumanMessage(content=cfg.topic),
                         *(phase1_state.get("plan_messages", [])),
@@ -285,6 +322,7 @@ class Evaluator:
                 try:
                     phase2_state = self._invoke_graph(
                         {
+                            **_budget_resume_state(phase2_state),
                             "messages": [
                                 HumanMessage(content=cfg.topic),
                                 *(phase2_state.get("plan_messages", [])),
@@ -308,13 +346,20 @@ class Evaluator:
                 actual_behavior = "llm_proceed"
                 plan_b = ""
 
-        # 提取最终报告
+        # 提取最终报告。若全局预算在写作中断，优先保留 Writer 已生成的
+        # 最新草稿，避免误把较早的计划消息当作报告。
         messages = phase2_state.get("messages", [])
         report = ""
-        for msg in reversed(messages):
-            if isinstance(msg, AIMessage) and msg.content and len(msg.content) > 200:
-                report = msg.content
-                break
+        latest_draft = str(phase2_state.get("report_draft", "") or "")
+        if phase2_state.get("budget_stop_reason") in GLOBAL_BUDGET_STOP_REASONS:
+            report = latest_draft
+        if not report:
+            for msg in reversed(messages):
+                if isinstance(msg, AIMessage) and msg.content and len(msg.content) > 200:
+                    report = msg.content
+                    break
+        if not report:
+            report = latest_draft
 
         sources = json.dumps(
             phase2_state.get("sources_gathered", []),
@@ -340,10 +385,15 @@ class Evaluator:
         """
         try:
             result = self._invoke_agent_with_feedback(cfg)
+            final_state = result.get("phase2_state", {})
             return E2EResult(
                 topic=cfg.topic,
                 report=result["report"],
                 sources=result["sources"],
+                llm_token_count=int(final_state.get("llm_token_count", 0)),
+                budget_stop_reason=str(
+                    final_state.get("budget_stop_reason", "")
+                ),
             )
         except Exception as exc:
             logger.error(f"Agent 调用失败: {exc}")
@@ -497,7 +547,7 @@ def format_eval_report(report: EvalReport) -> str:
                 lines.append(f"    计划:             {r.plan_score.overall_score:.1f}/5")
             if r.plan_reflection_score:
                 prs = r.plan_reflection_score
-                lines.append(f"    计划反思:")
+                lines.append("    计划反思:")
                 lines.append(f"      意图识别:       {prs.intent_recognition.score}/5")
                 lines.append(f"      反馈吸收:       {prs.feedback_incorporation.score}/5")
                 lines.append(f"      总评分:         {prs.overall_score:.1f}/5  (行为: {prs.actual_behavior})")

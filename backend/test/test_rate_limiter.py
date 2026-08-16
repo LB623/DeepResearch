@@ -1,8 +1,8 @@
 """Tests for RateLimiter — token bucket rate limiter with thread safety."""
 
-import time
 import threading
-import pytest
+import time
+
 from agent.base_agent import RateLimiter, get_web_search_rate_limiter
 
 

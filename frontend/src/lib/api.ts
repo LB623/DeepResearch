@@ -21,7 +21,9 @@ export async function fetchAvailableModels(): Promise<ModelConfig[]> {
     const data = await response.json();
     return data.models || [];
   } catch (error) {
-    console.error("获取模型列表失败:", error);
+    if (import.meta.env.DEV) {
+      console.warn("模型服务暂不可用，已切换到本地默认列表。", error);
+    }
     // 返回默认模型列表作为降级方案
     return [
       { model_id: "qwen3.6-flash", display_name: "Qwen-Flash", icon: "Zap", icon_color: "yellow-400" },

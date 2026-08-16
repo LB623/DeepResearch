@@ -1,5 +1,6 @@
 """Integration tests for ResearchAgent sub-graph — nodes, routing, and graph topology."""
 
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -29,9 +30,141 @@ class TestResearchAgentGraphTopology:
 
     def test_required_nodes_exist(self):
         nodes = list(research_agent_graph.nodes.keys())
+        assert "budget_guard" in nodes
         assert _GENERATE_QUERIES in nodes
         assert _WEB_SEARCH in nodes
         assert _CRITIQUE in nodes
+
+
+class TestResearchAgentBudgets:
+    def test_initial_query_count_is_a_hard_execution_limit(self, sample_state):
+        from agent.tools_and_schemas import Reflection, SearchQueryList
+
+        sample_state["initial_search_query_count"] = 1
+        sample_state["max_research_loops"] = 1
+        web_queries: list[str] = []
+
+        class FakeJsonBoundary:
+            def __init__(self, model_id=None, keys=None):
+                self.keys = keys
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            def step(self, **kwargs):
+                if self.keys is SearchQueryList:
+                    return SearchQueryList(
+                        query=["q1", "q2", "q3", "q4", "q5"],
+                        rationale="boundary returned too many candidates",
+                    )
+                return Reflection(
+                    is_sufficient=True,
+                    knowledge_gap="",
+                    follow_up_queries=[],
+                )
+
+        class FakeSummaryBoundary:
+            def __init__(self, model_id=None):
+                self.llm = MagicMock(last_usage={"total_tokens": 10})
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            def step(self, **kwargs):
+                return "```text\nsummary\n```"
+
+        class FakeSearchBoundary:
+            def step(self, prompt, count=10):
+                web_queries.append(prompt)
+                return [
+                    {
+                        "title": prompt,
+                        "snippet": "evidence",
+                        "url": f"https://example.com/{prompt}",
+                    }
+                ]
+
+        with patch(
+            "agent.sub_agents.research_agent._get_kb_store",
+            return_value=None,
+        ), patch(
+            "agent.sub_agents.research_agent.JsonAgent",
+            FakeJsonBoundary,
+        ), patch(
+            "agent.sub_agents.research_agent.Agent",
+            FakeSummaryBoundary,
+        ), patch(
+            "agent.sub_agents.research_agent.WebSearchAgent",
+            FakeSearchBoundary,
+        ):
+            result = research_agent_graph.invoke(
+                sample_state,
+                config={"configurable": {"max_web_search_calls": 20}},
+            )
+
+        assert web_queries == ["q1"]
+        assert result["executed_queries"] == ["q1"]
+        assert result["web_search_call_count"] == 1
+
+    def test_search_call_limit_stops_compiled_graph(self, sample_state):
+        sample_state["web_search_call_count"] = 20
+
+        result = research_agent_graph.invoke(
+            sample_state,
+            config={"configurable": {"max_web_search_calls": 20}},
+        )
+
+        assert result["budget_stop_reason"] == "search_call_limit"
+        assert result["web_search_call_count"] == 20
+
+    def test_elapsed_time_limit_stops_compiled_graph(self, sample_state):
+        sample_state["run_started_at"] = time.time() - 901
+        sample_state["web_search_call_count"] = 0
+
+        result = research_agent_graph.invoke(
+            sample_state,
+            config={
+                "configurable": {
+                    "max_elapsed_seconds": 900,
+                    "max_web_search_calls": 20,
+                }
+            },
+        )
+
+        assert result["budget_stop_reason"] == "elapsed_time_limit"
+
+    def test_no_progress_limit_stops_compiled_graph(self, sample_state):
+        sample_state["no_progress_rounds"] = 2
+        sample_state["web_search_call_count"] = 0
+
+        result = research_agent_graph.invoke(
+            sample_state,
+            config={
+                "configurable": {
+                    "max_no_progress_rounds": 2,
+                    "max_web_search_calls": 20,
+                }
+            },
+        )
+
+        assert result["budget_stop_reason"] == "no_progress"
+
+    def test_token_limit_stops_compiled_graph(self, sample_state):
+        sample_state["llm_token_count"] = 120_000
+        sample_state["web_search_call_count"] = 0
+
+        result = research_agent_graph.invoke(
+            sample_state,
+            config={
+                "configurable": {
+                    "max_total_tokens": 120_000,
+                    "max_web_search_calls": 20,
+                }
+            },
+        )
+
+        assert result["budget_stop_reason"] == "token_limit"
+        assert result["llm_token_count"] == 120_000
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -125,7 +258,7 @@ class TestQueryDedupe:
 class TestFanOutToWebSearch:
     def test_fan_out_creates_one_send_per_query(self):
         state = {"search_query": ["q1", "q2", "q3"]}
-        sends = _fan_out_to_web_search(state)
+        sends = _fan_out_to_web_search(state, {"configurable": {}})
         assert len(sends) == 3
         assert sends[0].node == _WEB_SEARCH
         assert sends[0].arg["search_query"] == "q1"
@@ -135,8 +268,8 @@ class TestFanOutToWebSearch:
 
     def test_fan_out_empty_queries(self):
         state = {"search_query": []}
-        sends = _fan_out_to_web_search(state)
-        assert len(sends) == 0
+        sends = _fan_out_to_web_search(state, {"configurable": {}})
+        assert sends == "__end__"
 
     def test_fan_out_uses_generated_queries_and_skips_executed(self, monkeypatch):
         monkeypatch.setenv("QUERY_DEDUPE_ENABLED", "1")
@@ -145,7 +278,7 @@ class TestFanOutToWebSearch:
             "generated_queries": ["q1", "q2", "q1"],
             "executed_queries": ["q2"],
         }
-        sends = _fan_out_to_web_search(state)
+        sends = _fan_out_to_web_search(state, {"configurable": {}})
         assert [send.arg["search_query"] for send in sends] == ["q1"]
 
 
@@ -237,6 +370,42 @@ class TestCritique:
             assert result["is_sufficient"] is False
             assert len(result["follow_up_queries"]) == 2
 
+    def test_empty_search_rounds_count_as_no_progress(self, sample_state):
+        from agent.tools_and_schemas import Reflection
+
+        sample_state.update(
+            {
+                "executed_queries": ["q1"],
+                "sources_gathered": [],
+                "web_search_result": ["未找到关于 'q1' 的搜索结果"],
+                "evidence_fingerprint": "",
+                "no_progress_rounds": 0,
+            }
+        )
+        with patch("agent.sub_agents.research_agent.JsonAgent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.step.return_value = Reflection(
+                is_sufficient=False,
+                knowledge_gap="no evidence",
+                follow_up_queries=["q2"],
+            )
+            mock_agent_cls.return_value = mock_agent
+
+            first = _critique(sample_state, {"configurable": {}})
+            second_state = {
+                **sample_state,
+                **first,
+                "executed_queries": ["q1", "q2"],
+                "web_search_result": [
+                    "未找到关于 'q1' 的搜索结果",
+                    "未找到关于 'q2' 的搜索结果",
+                ],
+            }
+            second = _critique(second_state, {"configurable": {}})
+
+        assert first["no_progress_rounds"] == 0
+        assert second["no_progress_rounds"] == 1
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # _route_after_critique routing (sync — pure routing)
@@ -289,6 +458,25 @@ class TestRouteAfterCritique:
         assert isinstance(result, list)
         assert [send.arg["search_query"] for send in result] == ["new query 1"]
 
+    def test_followups_are_truncated_to_remaining_search_budget(self, sample_state):
+        state = {
+            **sample_state,
+            "is_sufficient": False,
+            "research_loop_count": 1,
+            "max_research_loops": 3,
+            "follow_up_queries": ["q1", "q2", "q3"],
+            "number_of_ran_queries": 19,
+            "web_search_call_count": 19,
+        }
+
+        result = _route_after_critique(
+            state,
+            {"configurable": {"max_web_search_calls": 20}},
+        )
+
+        assert isinstance(result, list)
+        assert [send.arg["search_query"] for send in result] == ["q1"]
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # TestWebSearchKBStorage — KB 存储路径覆盖
@@ -319,6 +507,7 @@ class TestWebSearchKBStorage:
             # 模拟 LLM 汇总
             mock_agent = MagicMock()
             mock_agent.step = MagicMock(return_value="汇总：AI芯片市场增长强劲")
+            mock_agent.llm.last_usage = {"total_tokens": 11}
             mock_agent_cls.return_value = mock_agent
 
             # 模拟 KB store 可用
@@ -330,6 +519,7 @@ class TestWebSearchKBStorage:
             mock_extractor.extract.return_value = [
                 {"fact": "AI芯片市场500亿美元", "source_url": "https://a.com", "confidence": 0.9}
             ]
+            mock_extractor.last_token_count = 7
             mock_get_extractor.return_value = mock_extractor
 
             state = {
@@ -348,6 +538,7 @@ class TestWebSearchKBStorage:
 
             # KB store 被调用
             mock_store.add_facts.assert_called_once()
+            assert result["llm_token_count"] == 18
 
     def test_kb_store_none_skips_silently(self, sample_state):
         """KB store 为 None → 静默跳过。"""

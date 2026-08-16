@@ -5,13 +5,9 @@
   - log_requests HTTP 中间件（GET/POST/异常）
 """
 
-import json
+
 import pytest
-
-from unittest.mock import MagicMock, patch
-
 from fastapi.testclient import TestClient
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # TestClient fixture — 避免 app.py 的模块级 setup_logger() 副作用
@@ -82,31 +78,25 @@ class TestApiModels:
         assert len(data["models"]) > 0
 
     def test_load_models_raises_generic_exception(self, monkeypatch, client):
-        """端点异常路径测试。
+        """端点异常只返回稳定错误码，不泄露内部异常。"""
+        import agent.app
 
-        注意：load_available_models_from_env 内部 catch 了所有异常并 fallback，
-        端点自身的 try/except ValueError/Exception 实际上不可达。
-        改为 monkeypatch 端点内部的 JSON 序列化让它抛异常。
-        """
-        # 模拟一个会触发异常的场景：构造一个非法的 model 对象
-        # 实际中 ModelConfig 在 load 时就验证过了，这里验证端点有 catch 保护
-        import agent.configuration
-        original = agent.configuration.load_available_models_from_env
-        def _bad_models():
-            """返回包含非法 model_id 的模型（None 会导致列表推导崩）。"""
-            m = MagicMock()
-            m.model_id = None
-            m.display_name = None
-            m.icon = None
-            m.icon_color = None
-            return [m]
+        def _raise_internal_error():
+            raise RuntimeError("internal-path /private/service")
 
         monkeypatch.setattr(
-            agent.configuration, "load_available_models_from_env", _bad_models
+            agent.app, "load_available_models_from_env", _raise_internal_error
         )
         response = client.get("/api/models")
-        # 链接到结果不崩就是通过——中间件和端点都没有挂
-        assert response.status_code in (200, 500)
+
+        assert response.status_code == 500
+        assert response.json() == {
+            "error": {
+                "code": "MODEL_LIST_UNAVAILABLE",
+                "message": "模型列表暂时不可用",
+            }
+        }
+        assert "internal-path" not in response.text
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -141,3 +131,44 @@ class TestRequestLogging:
         # 实际上直接请求不存在的路径也会得到 404
         response = client.get("/nonexistent-path")
         assert response.status_code == 404  # 正常返回 404，中间件没崩
+
+    def test_request_body_is_not_logged_by_default(self, monkeypatch, client):
+        """默认 HTTP 日志只记录元数据，不记录请求正文。"""
+        import io
+
+        from loguru import logger
+
+        monkeypatch.delenv("LOG_REQUEST_BODY", raising=False)
+        sink = io.StringIO()
+        handler_id = logger.add(sink, format="{message}")
+        try:
+            response = client.post(
+                "/api/models",
+                json={
+                    "api_key": "request-secret-key",
+                    "messages": [{"content": "private research request"}],
+                },
+            )
+        finally:
+            logger.remove(handler_id)
+
+        assert response.status_code == 405
+        output = sink.getvalue()
+        assert "request-secret-key" not in output
+        assert "private research request" not in output
+
+    def test_invalid_request_id_is_replaced(self, client):
+        supplied = "safe\nFORGED=1"
+        response = client.get("/api/models", headers={"X-Request-ID": supplied})
+
+        returned = response.headers["X-Request-ID"]
+        assert returned != supplied
+        assert "\n" not in returned
+
+    def test_valid_request_id_is_preserved(self, client):
+        response = client.get(
+            "/api/models",
+            headers={"X-Request-ID": "request_123.test"},
+        )
+
+        assert response.headers["X-Request-ID"] == "request_123.test"

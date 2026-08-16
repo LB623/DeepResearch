@@ -1,9 +1,10 @@
 """Integration tests for the main orchestrator graph — plan phase and routing."""
 
-import pytest
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
-from langchain_core.messages import HumanMessage, AIMessage
 
+import pytest
+from langchain_core.messages import HumanMessage
 
 # ═══════════════════════════════════════════════════════════════════════
 # Graph topology
@@ -11,7 +12,12 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 class TestMainGraphTopology:
     def test_graph_nodes_exist(self):
-        from agent.graph import graph, GENERATE_PLAN_NODE, RESEARCH_AGENT_NODE, WRITER_AGENT_NODE
+        from agent.graph import (
+            GENERATE_PLAN_NODE,
+            RESEARCH_AGENT_NODE,
+            WRITER_AGENT_NODE,
+            graph,
+        )
 
         nodes = list(graph.nodes.keys())
         assert GENERATE_PLAN_NODE in nodes
@@ -21,11 +27,33 @@ class TestMainGraphTopology:
         assert "awaiting_plan_confirmation" in nodes
 
     def test_graph_has_start_edge(self):
-        from agent.graph import graph, GENERATE_PLAN_NODE
+        from agent.graph import GENERATE_PLAN_NODE, graph
 
         nodes = list(graph.nodes.keys())
         assert GENERATE_PLAN_NODE in nodes
         assert graph.builder is not None
+
+    def test_subgraph_accumulators_are_converted_to_deltas(self):
+        from agent.graph import _subgraph_delta_updates
+
+        parent = {
+            "messages": [HumanMessage(content="topic")],
+            "executed_queries": ["q1"],
+            "web_search_call_count": 3,
+            "llm_token_count": 40,
+        }
+        child = {
+            **parent,
+            "executed_queries": ["q1", "q2"],
+            "web_search_call_count": 4,
+            "llm_token_count": 55,
+        }
+
+        assert _subgraph_delta_updates(parent, child) == {
+            "executed_queries": ["q2"],
+            "web_search_call_count": 1,
+            "llm_token_count": 15,
+        }
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -33,6 +61,41 @@ class TestMainGraphTopology:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestGeneratePlan:
+    @pytest.mark.asyncio
+    async def test_plan_tokens_stop_main_graph_before_research(self):
+        from agent.graph import graph
+
+        state = {
+            "messages": [HumanMessage(content="budgeted topic")],
+            "plan_status": "unconfirmed",
+            "plan": "",
+            "plan_messages": [],
+            "llm_token_count": 0,
+            "web_search_call_count": 0,
+            "no_progress_rounds": 0,
+        }
+
+        with patch("agent.graph.Agent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.llm.last_usage = {"total_tokens": 60}
+            mock_agent.astep = AsyncMock(
+                return_value="```markdown\n# 研究计划\n\n1. 验证预算\n```"
+            )
+            mock_agent_cls.return_value = mock_agent
+
+            result = await graph.ainvoke(
+                state,
+                config={
+                    "configurable": {
+                        "max_total_tokens": 50,
+                        "max_elapsed_seconds": 900,
+                    }
+                },
+            )
+
+        assert result["llm_token_count"] == 60
+        assert result["budget_stop_reason"] == "token_limit"
+
     @pytest.mark.asyncio
     async def test_generates_plan_for_unconfirmed_status(self):
         from agent.graph import generate_plan
@@ -128,6 +191,40 @@ class TestEvaluatePlan:
             assert "plan_status" not in result  # not replan
 
     @pytest.mark.asyncio
+    async def test_implicit_confirmation_tokens_are_added_to_task_budget(self):
+        from agent.graph import confirm_plan
+        from agent.tools_and_schemas import PlanReflection
+
+        state = {
+            "messages": [HumanMessage(content="topic"), HumanMessage(content="这个计划没问题")],
+            "plan_status": "confirmed",
+            "plan": "# 研究计划\n内容",
+            "run_started_at": time.time(),
+            "llm_token_count": 40,
+            "web_search_call_count": 0,
+            "no_progress_rounds": 0,
+        }
+
+        with patch("agent.graph.JsonAgent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.llm.last_usage = {"total_tokens": 15}
+            mock_agent.astep = AsyncMock(return_value=PlanReflection(satisfy=True))
+            mock_agent_cls.return_value = mock_agent
+
+            result = await confirm_plan(
+                state,
+                {
+                    "configurable": {
+                        "max_total_tokens": 50,
+                        "max_elapsed_seconds": 900,
+                    }
+                },
+            )
+
+        assert result["llm_token_count"] == 15
+        assert result["budget_stop_reason"] == "token_limit"
+
+    @pytest.mark.asyncio
     async def test_llm_rejects_plan_triggers_replan(self):
         """LLM rejection is now in confirm_plan, not evaluate_plan."""
         from agent.graph import confirm_plan
@@ -145,7 +242,8 @@ class TestEvaluatePlan:
             mock_agent_cls.return_value = mock_agent
 
             result = await confirm_plan(state, {"configurable": {}})
-            assert result == {"plan_status": "unconfirmed"}
+            assert result["plan_status"] == "unconfirmed"
+            assert result["llm_token_count"] == 0
 
     @pytest.mark.asyncio
     async def test_no_plan_triggers_replan(self):
@@ -167,6 +265,5 @@ class TestEvaluatePlan:
 
 class TestReplan:
     def test_resets_plan_status(self):
-        state = {"plan_status": "confirmed"}
         result = {"plan_status": "unconfirmed"}
         assert result["plan_status"] == "unconfirmed"

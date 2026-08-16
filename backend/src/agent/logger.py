@@ -1,7 +1,42 @@
-import os
-import sys
-from loguru import logger
 import atexit
+import hashlib
+import os
+import re
+import sys
+from typing import Any
+
+from loguru import logger
+
+_SENSITIVE_KEY_RE = re.compile(
+    r"(authorization|cookie|api[_-]?key|token|secret|password|credential)",
+    re.IGNORECASE,
+)
+_REDACTED = "[REDACTED]"
+
+
+def content_metadata(value: Any, *, label: str = "content") -> str:
+    """Return stable, non-reversible metadata for private text."""
+    text = str(value or "")
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+    return f"{label}_id={digest} {label}_chars={len(text)}"
+
+
+def sanitize_for_logging(value: Any, *, key: str | None = None) -> Any:
+    """Return a log-safe representation of nested request data."""
+    if key and _SENSITIVE_KEY_RE.search(key):
+        return _REDACTED
+    if isinstance(value, dict):
+        return {
+            item_key: sanitize_for_logging(item_value, key=str(item_key))
+            for item_key, item_value in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [sanitize_for_logging(item) for item in value]
+    if isinstance(value, bytes):
+        return f"<bytes length={len(value)}>"
+    if isinstance(value, str):
+        return _REDACTED
+    return value
 
 
 def setup_logger(log_dir="logs", console_log_level="INFO", file_log_level="DEBUG"):
@@ -16,7 +51,7 @@ def setup_logger(log_dir="logs", console_log_level="INFO", file_log_level="DEBUG
 
         # 确保日志目录存在
         os.makedirs(log_dir, exist_ok=True)
-        
+
         # 移除默认处理器
         logger.remove()
         # 添加控制台处理器
@@ -34,7 +69,7 @@ def setup_logger(log_dir="logs", console_log_level="INFO", file_log_level="DEBUG
             encoding="utf-8"  # 添加UTF-8编码支持，解决中文乱码问题
             # enqueue=True  启用异步日志记录，避免阻塞调用
         )
-        
+
         # 注册程序退出时的处理函数，确保所有日志都被写入
         atexit.register(lambda: logger.complete() if hasattr(logger, 'complete') else None)
     except OSError as e:
@@ -55,7 +90,7 @@ def setup_logger(log_dir="logs", console_log_level="INFO", file_log_level="DEBUG
             level="DEBUG"
         )
         logger.error(f"日志配置失败 ({type(e).__name__}): {e}")
-    
+
     return logger
 
 
@@ -65,7 +100,7 @@ def log_request_details(request_data):
     Args:
         request_data: 请求数据
     """
-    logger.info(f"收到前端请求: {request_data}")
+    logger.info("收到前端请求: {}", sanitize_for_logging(request_data))
 
 
 # def log_node_input_output(node_name, input_data=None, output_data=None):

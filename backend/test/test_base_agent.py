@@ -1,11 +1,9 @@
 """Tests for Agent, JsonAgent, MCPAgent, and WebSearchAgent classes."""
 
 import json
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 from agent.tools_and_schemas import PlanReflection
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # Agent
@@ -188,8 +186,8 @@ class TestWebSearchAgent:
         assert "url" in result[0]
 
     def test_step_uses_cache_on_hit(self, mock_dashscope_app):
-        from agent.base_agent import WebSearchAgent
         from agent import search_cache
+        from agent.base_agent import WebSearchAgent
 
         # Pre-populate cache
         cached_data = [{"snippet": "cached result", "title": "Cached", "url": "https://cached.com"}]
@@ -203,8 +201,8 @@ class TestWebSearchAgent:
         mock_dashscope_app.call.assert_not_called()
 
     def test_step_cache_miss_calls_api(self, mock_dashscope_app):
-        from agent.base_agent import WebSearchAgent
         from agent import search_cache
+        from agent.base_agent import WebSearchAgent
 
         search_cache.clear_cache()
 
@@ -234,7 +232,6 @@ class TestWebSearchAgent:
 
         # Actually, the mock_dashscope_app fixture uses a class-level mock.
         # Let's test the concept differently — test that 429 in error raises correctly
-        from agent.base_agent import WebSearchAgent
 
         # Mock Application.call to raise on first call
         with patch("agent.base_agent.Application") as mock_app:

@@ -25,14 +25,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from eval.evaluator import (
-    ComponentResult,
-    E2EResult,
     EvalReport,
     Evaluator,
     TopicCfg,
@@ -55,7 +52,7 @@ def load_test_set(path: str = "test_set.json") -> list[TopicCfg]:
             TopicCfg(topic="2025年人民币汇率走势分析及主要影响因素"),
         ]
 
-    with open(full_path, "r", encoding="utf-8") as f:
+    with open(full_path, encoding="utf-8") as f:
         data = json.load(f)
 
     cfgs = []
@@ -70,7 +67,7 @@ def load_test_set(path: str = "test_set.json") -> list[TopicCfg]:
     return cfgs
 
 
-def main():
+def main(argv=None, evaluator_factory=Evaluator) -> int:
     parser = argparse.ArgumentParser(
         description="DeepResearch Agent 评估运行器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -131,7 +128,7 @@ def main():
         help="预期系统行为：proceed（确认并继续）或 replan（修改计划）",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # 加载主题
     if args.topic:
@@ -145,7 +142,7 @@ def main():
 
     if not cfgs:
         print("没有可评估的主题。请使用 --topic 或确保 test_set.json 存在。")
-        sys.exit(1)
+        return 1
 
     # 应用 CLI 覆盖参数
     if args.initial_queries is not None or args.max_loops is not None:
@@ -156,7 +153,7 @@ def main():
                 c.max_research_loops = args.max_loops
 
     print(f"正在以 '{args.mode}' 模式评估 {len(cfgs)} 个主题...")
-    print(f"主题:")
+    print("主题:")
     for c in cfgs:
         extra = ""
         if c.user_feedback:
@@ -164,7 +161,7 @@ def main():
         print(f"  - {c.topic[:100]}  (查询数={c.initial_search_query_count}, 循环数={c.max_research_loops}{extra})")
     print()
 
-    evaluator = Evaluator(judge_model_id=args.judge_model)
+    evaluator = evaluator_factory(judge_model_id=args.judge_model)
     report = EvalReport(timestamp=datetime.now().isoformat())
 
     try:
@@ -191,6 +188,11 @@ def main():
     output_path = args.output or f"eval_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     save_eval_report(report, output_path)
 
+    has_errors = any(result.error for result in report.e2e_results) or any(
+        result.error for result in report.component_results
+    )
+    return 1 if has_errors else 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

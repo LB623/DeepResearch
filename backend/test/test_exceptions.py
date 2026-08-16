@@ -9,33 +9,31 @@ Validates:
   - KB embedding 401/403 → KBEmbeddingFatalError
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from agent.exceptions import (
-    TransientError,
-    PermanentError,
     AgentError,
-    LLMRateLimitError,
-    LLMServerError,
-    LLMNetworkError,
-    LLMAuthError,
-    LLMBadRequestError,
-    LLMUnexpectedError,
-    MCPRateLimitError,
-    MCPAuthError,
-    MCPAccessDeniedError,
-    MCPParseError,
-    MCPEmptyResultError,
-    MCPServerError,
+    KBConfigError,
     KBConnectionError,
     KBEmbeddingError,
     KBEmbeddingFatalError,
-    KBConfigError,
-    is_transient,
+    LLMAuthError,
+    LLMBadRequestError,
+    LLMNetworkError,
+    LLMRateLimitError,
+    LLMServerError,
+    LLMUnexpectedError,
+    MCPAccessDeniedError,
+    MCPAuthError,
+    MCPEmptyResultError,
+    MCPParseError,
+    MCPRateLimitError,
+    MCPServerError,
     is_permanent,
+    is_transient,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # Exception hierarchy tests
@@ -105,8 +103,9 @@ class TestOpenAIErrorTranslation:
         return mock_resp
 
     def test_rate_limit_error_to_llm_rate_limit(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import RateLimitError
+
+        from agent.llm.llm import _translate_openai_error
 
         resp = self._make_mock_response(429)
         orig = RateLimitError("rate limited", response=resp, body=None)
@@ -115,8 +114,9 @@ class TestOpenAIErrorTranslation:
         assert is_transient(translated)
 
     def test_auth_error_to_llm_auth(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import AuthenticationError
+
+        from agent.llm.llm import _translate_openai_error
 
         resp = self._make_mock_response(401)
         orig = AuthenticationError("bad key", response=resp, body=None)
@@ -125,8 +125,9 @@ class TestOpenAIErrorTranslation:
         assert is_permanent(translated)
 
     def test_bad_request_to_llm_bad_request(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import BadRequestError
+
+        from agent.llm.llm import _translate_openai_error
 
         resp = self._make_mock_response(400)
         orig = BadRequestError("model not found", response=resp, body=None)
@@ -135,8 +136,9 @@ class TestOpenAIErrorTranslation:
         assert is_permanent(translated)
 
     def test_connection_error_to_llm_network(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import APIConnectionError
+
+        from agent.llm.llm import _translate_openai_error
 
         req = self._make_mock_response().request
         orig = APIConnectionError(message="refused", request=req)
@@ -145,8 +147,9 @@ class TestOpenAIErrorTranslation:
         assert is_transient(translated)
 
     def test_server_error_to_llm_server(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import InternalServerError
+
+        from agent.llm.llm import _translate_openai_error
 
         resp = self._make_mock_response(500)
         orig = InternalServerError("boom", response=resp, body=None)
@@ -155,8 +158,9 @@ class TestOpenAIErrorTranslation:
         assert is_transient(translated)
 
     def test_permission_denied_to_llm_bad_request(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import PermissionDeniedError
+
+        from agent.llm.llm import _translate_openai_error
 
         resp = self._make_mock_response(403)
         orig = PermissionDeniedError("no access", response=resp, body=None)
@@ -165,8 +169,9 @@ class TestOpenAIErrorTranslation:
         assert is_permanent(translated)
 
     def test_unknown_to_unexpected(self):
-        from agent.llm.llm import _translate_openai_error
         from openai import APIError
+
+        from agent.llm.llm import _translate_openai_error
 
         req = self._make_mock_response(418).request
         orig = APIError("something weird", request=req, body=None)
@@ -175,7 +180,7 @@ class TestOpenAIErrorTranslation:
         assert is_permanent(translated)
 
     def test_llm_empty_content_raises(self):
-        from agent.llm.llm import OpenAICompatibleLLM, LLMUnexpectedError
+        from agent.llm.llm import LLMUnexpectedError, OpenAICompatibleLLM
 
         with patch("agent.llm.llm.OpenAI") as mock_openai_cls:
             mock_client = MagicMock()

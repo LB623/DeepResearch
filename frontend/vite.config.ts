@@ -12,6 +12,20 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes("/node_modules/@langchain/") ||
+            id.includes("/node_modules/langsmith/")
+          ) {
+            return "langgraph-vendor";
+          }
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       // Proxy API requests to the backend server

@@ -1,5 +1,6 @@
 """Integration tests for WriterAgent sub-graph — nodes, routing, and debate loop."""
 
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -37,6 +38,171 @@ class TestWriterAgentGraphTopology:
         assert _CRITIC_REVIEW in nodes
         assert _CITE_AND_POLISH in nodes
 
+    @pytest.mark.asyncio
+    async def test_graph_stops_before_llm_when_token_budget_is_exhausted(
+        self,
+        sample_state,
+    ):
+        state = {
+            **sample_state,
+            "run_started_at": time.time(),
+            "llm_token_count": 50,
+            "web_search_call_count": 0,
+            "no_progress_rounds": 0,
+        }
+
+        with patch("agent.sub_agents.writer_agent.Agent") as mock_agent_cls:
+            mock_agent_cls.side_effect = AssertionError(
+                "writer LLM must not run after budget exhaustion"
+            )
+            result = await writer_agent_graph.ainvoke(
+                state,
+                config={
+                    "configurable": {
+                        "max_total_tokens": 50,
+                        "max_elapsed_seconds": 900,
+                    }
+                },
+            )
+
+        mock_agent_cls.assert_not_called()
+        assert result["budget_stop_reason"] == "token_limit"
+        assert "预算受限" in result["messages"][-1].content
+
+    @pytest.mark.asyncio
+    async def test_graph_accumulates_tokens_from_every_writer_stage(
+        self,
+        sample_state,
+    ):
+        from agent.tools_and_schemas import CritiqueResult
+
+        state = {
+            **sample_state,
+            "run_started_at": time.time(),
+            "llm_token_count": 5,
+            "web_search_call_count": 0,
+            "no_progress_rounds": 0,
+        }
+        agent_outputs = iter(
+            [
+                "```markdown\n# Outline\n\n## Evidence\n```",
+                "```markdown\n# Report\n\n## Evidence\n\nSupported text.\n```",
+                "```markdown\n# Report\n\n## Evidence\n\nSupported text.\n```",
+            ]
+        )
+
+        class FakeWriterBoundary:
+            def __init__(self, model_id=None):
+                self.llm = MagicMock(last_usage={"total_tokens": 10})
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            async def astep(self, **kwargs):
+                return next(agent_outputs)
+
+        class FakeCriticBoundary:
+            def __init__(self, model_id=None, keys=None):
+                self.llm = MagicMock(last_usage={"total_tokens": 20})
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            async def astep(self, **kwargs):
+                return CritiqueResult(
+                    overall_rating=9.0,
+                    issues=[],
+                    ready_for_polish=True,
+                    summary="ready",
+                )
+
+        with patch(
+            "agent.sub_agents.writer_agent.Agent",
+            FakeWriterBoundary,
+        ), patch(
+            "agent.sub_agents.writer_agent.JsonAgent",
+            FakeCriticBoundary,
+        ):
+            result = await writer_agent_graph.ainvoke(
+                state,
+                config={
+                    "configurable": {
+                        "max_total_tokens": 1000,
+                        "max_elapsed_seconds": 900,
+                    }
+                },
+            )
+
+        assert result["llm_token_count"] == 55
+
+    @pytest.mark.asyncio
+    async def test_graph_still_writes_after_research_search_limit(
+        self,
+        sample_state,
+    ):
+        from agent.tools_and_schemas import CritiqueResult
+
+        state = {
+            **sample_state,
+            "run_started_at": time.time(),
+            "llm_token_count": 5,
+            "web_search_call_count": 1,
+            "no_progress_rounds": 0,
+            "budget_stop_reason": "search_call_limit",
+        }
+        agent_outputs = iter(
+            [
+                "```markdown\n# Outline\n\n## Evidence\n```",
+                "```markdown\n# Report\n\n## Evidence\n\nSupported text.\n```",
+                "```markdown\n# Report\n\n## Evidence\n\nSupported text.\n```",
+            ]
+        )
+
+        class FakeWriterBoundary:
+            def __init__(self, model_id=None):
+                self.llm = MagicMock(last_usage={"total_tokens": 10})
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            async def astep(self, **kwargs):
+                return next(agent_outputs)
+
+        class FakeCriticBoundary:
+            def __init__(self, model_id=None, keys=None):
+                self.llm = MagicMock(last_usage={"total_tokens": 10})
+
+            def set_step_prompt(self, prompt):
+                self.prompt = prompt
+
+            async def astep(self, **kwargs):
+                return CritiqueResult(
+                    overall_rating=9.0,
+                    issues=[],
+                    ready_for_polish=True,
+                    summary="ready",
+                )
+
+        with patch(
+            "agent.sub_agents.writer_agent.Agent",
+            FakeWriterBoundary,
+        ), patch(
+            "agent.sub_agents.writer_agent.JsonAgent",
+            FakeCriticBoundary,
+        ):
+            result = await writer_agent_graph.ainvoke(
+                state,
+                config={
+                    "configurable": {
+                        "max_web_search_calls": 1,
+                        "max_total_tokens": 1000,
+                        "max_elapsed_seconds": 900,
+                    }
+                },
+            )
+
+        assert result["messages"][-1].type == "ai"
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # _outline node (async)
@@ -59,6 +225,22 @@ class TestOutline:
             assert "第一章" in result["report_outline"]
             assert result["revision_count"] == 0
             assert result["max_revisions"] == 3
+
+    @pytest.mark.asyncio
+    async def test_uses_configured_writer_revision_limit(self, sample_state):
+        with patch("agent.sub_agents.writer_agent.Agent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.astep = AsyncMock(
+                return_value="```markdown\n# 报告大纲\n\n## 第一章\n```"
+            )
+            mock_agent_cls.return_value = mock_agent
+
+            result = await _outline(
+                sample_state,
+                {"configurable": {"max_writer_revisions": 0}},
+            )
+
+        assert result["max_revisions"] == 0
 
 
 # ═══════════════════════════════════════════════════════════════════════

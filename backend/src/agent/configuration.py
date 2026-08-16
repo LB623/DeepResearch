@@ -1,8 +1,19 @@
-import os
 import json
-from pydantic import BaseModel, Field
-from typing import Any, Optional, List
+import os
+from typing import Any, List
+
 from langchain_core.runnables import RunnableConfig
+from pydantic import BaseModel, Field
+
+_SERVER_CAPPED_FIELDS = {
+    "number_of_initial_queries",
+    "max_research_loops",
+    "max_writer_revisions",
+    "max_web_search_calls",
+    "max_elapsed_seconds",
+    "max_no_progress_rounds",
+    "max_total_tokens",
+}
 
 # 模型ID常量
 MODEL_ID_FLASH = "deepseek-v4-flash"
@@ -25,11 +36,11 @@ def load_available_models_from_env() -> List[ModelConfig]:
         ModelConfig(model_id=MODEL_ID_MAX, display_name="DS4-Pro", icon="Cpu", icon_color="purple-400"),
     ]
     models_json = os.getenv("AVAILABLE_MODELS")
-    
+
     if not models_json:
         # 默认模型列表
         return default_models
-    
+
     try:
         models_data = json.loads(models_json)
         return [ModelConfig(**model) for model in models_data]
@@ -71,43 +82,76 @@ class Configuration(BaseModel):
     # 可用模型列表配置（从环境变量加载）
     available_models: List[ModelConfig] = Field(
         default_factory=load_available_models_from_env,
-        metadata={"description": "可用的LLM模型列表"},
+        description="可用的LLM模型列表",
     )
 
     query_generator_model: str = Field(
         default_factory=get_flash_model_id,
-        metadata={
-            "description": "用于Agent查询生成的LLM的名称."
-        },
+        description="用于Agent查询生成的LLM的名称.",
     )
 
     reflection_model: str = Field(
         default_factory=get_plus_model_id,
-        metadata={
-            "description": "用于Agent反思的LLM的名称."
-        },
+        description="用于Agent反思的LLM的名称.",
     )
 
     answer_model: str = Field(
         default_factory=get_default_model_id,
-        metadata={
-            "description": "用于Agent生成答案的LLM模型名称."
-        },
+        description="用于Agent生成答案的LLM模型名称.",
     )
 
     number_of_initial_queries: int = Field(
         default=2,
-        metadata={"description": "要生成的初始搜索查询数量."},
+        ge=0,
+        le=20,
+        description="要生成的初始搜索查询数量.",
     )
 
     max_research_loops: int = Field(
         default=2,
-        metadata={"description": "要执行的最大research循环次数."},
+        ge=0,
+        le=20,
+        description="要执行的最大research循环次数.",
+    )
+
+    max_writer_revisions: int = Field(
+        default=3,
+        ge=0,
+        le=20,
+        description="报告初稿通过评论员评审后允许的最大修订次数.",
+    )
+
+    max_web_search_calls: int = Field(
+        default=20,
+        ge=0,
+        le=100,
+        description="单个研究任务允许的最大网页搜索次数.",
+    )
+
+    max_elapsed_seconds: float = Field(
+        default=900,
+        ge=0,
+        le=86_400,
+        description="单个研究任务允许的最大墙钟时间（秒）.",
+    )
+
+    max_no_progress_rounds: int = Field(
+        default=2,
+        ge=0,
+        le=20,
+        description="连续无新增证据时允许继续的最大研究轮数.",
+    )
+
+    max_total_tokens: int = Field(
+        default=120_000,
+        ge=0,
+        le=2_000_000,
+        description="单个研究任务允许累计消耗的最大 LLM token 数.",
     )
 
     @classmethod
     def from_runnable_config(
-        cls, config: Optional[RunnableConfig] = None
+        cls, config: RunnableConfig | None = None
     ) -> "Configuration":
         """从RunnableConfig创建配置实例."""
         configurable = (
@@ -125,4 +169,9 @@ class Configuration(BaseModel):
 
         values = {k: v for k, v in raw_values.items() if v is not None}
 
-        return cls(**values)
+        parsed = cls(**values)
+        defaults = cls()
+        for name in _SERVER_CAPPED_FIELDS:
+            if os.environ.get(name.upper()) is None:
+                setattr(parsed, name, min(getattr(parsed, name), getattr(defaults, name)))
+        return parsed

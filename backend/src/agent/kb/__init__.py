@@ -15,8 +15,8 @@ Usage:
     known = store.query("AI芯片市场趋势", top_k=10)
 """
 
-from agent.kb.fact_store import FactStore
 from agent.kb.extractor import FactExtractor
+from agent.kb.fact_store import FactStore
 from agent.kb.lifecycle import (
     CATEGORY_TTL,
     FRESHNESS_MAX_AGE,
@@ -27,10 +27,12 @@ from agent.kb.lifecycle import (
     should_tag,
     should_warn,
 )
+from agent.kb.provider import FactStoreProvider
 
 __all__ = [
     "FactStore",
     "FactExtractor",
+    "FactStoreProvider",
     "KBLifecycleMode",
     "get_mode",
     "should_filter",

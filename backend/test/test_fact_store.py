@@ -30,6 +30,31 @@ class TestFactStoreInit:
             assert store.uri == "http://custom:19530"
             assert store.collection == "custom_facts"
 
+    def test_readiness_reports_embedding_failure_without_retrying(self):
+        from agent.kb.fact_store import FactStore
+
+        with (
+            patch("agent.kb.fact_store.MilvusClient") as mock_client_cls,
+            patch("agent.kb.fact_store.requests.post") as mock_post,
+        ):
+            mock_client = MagicMock()
+            mock_client.has_collection.return_value = True
+            mock_client_cls.return_value = mock_client
+            mock_post.side_effect = __import__("requests").ConnectionError(
+                "embedding unavailable"
+            )
+
+            readiness = FactStore().readiness()
+
+        assert readiness == {
+            "milvus_ready": True,
+            "embedding_ready": False,
+            "embedding_model": "text-embedding-v3",
+            "embedding_dim": 1024,
+            "error_type": "RuntimeError",
+        }
+        mock_post.assert_called_once()
+
 
 class TestFactStoreAddFacts:
     def test_add_facts_embeds_and_inserts(self):

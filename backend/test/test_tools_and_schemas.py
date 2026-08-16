@@ -2,12 +2,13 @@
 
 import pytest
 from pydantic import ValidationError
+
 from agent.tools_and_schemas import (
-    SearchQueryList,
-    Reflection,
-    PlanReflection,
-    Issue,
     CritiqueResult,
+    Issue,
+    PlanReflection,
+    Reflection,
+    SearchQueryList,
 )
 
 

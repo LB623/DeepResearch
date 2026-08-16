@@ -34,6 +34,7 @@ from agent.exceptions import (
     KBConfigError,
     KBEmbeddingFatalError,
 )
+from agent.logger import content_metadata
 
 # ── constants ─────────────────────────────────────────────────────────
 COLLECTION_NAME = "research_facts"
@@ -117,7 +118,7 @@ class FactStore:
         inserted = result.get("insert_count", len(data))
         logger.info(
             f"[KB] stored {inserted} facts → Milvus/{self.collection} "
-            f"(topics: {set(f.get('research_topic', '') for f in facts)})"
+            f"(topic_count={len(set(f.get('research_topic', '') for f in facts))})"
         )
         return inserted
 
@@ -164,6 +165,7 @@ class FactStore:
         candidate_multiplier = max(1, candidate_multiplier)
         search_limit = top_k * candidate_multiplier if rerank_enabled else top_k
 
+        query_meta = content_metadata(topic, label="query")
         embedding = self._embed([topic])
         results = self.client.search(
             collection_name=self.collection,
@@ -180,7 +182,7 @@ class FactStore:
         )
 
         if not results or not results[0]:
-            logger.info(f"[KB] query '{topic[:60]}...' → 0 results")
+            logger.info(f"[KB] query {query_meta}; hits=0")
             return []
 
         now = time.time()
@@ -264,10 +266,10 @@ class FactStore:
             hits = hits[:top_k]
 
         logger.info(
-            f"[KB] query '{topic[:60]}...' → {len(hits)} hits "
-            f"(top score={hits[0]['relevance']:.3f})"
+            f"[KB] query {query_meta}; hits={len(hits)} "
+            f"top_score={hits[0]['relevance']:.3f}"
             if hits
-            else f"[KB] query '{topic[:60]}...' → 0 hits"
+            else f"[KB] query {query_meta}; hits=0"
         )
         return hits
 
@@ -326,6 +328,22 @@ class FactStore:
             )
             return {"collection": self.collection, "row_count": "unknown"}
 
+    def readiness(self) -> dict:
+        """Probe Milvus and Embedding once without exposing credentials or payloads."""
+        result = {
+            "milvus_ready": bool(self.client.has_collection(self.collection)),
+            "embedding_ready": False,
+            "embedding_model": self.embedding_model,
+            "embedding_dim": self.embedding_dim,
+            "error_type": "",
+        }
+        try:
+            self._embed(["embedding readiness probe"], max_attempts=1)
+            result["embedding_ready"] = True
+        except Exception as exc:
+            result["error_type"] = type(exc).__name__
+        return result
+
     # ── internal helpers ────────────────────────────────────────────
 
     @property
@@ -353,7 +371,12 @@ class FactStore:
             f"(dim={self.embedding_dim}, metric=COSINE)"
         )
 
-    def _embed(self, texts: list[str]) -> list[list[float]]:
+    def _embed(
+        self,
+        texts: list[str],
+        *,
+        max_attempts: int = 3,
+    ) -> list[list[float]]:
         """从兼容 OpenAI 的端点获取嵌入向量。
 
         最多重试 3 次，失败后采用退避策略。
@@ -382,7 +405,7 @@ class FactStore:
         }
 
         last_exc: Exception | None = None
-        for attempt in range(3):
+        for attempt in range(max_attempts):
             try:
                 logger.debug(
                     f"[KB] embedding {len(texts)} texts via {url} (model={self.embedding_model}, attempt={attempt + 1})"
@@ -431,16 +454,18 @@ class FactStore:
                     ) from e
 
                 # 可恢复：429 / 5xx — 重试
-                if status == 429 and attempt < 2:
-                    wait = 3 * (attempt + 1)
+                if status == 429 and attempt < max_attempts - 1:
+                    wait = 3.0 * (attempt + 1)
                     logger.warning(
-                        f"[KB] embedding 429 rate-limited, retrying in {wait}s (attempt {attempt + 1}/3)"
+                        f"[KB] embedding 429 rate-limited, retrying in {wait}s "
+                        f"(attempt {attempt + 1}/{max_attempts})"
                     )
                     time.sleep(wait)
-                elif status >= 500 and attempt < 2:
-                    wait = 2 * (attempt + 1)
+                elif status >= 500 and attempt < max_attempts - 1:
+                    wait = 2.0 * (attempt + 1)
                     logger.warning(
-                        f"[KB] embedding server error {status}, retrying in {wait}s (attempt {attempt + 1}/3)"
+                        f"[KB] embedding server error {status}, retrying in {wait}s "
+                        f"(attempt {attempt + 1}/{max_attempts})"
                     )
                     time.sleep(wait)
                 else:
@@ -448,10 +473,11 @@ class FactStore:
 
             except (requests.ConnectionError, requests.Timeout) as e:
                 last_exc = e
-                if attempt < 2:
+                if attempt < max_attempts - 1:
                     wait = 1.5 * (attempt + 1)
                     logger.warning(
-                        f"[KB] embedding network error, retrying in {wait:.1f}s (attempt {attempt + 1}/3): {e}"
+                        f"[KB] embedding network error, retrying in {wait:.1f}s "
+                        f"(attempt {attempt + 1}/{max_attempts}): {e}"
                     )
                     time.sleep(wait)
                 else:
@@ -468,11 +494,12 @@ class FactStore:
             except Exception as e:
                 # 未知异常 — 保守重试
                 last_exc = e
-                if attempt < 2:
+                if attempt < max_attempts - 1:
                     wait = 1.5 * (attempt + 1)
                     logger.warning(
                         f"[KB] embedding unexpected error ({type(e).__name__}), "
-                        f"retrying in {wait:.1f}s (attempt {attempt + 1}/3): {e}"
+                        f"retrying in {wait:.1f}s "
+                        f"(attempt {attempt + 1}/{max_attempts}): {e}"
                     )
                     time.sleep(wait)
                 else:
@@ -482,7 +509,7 @@ class FactStore:
                     )
 
         raise RuntimeError(
-            f"[KB] embedding failed after 3 attempts: {last_exc}"
+            f"[KB] embedding failed after {max_attempts} attempts: {last_exc}"
         ) from last_exc
 
     async def _aembed(self, texts: list[str]) -> list[list[float]]:

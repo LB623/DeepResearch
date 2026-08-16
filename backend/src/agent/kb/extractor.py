@@ -77,6 +77,7 @@ class FactExtractor:
             "FACT_EXTRACTOR_MODEL",
             "deepseek-v4-flash",
         )
+        self.last_token_count = 0
 
     def extract(self, summary: str, research_topic: str = "") -> list[dict]:
         """从单个搜索结果摘要中提取事实。
@@ -88,6 +89,7 @@ class FactExtractor:
         Returns:
             List of {fact, source_url, confidence} dicts.
         """
+        self.last_token_count = 0
         if not summary or len(summary) < 50:
             logger.debug("[KB-extractor] 摘要过短，省略提取")
             return []
@@ -99,10 +101,25 @@ class FactExtractor:
             research_topic=research_topic or "(extracting facts)",
             summary=summary[:8000],  # truncate for safety
         )
+        usage = getattr(getattr(agent, "llm", None), "last_usage", {})
+        if isinstance(usage, dict):
+            try:
+                self.last_token_count = max(0, int(usage.get("total_tokens", 0)))
+            except (TypeError, ValueError):
+                self.last_token_count = 0
 
         try:
             json_str = Post.extract_pattern(raw, pattern="json")
             facts = json.loads(json_str)
+            if isinstance(facts, dict):
+                facts = next(
+                    (
+                        facts[key]
+                        for key in ("facts", "items", "data")
+                        if isinstance(facts.get(key), list)
+                    ),
+                    None,
+                )
             if isinstance(facts, list):
                 facts = self._validate(facts)
                 logger.info(
@@ -110,6 +127,10 @@ class FactExtractor:
                     f"from summary ({len(summary)} chars)"
                 )
                 return facts
+            logger.warning(
+                "[KB-extractor] unexpected JSON shape type={}",
+                type(facts).__name__,
+            )
         except json.JSONDecodeError as exc:
             logger.warning(
                 f"[KB-extractor] JSON parse failed — LLM returned malformed JSON: {exc}"

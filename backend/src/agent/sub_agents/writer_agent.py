@@ -13,6 +13,8 @@
 from __future__ import annotations
 
 import re
+import time
+from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage
@@ -21,6 +23,13 @@ from langgraph.graph import END, START, StateGraph
 from loguru import logger
 
 from agent.base_agent import Agent, JsonAgent
+from agent.budget import (
+    agent_total_tokens,
+    budget_stop_reason,
+    is_global_budget_stop,
+    token_usage_updates,
+    usage_updates,
+)
 from agent.checkpoint import get_checkpointer
 from agent.configuration import Configuration
 from agent.post import Post
@@ -41,6 +50,8 @@ _OUTLINE = "outline"
 _DRAFT = "draft"
 _CRITIC_REVIEW = "critic_review"
 _CITE_AND_POLISH = "cite_and_polish"
+_BUDGET_GUARD = "budget_guard"
+_FALLBACK_REPORT = "fallback_report"
 
 # ── constants ──────────────────────────────────────────────────────────
 DEFAULT_MAX_REVISIONS = 3
@@ -69,6 +80,45 @@ _MIN_POLISH_LENGTH_RATIO = 0.75
 # Node implementations
 # ═══════════════════════════════════════════════════════════════════════
 
+def _budget_guard(state: OverallState, config: RunnableConfig) -> dict:
+    started_at = state.get("run_started_at") or time.time()
+    reason = budget_stop_reason(
+        {**state, "run_started_at": started_at},
+        config,
+    )
+    updates: dict[str, Any] = {"run_started_at": started_at}
+    if reason:
+        updates["budget_stop_reason"] = reason
+    return updates
+
+
+def _route_after_budget_guard(state: OverallState) -> str:
+    if is_global_budget_stop(state):
+        return _FALLBACK_REPORT
+    return _OUTLINE
+
+
+def _fallback_report(state: OverallState) -> dict:
+    """Render existing evidence without another paid LLM call."""
+    draft = state.get("report_draft", "").strip()
+    if draft:
+        report = draft
+    else:
+        summaries = [
+            str(item).strip()
+            for item in state.get("web_search_result", [])
+            if str(item).strip()
+        ]
+        evidence = "\n\n---\n\n".join(summaries) or "当前预算内未获得可用证据。"
+        report = (
+            "# 研究报告（预算受限）\n\n"
+            "> 研究预算已耗尽，以下内容仅整理已收集证据，未执行额外生成或验证。\n\n"
+            "## 已收集证据\n\n"
+            f"{evidence}"
+        )
+    return {"messages": [AIMessage(content=report)]}
+
+
 async def _outline(state: OverallState, config: RunnableConfig) -> dict:
     """Generate a structured report outline from the research topic and plan."""
     configurable = Configuration.from_runnable_config(config)
@@ -87,7 +137,13 @@ async def _outline(state: OverallState, config: RunnableConfig) -> dict:
     return {
         "report_outline": outline,
         "revision_count": 0,
-        "max_revisions": DEFAULT_MAX_REVISIONS,
+        "max_revisions": configurable.max_writer_revisions,
+        **usage_updates(
+            state,
+            config,
+            agent,
+            started_at=state.get("run_started_at") or time.time(),
+        ),
     }
 
 
@@ -134,6 +190,7 @@ async def _draft(state: OverallState, config: RunnableConfig) -> dict:
         revision_context=revision_context,
         previous_draft=previous_draft,
     )
+    token_delta = agent_total_tokens(agent)
     draft = Post.extract_pattern(raw, pattern="markdown")
     rejection_reason = _draft_rejection_reason(outline_text, draft)
     if rejection_reason:
@@ -157,6 +214,7 @@ async def _draft(state: OverallState, config: RunnableConfig) -> dict:
             revision_context=recovery_context,
             previous_draft=draft,
         )
+        token_delta += agent_total_tokens(agent)
         retry_draft = Post.extract_pattern(retry_raw, pattern="markdown")
         retry_reason = _draft_rejection_reason(outline_text, retry_draft)
         if retry_reason is None or len(retry_draft) > len(draft):
@@ -164,7 +222,16 @@ async def _draft(state: OverallState, config: RunnableConfig) -> dict:
         if retry_reason:
             logger.warning(f"[WriterAgent] recovered draft still incomplete: {retry_reason}")
     logger.info(f"[WriterAgent] draft 已生成 ({len(draft)} 字)")
-    return {**return_update, "report_draft": draft}
+    return {
+        **return_update,
+        "report_draft": draft,
+        **token_usage_updates(
+            state,
+            config,
+            token_delta,
+            started_at=state.get("run_started_at") or time.time(),
+        ),
+    }
 
 
 async def _critic_review(state: OverallState, config: RunnableConfig) -> dict:
@@ -226,6 +293,12 @@ async def _critic_review(state: OverallState, config: RunnableConfig) -> dict:
         "critic_feedback": feedback,
         "critic_score": result.overall_rating,
         "ready_for_polish": result.ready_for_polish,
+        **usage_updates(
+            state,
+            config,
+            agent,
+            started_at=state.get("run_started_at") or time.time(),
+        ),
     }
 
 
@@ -238,6 +311,9 @@ def _route_after_critic(state: OverallState, config: RunnableConfig) -> str:
 
     否则回到 draft 继续修改。
     """
+    if is_global_budget_stop(state):
+        return _FALLBACK_REPORT
+
     revision = state.get("revision_count", 0)
     max_rev = state.get("max_revisions", DEFAULT_MAX_REVISIONS)
     ready = state.get("ready_for_polish", False)
@@ -304,9 +380,9 @@ def _normalize_citations(polished: str, sources: list[dict]) -> tuple[str, list[
     def replace_internal_citation(match: re.Match[str]) -> str:
         pair = (int(match.group(1)), int(match.group(2)))
         source = sources_by_pair.get(pair)
-        value = source.get("value") if source else None
-        if not value:
+        if source is None or not source.get("value"):
             return match.group(0)
+        value = source["value"]
         add_source(source)
         label = f"{pair[0]}-{pair[1]}"
         return f"[{label}]({value})"
@@ -317,9 +393,9 @@ def _normalize_citations(polished: str, sources: list[dict]) -> tuple[str, list[
         label = match.group(0)[1:-1]
         index = int(match.group(2))
         source = _source_for_material_index(sources, index)
-        value = source.get("value") if source else None
-        if not value:
+        if source is None or not source.get("value"):
             return match.group(0)
+        value = source["value"]
         add_source(source)
         return f"[{label}]({value})"
 
@@ -469,29 +545,55 @@ async def _cite_and_polish(state: OverallState, config: RunnableConfig) -> dict:
     return {
         "messages": [AIMessage(content=polished)],
         "sources_gathered": unique_sources,
+        **usage_updates(
+            state,
+            config,
+            agent,
+            started_at=state.get("run_started_at") or time.time(),
+        ),
     }
+
+
+def _route_after_outline(state: OverallState) -> str:
+    if is_global_budget_stop(state):
+        return _FALLBACK_REPORT
+    return _DRAFT
+
+
+def _route_after_draft(state: OverallState) -> str:
+    if is_global_budget_stop(state):
+        return _FALLBACK_REPORT
+    return _CRITIC_REVIEW
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # 构建子图（带循环）
 # ═══════════════════════════════════════════════════════════════════════
 
-_builder = StateGraph(OverallState, config_schema=Configuration)
+_builder = StateGraph(OverallState, context_schema=Configuration)
 
+_builder.add_node(_BUDGET_GUARD, _budget_guard)
 _builder.add_node(_OUTLINE, _outline) # 生成大纲
 _builder.add_node(_DRAFT, _draft)  # 写草稿 / 修订
 _builder.add_node(_CRITIC_REVIEW, _critic_review) # 审稿
 _builder.add_node(_CITE_AND_POLISH, _cite_and_polish) # 终稿
+_builder.add_node(_FALLBACK_REPORT, _fallback_report)
 
 # Flow: outline → draft → critic → (loop or polish)
-_builder.add_edge(START, _OUTLINE)
-_builder.add_edge(_OUTLINE, _DRAFT)
-_builder.add_edge(_DRAFT, _CRITIC_REVIEW)
+_builder.add_edge(START, _BUDGET_GUARD)
+_builder.add_conditional_edges(
+    _BUDGET_GUARD,
+    _route_after_budget_guard,
+    [_OUTLINE, _FALLBACK_REPORT],
+)
+_builder.add_conditional_edges(_OUTLINE, _route_after_outline, [_DRAFT, _FALLBACK_REPORT])
+_builder.add_conditional_edges(_DRAFT, _route_after_draft, [_CRITIC_REVIEW, _FALLBACK_REPORT])
 _builder.add_conditional_edges(
     _CRITIC_REVIEW,
     _route_after_critic,
-    [_DRAFT, _CITE_AND_POLISH],
+    [_DRAFT, _CITE_AND_POLISH, _FALLBACK_REPORT],
 )
 _builder.add_edge(_CITE_AND_POLISH, END)
+_builder.add_edge(_FALLBACK_REPORT, END)
 
 writer_agent_graph = _builder.compile(checkpointer=get_checkpointer(), name="WriterAgent")
