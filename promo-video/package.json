@@ -1,0 +1,28 @@
+{
+  "name": "deepresearch-promo-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "typecheck": "npm run typecheck:video && npm run typecheck:capture",
+    "typecheck:video": "tsc --noEmit -p tsconfig.json",
+    "typecheck:capture": "tsc --noEmit -p capture-app/tsconfig.json",
+    "capture": "npm run typecheck:capture && node scripts/capture-product.mjs",
+    "render:deliverables": "node scripts/render-deliverables.mjs",
+    "render:bgm": "remotion render src/index.ts DeepResearchPromo out/deepresearch-promo-bgm.mp4",
+    "render:no-bgm": "remotion render src/index.ts DeepResearchPromo out/deepresearch-promo-no-bgm.mp4 --props=props-nobgm.json",
+    "still": "remotion still src/index.ts DeepResearchPromo"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.484",
+    "puppeteer-core": "25.6.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.484"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "typescript": "6.0.3"
+  }
+}

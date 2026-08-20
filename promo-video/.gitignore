@@ -1,0 +1,5 @@
+node_modules/
+capture-app/node_modules/
+.DS_Store
+out/
+analysis/rendered-music/

@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeepResearch Promo Styleframes · 2026-08-13</title>
+    <style>
+      :root {
+        --background: #f3f5f4;
+        --foreground: #151a19;
+        --card: #fafbfa;
+        --popover: #ffffff;
+        --primary: #1d6f5f;
+        --primary-deep: #174e44;
+        --primary-foreground: #f7fbfa;
+        --secondary: #e9edeb;
+        --secondary-foreground: #202725;
+        --muted: #e4e9e7;
+        --muted-foreground: #68736f;
+        --accent: #e3ece8;
+        --accent-foreground: #174e44;
+        --border: #d8dedb;
+        --input: #ccd5d1;
+        --radius: 12px;
+        --font-ui: "SF Pro Display", "SF Pro Text", -apple-system,
+          BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        --font-data: "SFMono-Regular", "Cascadia Code", "Roboto Mono",
+          "PingFang SC", monospace;
+        font-family: var(--font-ui);
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 1920px; margin: 0; background: #dfe4e1; }
+      body { color: var(--foreground); }
+
+      .frame {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background:
+          radial-gradient(900px 600px at 82% 6%, rgb(29 111 95 / 6%), transparent 68%),
+          radial-gradient(720px 520px at 8% 92%, rgb(23 78 68 / 3.5%), transparent 72%),
+          var(--background);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .frame::before {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        content: "";
+        background-image:
+          linear-gradient(rgb(21 26 25 / 1.35%) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(21 26 25 / 1.35%) 1px, transparent 1px);
+        background-size: 80px 80px;
+        mask-image: linear-gradient(to bottom, rgb(0 0 0 / 42%), transparent 76%);
+      }
+
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 13px;
+        color: var(--foreground);
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: -0.025em;
+      }
+
+      .brand-lockup img { width: 36px; height: 36px; display: block; border-radius: 10px; }
+      .frame-meta {
+        color: var(--muted-foreground);
+        font: 600 13px/1 var(--font-data);
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+
+      .topbar {
+        position: absolute;
+        z-index: 4;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 84px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 68px;
+        border-bottom: 1px solid rgb(216 222 219 / 82%);
+        background: rgb(243 245 244 / 86%);
+        backdrop-filter: blur(18px) saturate(120%);
+      }
+
+      .eyebrow {
+        color: var(--primary);
+        font: 700 15px/1 var(--font-data);
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .primary { color: var(--primary); }
+      .muted { color: var(--muted-foreground); }
+      .mono { font-family: var(--font-data); }
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: rgb(250 251 250 / 96%);
+        box-shadow: 0 34px 90px -52px rgb(15 28 24 / 42%);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 13px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--muted-foreground);
+        background: rgb(250 251 250 / 82%);
+        font: 600 12px/1 var(--font-data);
+        letter-spacing: .04em;
+      }
+
+      .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+      .demo-label {
+        position: absolute;
+        z-index: 5;
+        right: 56px;
+        bottom: 38px;
+        color: var(--muted-foreground);
+        font: 600 12px/1 var(--font-data);
+        letter-spacing: .1em;
+      }
+
+      /* Frame 01 · official brand lockup */
+      .f1 .hero {
+        position: absolute;
+        z-index: 2;
+        inset: 84px 0 0;
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+
+      .f1 .hero-inner { transform: translateY(-12px); }
+      .f1 .mark-stage {
+        position: relative;
+        display: grid;
+        width: 146px;
+        height: 146px;
+        margin: 0 auto 34px;
+        place-items: center;
+        border: 1px solid rgb(29 111 95 / 16%);
+        border-radius: 42px;
+        background: rgb(250 251 250 / 78%);
+        box-shadow:
+          0 38px 90px -48px rgb(23 78 68 / 56%),
+          0 0 0 18px rgb(29 111 95 / 3.5%);
+      }
+
+      .f1 .mark-stage::before,
+      .f1 .mark-stage::after {
+        position: absolute;
+        width: 54px;
+        height: 1px;
+        content: "";
+        background: linear-gradient(90deg, transparent, rgb(29 111 95 / 54%));
+      }
+
+      .f1 .mark-stage::before { left: -70px; }
+      .f1 .mark-stage::after { right: -70px; transform: rotate(180deg); }
+      .f1 .mark-stage img { width: 112px; height: 112px; display: block; border-radius: 31px; }
+      .f1 h1 {
+        margin: 0;
+        font-size: 112px;
+        font-weight: 680;
+        line-height: .96;
+        letter-spacing: -.06em;
+      }
+
+      .f1 .promise {
+        margin: 32px 0 0;
+        color: var(--muted-foreground);
+        font-size: 32px;
+        font-weight: 450;
+        line-height: 1.4;
+        letter-spacing: -.018em;
+      }
+
+      .f1 .promise strong { color: var(--primary-deep); font-weight: 620; }
+      .f1 .rule {
+        width: 620px;
+        height: 1px;
+        margin: 35px auto 0;
+        background: linear-gradient(90deg, transparent, rgb(29 111 95 / 64%), transparent);
+      }
+
+      .f1 .features {
+        position: absolute;
+        z-index: 3;
+        left: 0;
+        right: 0;
+        bottom: 58px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .f1 .features span {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--secondary-foreground);
+        background: rgb(250 251 250 / 72%);
+        font: 650 12px/1 var(--font-data);
+        letter-spacing: .08em;
+      }
+
+      /* Frame 02 · current search/composer language */
+      .f2 .copy {
+        position: absolute;
+        z-index: 2;
+        left: 110px;
+        top: 206px;
+        width: 520px;
+      }
+
+      .f2 h2 {
+        margin: 25px 0 24px;
+        font-size: 72px;
+        font-weight: 650;
+        line-height: 1.03;
+        letter-spacing: -.052em;
+      }
+
+      .f2 .lead {
+        max-width: 490px;
+        color: var(--muted-foreground);
+        font-size: 21px;
+        line-height: 1.75;
+      }
+
+      .f2 .principles { display: grid; gap: 17px; margin-top: 42px; }
+      .f2 .principle { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 13px; }
+      .f2 .principle b {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 8px;
+        color: var(--primary);
+        background: var(--accent);
+        font: 700 11px/1 var(--font-data);
+      }
+
+      .f2 .principle span { color: var(--secondary-foreground); font-size: 16px; }
+      .f2 .stage {
+        position: absolute;
+        z-index: 2;
+        left: 700px;
+        top: 126px;
+        width: 1090px;
+        height: 842px;
+        perspective: 1800px;
+      }
+
+      .f2 .app-window {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        transform: rotateY(-3.2deg) rotateX(1.2deg);
+        transform-origin: center;
+        box-shadow: 0 52px 120px -70px rgb(15 28 24 / 58%);
+      }
+
+      .mini-header {
+        display: flex;
+        height: 66px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 28px;
+        border-bottom: 1px solid var(--border);
+        background: rgb(243 245 244 / 88%);
+      }
+
+      .mini-header .brand-lockup { font-size: 14px; gap: 10px; }
+      .mini-header .brand-lockup img { width: 30px; height: 30px; border-radius: 9px; }
+      .workspace-body { padding: 32px 38px 38px; }
+      .question-kicker { color: var(--muted-foreground); font-size: 12px; font-weight: 600; }
+      .composer {
+        margin-top: 10px;
+        overflow: hidden;
+        border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+        border-radius: 16px;
+        background: var(--card);
+        box-shadow:
+          0 30px 72px -48px rgb(15 28 24 / 50%),
+          0 0 0 1px rgb(255 255 255 / 55%) inset;
+      }
+
+      .prompt {
+        min-height: 126px;
+        padding: 23px 25px;
+        color: var(--foreground);
+        font-size: 20px;
+        line-height: 1.55;
+      }
+
+      .composer-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border-top: 1px solid var(--border);
+        background: rgb(233 237 235 / 44%);
+      }
+
+      .control {
+        padding: 10px 13px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--secondary-foreground);
+        background: var(--card);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .start {
+        margin-left: auto;
+        padding: 11px 18px;
+        border-radius: 9px;
+        color: var(--primary-foreground);
+        background: var(--primary);
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      .path-card {
+        margin-top: 22px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--card);
+      }
+
+      .path-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .path-title { display: flex; align-items: center; gap: 12px; }
+      .path-title b {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 9px;
+        color: var(--primary);
+        background: var(--accent);
+        font-size: 14px;
+      }
+
+      .path-title strong { display: block; font-size: 13px; }
+      .path-title span { display: block; margin-top: 3px; color: var(--muted-foreground); font-size: 11px; }
+      .path-events { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; padding: 18px 20px 20px; }
+      .path-event { display: grid; grid-template-columns: 30px 1fr; gap: 11px; min-height: 69px; }
+      .path-event .icon {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--primary);
+        background: var(--background);
+        font: 700 10px/1 var(--font-data);
+      }
+
+      .path-event strong { display: block; padding-top: 2px; font-size: 12px; }
+      .path-event span { display: block; margin-top: 4px; color: var(--muted-foreground); font-size: 11px; line-height: 1.45; }
+
+      /* Frame 03 · observable workflow and native report */
+      .f3 .scene-head {
+        position: absolute;
+        z-index: 2;
+        left: 86px;
+        right: 86px;
+        top: 118px;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+      }
+
+      .f3 h2 { margin: 14px 0 0; font-size: 54px; line-height: 1.04; letter-spacing: -.045em; }
+      .f3 .head-copy { color: var(--muted-foreground); font-size: 17px; }
+      .f3 .grid {
+        position: absolute;
+        z-index: 2;
+        left: 86px;
+        right: 86px;
+        top: 244px;
+        bottom: 64px;
+        display: grid;
+        grid-template-columns: 420px minmax(0, 1fr) 370px;
+        gap: 22px;
+      }
+
+      .f3 .panel { overflow: hidden; }
+      .panel-head {
+        display: flex;
+        min-height: 72px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel-head strong { font-size: 14px; }
+      .panel-head span { color: var(--muted-foreground); font-size: 11px; }
+      .timeline-list { padding: 24px 24px 14px; }
+      .step { position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 13px; padding-bottom: 21px; }
+      .step::after {
+        position: absolute;
+        top: 35px;
+        bottom: 1px;
+        left: 16px;
+        width: 1px;
+        content: "";
+        background: var(--border);
+      }
+
+      .step:last-child::after { display: none; }
+      .step-icon {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 1px solid rgb(29 111 95 / 18%);
+        border-radius: 10px;
+        color: var(--primary);
+        background: var(--accent);
+        font: 700 10px/1 var(--font-data);
+      }
+
+      .step strong { display: block; padding-top: 1px; font-size: 13px; line-height: 1.45; }
+      .step span { display: block; margin-top: 3px; color: var(--muted-foreground); font-size: 11px; line-height: 1.45; }
+      .report-stage { padding: 27px 34px 30px; }
+      .report-stage h1 { margin: 0; font-size: 32px; line-height: 1.17; letter-spacing: -.04em; }
+      .report-stage .notice {
+        margin: 19px 0 24px;
+        padding: 12px 16px;
+        border-left: 3px solid var(--primary);
+        color: var(--secondary-foreground);
+        background: rgb(29 111 95 / 4.5%);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .report-stage h3 { margin: 24px 0 10px; font-size: 17px; letter-spacing: -.02em; }
+      .report-stage p { margin: 0; color: var(--secondary-foreground); font-size: 13px; line-height: 1.65; }
+      .evidence-table { margin-top: 20px; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; }
+      .evidence-row {
+        display: grid;
+        grid-template-columns: 118px 1fr 118px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .evidence-row:last-child { border-bottom: 0; }
+      .evidence-row > span,
+      .evidence-row > strong { padding: 12px 14px; border-right: 1px solid var(--border); font-size: 11px; line-height: 1.45; }
+      .evidence-row > :last-child { border-right: 0; }
+      .evidence-row.head { color: var(--secondary-foreground); background: rgb(233 237 235 / 72%); font-weight: 650; }
+      .evidence-row:not(.head) > span { color: var(--muted-foreground); }
+      .evidence-row:not(.head) > strong { font-weight: 600; }
+      .metrics-body { padding: 26px 24px; }
+      .source-count { display: flex; align-items: baseline; gap: 10px; }
+      .source-count strong { font-size: 56px; line-height: 1; letter-spacing: -.06em; }
+      .source-count span { color: var(--muted-foreground); font-size: 12px; }
+      .coverage {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 19px;
+        padding: 13px 14px;
+        border-radius: 10px;
+        color: var(--accent-foreground);
+        background: var(--accent);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .citation { padding: 19px 0; border-bottom: 1px solid var(--border); }
+      .citation:last-of-type { border-bottom: 0; }
+      .citation .index {
+        display: inline-grid;
+        width: 30px;
+        height: 25px;
+        margin-bottom: 10px;
+        place-items: center;
+        border-radius: 7px;
+        color: var(--primary);
+        background: var(--accent);
+        font: 700 11px/1 var(--font-data);
+      }
+
+      .citation strong { display: block; font-size: 13px; line-height: 1.4; }
+      .citation span { display: block; margin-top: 5px; color: var(--muted-foreground); font-size: 11px; line-height: 1.4; }
+      .fictional-note {
+        position: absolute;
+        right: 24px;
+        bottom: 21px;
+        color: var(--muted-foreground);
+        font: 600 10px/1 var(--font-data);
+        letter-spacing: .08em;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="frame f1">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img src="../../frontend/public/research-mark.svg" alt="" />
+          <span>DeepResearch</span>
+        </div>
+        <div class="status-pill"><span class="status-dot"></span>2026-08-13 · CURRENT APP</div>
+      </header>
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="mark-stage">
+            <img src="../../frontend/public/research-mark.svg" alt="DeepResearch" />
+          </div>
+          <h1>DeepResearch</h1>
+          <p class="promise">把复杂问题，<strong>研究清楚。</strong></p>
+          <div class="rule"></div>
+        </div>
+      </div>
+      <div class="features">
+        <span>AI SEARCH</span>
+        <span>RESEARCH WORKFLOW</span>
+        <span>EVIDENCE ANALYSIS</span>
+      </div>
+      <div class="demo-label">STYLEFRAME 01 · OFFICIAL BRAND LOCKUP</div>
+    </section>
+
+    <section class="frame f2">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img src="../../frontend/public/research-mark.svg" alt="" />
+          <span>DeepResearch</span>
+        </div>
+        <div class="frame-meta">STYLEFRAME 02 · AI SEARCH</div>
+      </header>
+      <div class="copy">
+        <div class="eyebrow">01 / AI 搜索</div>
+        <h2>问题拆开，<br />证据<span class="primary">汇入。</span></h2>
+        <p class="lead">从一个研究问题出发，生成查询、汇集来源，并把每一条判断连接回证据。</p>
+        <div class="principles">
+          <div class="principle"><b>01</b><span>查询分支并行生成</span></div>
+          <div class="principle"><b>02</b><span>来源与过程实时可见</span></div>
+          <div class="principle"><b>03</b><span>证据不足时继续补充</span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="app-window panel">
+          <div class="mini-header">
+            <div class="brand-lockup">
+              <img src="../../frontend/public/research-mark.svg" alt="" />
+              <span>DeepResearch</span>
+            </div>
+            <div class="status-pill"><span class="status-dot"></span>就绪</div>
+          </div>
+          <div class="workspace-body">
+            <div class="question-kicker">研究问题</div>
+            <div class="composer">
+              <div class="prompt">分析虚构的 Orion-7 推理引擎：架构取舍、生态依赖与潜在风险</div>
+              <div class="composer-controls">
+                <span class="control">研究深度 · 深入</span>
+                <span class="control">模型 · Orion-7 Reasoner</span>
+                <span class="start">开始研究&nbsp; →</span>
+              </div>
+            </div>
+            <div class="path-card">
+              <div class="path-head">
+                <div class="path-title"><b>✓</b><div><strong>研究路径</strong><span>查询、来源与综合过程</span></div></div>
+                <span class="muted mono">4 个阶段</span>
+              </div>
+              <div class="path-events">
+                <div class="path-event"><span class="icon">Q1</span><div><strong>生成搜索查询</strong><span>Orion-7 scheduler memory topology</span></div></div>
+                <div class="path-event"><span class="icon">Q2</span><div><strong>生成搜索查询</strong><span>runtime portability ecosystem constraints</span></div></div>
+                <div class="path-event"><span class="icon">28</span><div><strong>网络研究</strong><span>已汇集 28 条虚构资料与证据片段</span></div></div>
+                <div class="path-event"><span class="icon">↻</span><div><strong>反思和分析</strong><span>正在比较结果并核对分歧</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-label">DEMO DATA · FICTIONAL · NETWORK ISOLATED</div>
+    </section>
+
+    <section class="frame f3">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img src="../../frontend/public/research-mark.svg" alt="" />
+          <span>DeepResearch</span>
+        </div>
+        <div class="frame-meta">STYLEFRAME 03 · WORKFLOW + ANALYSIS</div>
+      </header>
+      <div class="scene-head">
+        <div><div class="eyebrow">02–03 / 自动化工作流与数据分析</div><h2>过程可见，结果可核验。</h2></div>
+        <div class="head-copy">计划确认 → 研究循环 → 审稿与引用润色</div>
+      </div>
+      <div class="grid">
+        <section class="timeline panel">
+          <div class="panel-head"><strong>研究路径</strong><span>已完成 · 5 个阶段</span></div>
+          <div class="timeline-list">
+            <div class="step"><span class="step-icon">01</span><div><strong>研究计划已确认</strong><span>冻结范围、判断标准与研究深度</span></div></div>
+            <div class="step"><span class="step-icon">02</span><div><strong>生成并去重查询</strong><span>并行拆分 6 条虚构检索分支</span></div></div>
+            <div class="step"><span class="step-icon">03</span><div><strong>搜索与证据审查</strong><span>汇集 28 条资料，补足 3 处缺口</span></div></div>
+            <div class="step"><span class="step-icon">04</span><div><strong>提纲、草稿与审稿</strong><span>保留章节结构并校验关键主张</span></div></div>
+            <div class="step"><span class="step-icon">05</span><div><strong>引用润色与报告完成</strong><span>来源去重，结论可回查</span></div></div>
+          </div>
+        </section>
+
+        <section class="report panel">
+          <div class="panel-head"><strong>当前研究 · 研究报告</strong><span>Orion-7 · fictional fixture</span></div>
+          <article class="report-stage">
+            <h1>Orion-7 推理引擎：架构取舍与生态风险</h1>
+            <div class="notice">演示说明：以下实体、资料与结论全部为虚构数据，仅用于展示证据分析与引用布局。</div>
+            <h3>核心结论</h3>
+            <p>Orion-7 以分层调度降低长上下文推理的峰值显存，但跨运行时适配仍是主要工程风险；吞吐收益必须与部署约束一起评价。</p>
+            <div class="evidence-table">
+              <div class="evidence-row head"><span>维度</span><span>工程观察</span><span>证据状态</span></div>
+              <div class="evidence-row"><span>调度</span><strong>分层队列减少空转</strong><span class="primary">3 条交叉印证</span></div>
+              <div class="evidence-row"><span>内存</span><strong>分块缓存压低峰值</strong><span>2 条资料支持</span></div>
+              <div class="evidence-row"><span>生态</span><strong>插件兼容仍需验证</strong><span>1 处证据缺口</span></div>
+            </div>
+            <h3>引用</h3>
+            <p class="primary">Northstar Labs Docs · Vector Systems Blog · Open Compute Notes</p>
+          </article>
+        </section>
+
+        <section class="metrics panel">
+          <div class="panel-head"><strong>引用与来源</strong><span>FICTIONAL</span></div>
+          <div class="metrics-body">
+            <div class="source-count"><strong>28</strong><span>条资料汇入本轮研究</span></div>
+            <div class="coverage"><span>证据链已建立</span><span>✓</span></div>
+            <div class="citation"><span class="index">[1]</span><strong>Northstar Labs · Router Architecture</strong><span>架构与缓存策略</span></div>
+            <div class="citation"><span class="index">[2]</span><strong>Vector Systems · Toolchain Survey</strong><span>生态兼容与迁移成本</span></div>
+            <div class="citation"><span class="index">[3]</span><strong>Open Compute Notes · Edge Profile</strong><span>部署与内存带宽</span></div>
+          </div>
+          <div class="fictional-note">DEMO DATA · NOT A BENCHMARK</div>
+        </section>
+      </div>
+    </section>
+  </body>
+</html>

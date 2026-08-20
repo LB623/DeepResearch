@@ -1,0 +1,51 @@
+{
+  "candidates": [
+    {
+      "factor": 0.5,
+      "bpm": 60.99618064392586,
+      "period": 0.9836681471952939,
+      "beat_count": 53,
+      "match": 1.0,
+      "mean_abs_ms": 8.175384202217195,
+      "drift_ms": 1.7454952431647042,
+      "first_beat_has_transient": true
+    },
+    {
+      "factor": 1.0,
+      "bpm": 121.99236128785172,
+      "period": 0.49183407359764697,
+      "beat_count": 106,
+      "match": 1.0,
+      "mean_abs_ms": 8.524478204297989,
+      "drift_ms": 0.5565381205842024,
+      "first_beat_has_transient": true
+    },
+    {
+      "factor": 2.0,
+      "bpm": 243.98472257570344,
+      "period": 0.24591703679882349,
+      "beat_count": 212,
+      "match": 0.9669811320754716,
+      "mean_abs_ms": 7.83484738192541,
+      "drift_ms": 2.128683105464712,
+      "first_beat_has_transient": true
+    }
+  ],
+  "winner": {
+    "factor": 1.0,
+    "bpm": 121.99236128785172,
+    "period": 0.49183407359764697,
+    "beat_count": 106,
+    "match": 1.0,
+    "mean_abs_ms": 8.524478204297989,
+    "drift_ms": 0.5565381205842024,
+    "first_beat_has_transient": true
+  },
+  "winner_reason": "Highest transient coverage in the expected house-music BPM range, then lowest mean error and drift.",
+  "raw_fit": {
+    "bpm": 121.99236128785172,
+    "t0": 7.933565868635564,
+    "period": 0.49183407359764697,
+    "residual_max_ms": 14.540836621705466
+  }
+}

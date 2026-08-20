@@ -1,0 +1,337 @@
+@import "../../../frontend/src/global.css";
+@source "../../../frontend/src";
+@source "./";
+
+:root {
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 1920px;
+  height: 1080px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+
+body {
+  min-width: 1920px;
+  min-height: 1080px;
+}
+
+button,
+textarea,
+[role="button"] {
+  caret-color: var(--primary);
+}
+
+.capture-page {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at 80% 12%, rgb(29 111 95 / 7%), transparent 34%),
+    radial-gradient(circle at 16% 92%, rgb(139 198 183 / 8%), transparent 30%),
+    var(--background);
+}
+
+.capture-page::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgb(21 26 25 / 2.4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(21 26 25 / 2.4%) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+
+.capture-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  padding: 0 72px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
+  background: color-mix(in srgb, var(--background) 91%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.capture-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.capture-brand-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  box-shadow: 0 8px 22px -14px rgb(23 78 68 / 70%);
+}
+
+.capture-brand-name {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.capture-brand-subtitle {
+  margin: 2px 0 0;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.capture-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--muted-foreground);
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.capture-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+}
+
+.capture-meta-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 10px rgb(29 111 95 / 30%);
+}
+
+.capture-content {
+  position: relative;
+  z-index: 1;
+  height: 1000px;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(520px, 0.78fr);
+  gap: 42px;
+  width: 100%;
+  height: 100%;
+  padding: 44px 72px 54px;
+}
+
+.search-welcome,
+.search-evidence,
+.workflow-panel,
+.report-panel {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  box-shadow: 0 28px 80px -52px rgb(15 28 24 / 42%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.search-welcome {
+  overflow: hidden;
+}
+
+.search-welcome .welcome-stage {
+  max-width: none;
+  padding: 44px 52px 38px;
+}
+
+.search-welcome h1 {
+  max-width: 780px;
+  font-size: 50px;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.search-welcome header > p {
+  max-width: 710px;
+}
+
+.search-welcome form {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.search-evidence {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  padding: 34px;
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: var(--primary);
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 28px;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+}
+
+.panel-copy {
+  margin: 10px 0 24px;
+  color: var(--muted-foreground);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.demo-label {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 20px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: var(--secondary);
+  font-family: var(--font-data);
+  font-size: 10px;
+  letter-spacing: 0.11em;
+}
+
+.workflow-stage {
+  display: grid;
+  grid-template-columns: 430px minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 76px 122px 94px;
+}
+
+.workflow-intro {
+  align-self: center;
+}
+
+.workflow-intro .panel-title {
+  font-size: 48px;
+  line-height: 1.08;
+}
+
+.workflow-panel {
+  width: 100%;
+  padding: 34px;
+}
+
+.report-stage {
+  width: 100%;
+  height: 100%;
+  padding: 30px 118px 42px;
+}
+
+.report-panel {
+  position: relative;
+  width: 100%;
+  height: 928px;
+  overflow: hidden;
+}
+
+.report-panel > .flex {
+  height: 100%;
+}
+
+.report-panel [data-radix-scroll-area-viewport] > div {
+  display: block !important;
+}
+
+.report-panel [data-radix-scroll-area-viewport] > div > div {
+  max-width: 1160px;
+  padding-top: 28px;
+  padding-bottom: 34px;
+}
+
+.report-panel .report-markdown h1 {
+  margin-bottom: 18px;
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+.report-panel .report-markdown h2 {
+  margin-top: 24px;
+  margin-bottom: 9px;
+  padding-top: 18px;
+  font-size: 20px;
+}
+
+.report-panel .report-markdown p,
+.report-panel .report-markdown li {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.report-panel .report-markdown blockquote {
+  margin: 16px 0;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.report-panel .report-markdown table {
+  font-size: 12px;
+}
+
+.report-panel .report-markdown > div {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.report-panel th,
+.report-panel td {
+  padding: 7px 10px;
+}
+
+.report-panel .composer-dock {
+  padding: 9px 28px 14px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+}
+
+.report-panel [data-capture="report-document"] {
+  width: 100%;
+}
+
+.report-demo-label {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 4;
+  margin: 0;
+}
