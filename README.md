@@ -371,3 +371,19 @@ DeepResearch/
 - Milvus 保存提取后的事实记录，不保存原始文档 Chunk。
 - Prompt Quality Guards 已增强事实约束，但覆盖度、时效性和来源分级仍需继续优化。
 - 生产部署前需要补充鉴权、密钥管理、监控和更严格的安全策略。
+
+---
+
+## 第三方项目与致谢
+
+本项目的多源及多媒体检索能力引用并集成了
+[Battam1111/omniseek](https://github.com/Battam1111/omniseek)。OmniSeek 作为独立的
+MCP sidecar 提供搜索结果、媒体资产和可转写媒体句柄；DeepResearch 负责调用边界、预算、
+来源归一化、报告引用与前端呈现。
+
+- 上游项目：[https://github.com/Battam1111/omniseek](https://github.com/Battam1111/omniseek)
+- 上游许可证：[Apache License 2.0](https://github.com/Battam1111/omniseek/blob/main/LICENSE)
+- 当前部署固定使用 OmniSeek `v0.2.0` OCI 镜像及其镜像摘要，以保证可复现性。
+
+OmniSeek 的项目名称、源代码和商标归其原作者及贡献者所有；本项目与 OmniSeek 上游不存在
+官方隶属或背书关系。
