@@ -119,7 +119,10 @@ def _fallback_report(state: OverallState) -> dict:
             "## 已收集证据\n\n"
             f"{evidence}"
         )
-    report = _append_media_evidence(report, state.get("sources_gathered", []))
+    report, _ = _finalize_report(
+        report,
+        state.get("sources_gathered", []),
+    )
     return {"messages": [AIMessage(content=report)]}
 
 
@@ -191,6 +194,7 @@ async def _draft(state: OverallState, config: RunnableConfig) -> dict:
         research_proposal=state.get("plan", ""),
         outline=outline_text,
         summaries="\n---\n\n".join(state["web_search_result"]),
+        source_manifest=_source_manifest(state.get("sources_gathered", [])),
         revision_context=revision_context,
         previous_draft=previous_draft,
     )
@@ -215,6 +219,7 @@ async def _draft(state: OverallState, config: RunnableConfig) -> dict:
             research_proposal=state.get("plan", ""),
             outline=outline_text,
             summaries="\n---\n\n".join(state["web_search_result"]),
+            source_manifest=_source_manifest(state.get("sources_gathered", [])),
             revision_context=recovery_context,
             previous_draft=draft,
         )
@@ -262,6 +267,7 @@ async def _critic_review(state: OverallState, config: RunnableConfig) -> dict:
         research_topic=research_topic,
         research_proposal=state.get("plan", ""),
         summaries=summaries_text,
+        source_manifest=_source_manifest(state.get("sources_gathered", [])),
         unsupported_named_terms=(
             ", ".join(unsupported_named_terms) if unsupported_named_terms else "无"
         ),
@@ -436,26 +442,61 @@ def _source_for_material_index(sources: list[dict], index: int) -> dict | None:
     return None
 
 
+def _replace_markdown_target(
+    markdown: str,
+    *,
+    target: str,
+    value: str,
+    citation_number: int,
+) -> str:
+    pattern = re.compile(
+        r"\[[^\]\r\n]+\]\(\s*<?" + re.escape(target) + r">?\s*\)"
+    )
+    return pattern.sub(f"[{citation_number}](<{value}>)", markdown)
+
+
+def _source_number(source: dict, sources: list[dict]) -> int:
+    key = _source_key(source)
+    for index, candidate in enumerate(sources):
+        if _source_key(candidate) == key:
+            return index + 1
+    return len(sources) + 1
+
+
 def _normalize_citations(polished: str, sources: list[dict]) -> tuple[str, list[dict]]:
-    """Convert internal citation forms into user-facing markdown links."""
+    """Convert internal citations into numbered, real-URL markdown links."""
     unique_sources: list[dict] = []
     seen: set[str] = set()
 
-    def add_source(source: dict) -> None:
+    def add_source(source: dict) -> int:
         key = _source_key(source)
         if key not in seen:
             seen.add(key)
             unique_sources.append(source)
+        return _source_number(source, sources)
 
     for source in sources:
-        short_url = source.get("short_url")
-        value = source.get("value")
+        short_url = _safe_http_url(source.get("short_url"))
+        value = _safe_http_url(source.get("value"))
         media_urls = [url for url, _ in _media_assets(source)]
-        if short_url and value and short_url in polished:
-            polished = polished.replace(short_url, value)
-            add_source(source)
-        elif value and value in polished:
-            add_source(source)
+        if not value:
+            continue
+        if (short_url and short_url in polished) or value in polished:
+            number = add_source(source)
+            if short_url:
+                polished = _replace_markdown_target(
+                    polished,
+                    target=short_url,
+                    value=value,
+                    citation_number=number,
+                )
+                polished = polished.replace(short_url, value)
+            polished = _replace_markdown_target(
+                polished,
+                target=value,
+                value=value,
+                citation_number=number,
+            )
         elif any(url in polished for url in media_urls):
             add_source(source)
 
@@ -471,24 +512,101 @@ def _normalize_citations(polished: str, sources: list[dict]) -> tuple[str, list[
         if source is None or not source.get("value"):
             return match.group(0)
         value = source["value"]
-        add_source(source)
-        label = f"{pair[0]}-{pair[1]}"
-        return f"[{label}]({value})"
+        number = add_source(source)
+        return f"[{number}](<{value}>)"
 
     polished = _INTERNAL_CITATION_RE.sub(replace_internal_citation, polished)
 
     def replace_material(match: re.Match[str]) -> str:
-        label = match.group(0)[1:-1]
         index = int(match.group(2))
         source = _source_for_material_index(sources, index)
         if source is None or not source.get("value"):
             return match.group(0)
         value = source["value"]
-        add_source(source)
-        return f"[{label}]({value})"
+        number = add_source(source)
+        return f"[{number}](<{value}>)"
 
     polished = _MATERIAL_CITATION_RE.sub(replace_material, polished)
+    polished = re.sub(
+        r"\[([^\]\r\n]+)\]\(<?https?://search\.com/id/[^)>\s]+>?\)",
+        r"\1（来源未解析）",
+        polished,
+    )
+    polished = re.sub(
+        r"https?://search\.com/id/[^)\]\s]+",
+        "来源未解析",
+        polished,
+    )
     return polished, unique_sources
+
+
+def _publisher_label(url: str) -> str:
+    host = (urlsplit(url).hostname or "").casefold()
+    if host.startswith("www."):
+        host = host[4:]
+    if host.endswith("zhihu.com"):
+        return "知乎专栏（第三方内容平台）"
+    if host.endswith("csdn.net"):
+        return "CSDN（第三方内容平台）"
+    return host or "未知网站"
+
+
+def _source_manifest(sources: list[dict]) -> str:
+    if not sources:
+        return "无可用来源。"
+
+    entries: list[str] = []
+    for index, source in enumerate(sources, start=1):
+        url = _safe_http_url(source.get("value"))
+        if not url:
+            continue
+        title = _markdown_label(source.get("label")) or _publisher_label(url)
+        publisher = _publisher_label(url)
+        authority = (
+            "第三方内容平台，不得称为官方模型卡、官方公告或官方数据"
+            if "第三方内容平台" in publisher
+            else "未自动认定为官方；只有材料明确证明发布主体时才能称为官方来源"
+        )
+        short_url = _safe_http_url(source.get("short_url")) or "无"
+        entries.append(
+            f"- 材料 {index}: 标题={title}; 网站={publisher}; "
+            f"引用地址={short_url}; 真实地址={url}; 权威性={authority}"
+        )
+    return "\n".join(entries) or "无可用来源。"
+
+
+def _append_source_index(
+    report: str,
+    used_sources: list[dict],
+    all_sources: list[dict],
+) -> str:
+    if not used_sources or "## 来源索引（系统核验）" in report:
+        return report
+
+    lines = [
+        "## 来源索引（系统核验）",
+        "",
+        "> 以下索引按实际链接列出。检索到某个页面不代表该页面属于官方来源。",
+        "",
+    ]
+    for source in used_sources:
+        url = _safe_http_url(source.get("value"))
+        if not url:
+            continue
+        number = _source_number(source, all_sources)
+        title = _markdown_label(source.get("label")) or _publisher_label(url)
+        publisher = _publisher_label(url)
+        lines.append(
+            f"- **[{number}]** [{title}](<{url}>) — 网站：{publisher}"
+        )
+    return report.rstrip() + "\n\n" + "\n".join(lines).rstrip() + "\n"
+
+
+def _finalize_report(report: str, sources: list[dict]) -> tuple[str, list[dict]]:
+    report = _append_media_evidence(report, sources)
+    report, unique_sources = _normalize_citations(report, sources)
+    report = _append_source_index(report, unique_sources, sources)
+    return report, unique_sources
 
 
 def _normalized_headings(markdown: str) -> set[str]:
@@ -605,6 +723,7 @@ async def _cite_and_polish(state: OverallState, config: RunnableConfig) -> dict:
         research_topic=get_research_topic(state["messages"]),
         draft=draft_text,
         summaries="\n---\n\n".join(state["web_search_result"]),
+        source_manifest=_source_manifest(state.get("sources_gathered", [])),
         critic_feedback=state.get("critic_feedback", ""),
     )
     polished = Post.extract_pattern(raw, pattern="markdown")
@@ -621,11 +740,7 @@ async def _cite_and_polish(state: OverallState, config: RunnableConfig) -> dict:
         )
         polished = draft_text
 
-    polished = _append_media_evidence(
-        polished,
-        state.get("sources_gathered", []),
-    )
-    polished, unique_sources = _normalize_citations(
+    polished, unique_sources = _finalize_report(
         polished,
         state.get("sources_gathered", []),
     )

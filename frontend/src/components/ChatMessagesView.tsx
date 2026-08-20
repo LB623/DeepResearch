@@ -65,20 +65,28 @@ const mdComponents: Components = {
       {children}
     </p>
   ),
-  a: ({ className, children, href, ...props }) => (
-    <a
-      className={cn(
-        "font-medium text-primary underline decoration-primary/35 underline-offset-[3px] transition-colors hover:decoration-primary focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-        className,
-      )}
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  a: ({ className, children, href, ...props }) => {
+    const isCitation =
+      typeof children === "string" && /^\d{1,3}$/.test(children);
+
+    return (
+      <a
+        className={cn(
+          isCitation
+            ? "mx-1 inline-flex min-w-5 -translate-y-px items-center justify-center rounded-md border border-primary/20 bg-primary/[0.07] px-1.5 py-0.5 text-[0.72em] font-semibold leading-none text-primary no-underline transition-colors hover:bg-primary/[0.13] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            : "font-medium text-primary underline decoration-primary/35 underline-offset-[3px] transition-colors hover:decoration-primary focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          className,
+        )}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={isCitation ? `打开来源 ${children}` : undefined}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
   img: ({ className, alt, ...props }) => (
     <img
       className={cn(

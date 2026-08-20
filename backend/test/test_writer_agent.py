@@ -15,9 +15,11 @@ from agent.sub_agents.writer_agent import (
     _critic_review,
     _draft,
     _draft_rejection_reason,
+    _fallback_report,
     _outline,
     _polish_rejection_reason,
     _route_after_critic,
+    _source_manifest,
     _unsupported_named_terms,
     writer_agent_graph,
 )
@@ -38,6 +40,58 @@ class TestWriterAgentGraphTopology:
         assert _DRAFT in nodes
         assert _CRITIC_REVIEW in nodes
         assert _CITE_AND_POLISH in nodes
+
+    def test_budget_fallback_resolves_internal_links_and_indexes_real_source(self):
+        result = _fallback_report(
+            {
+                "report_draft": (
+                    "# Report\n\n架构参数"
+                    "[知乎](https://search.com/id/0-0)。"
+                ),
+                "sources_gathered": [
+                    {
+                        "short_url": "https://search.com/id/0-0",
+                        "value": "https://zhuanlan.zhihu.com/p/example",
+                        "label": "Qwen 架构分析",
+                    }
+                ],
+            }
+        )
+
+        report = result["messages"][0].content
+        assert "架构参数[1](<https://zhuanlan.zhihu.com/p/example>)" in report
+        assert "## 来源索引（系统核验）" in report
+        assert "知乎专栏（第三方内容平台）" in report
+        assert "search.com" not in report
+
+    def test_budget_fallback_disables_unresolved_internal_links(self):
+        result = _fallback_report(
+            {
+                "report_draft": (
+                    "# Report\n\n结论"
+                    "[未知来源](https://search.com/id/9-9)。"
+                ),
+                "sources_gathered": [],
+            }
+        )
+
+        report = result["messages"][0].content
+        assert "未知来源（来源未解析）" in report
+        assert "search.com" not in report
+
+    def test_source_manifest_marks_third_party_platforms_as_non_official(self):
+        manifest = _source_manifest(
+            [
+                {
+                    "short_url": "https://search.com/id/0-0",
+                    "value": "https://zhuanlan.zhihu.com/p/example",
+                    "label": "架构解读",
+                }
+            ]
+        )
+
+        assert "知乎专栏（第三方内容平台）" in manifest
+        assert "不得称为官方模型卡" in manifest
 
 
     def test_media_evidence_gallery_is_bounded_and_rejects_unsafe_urls(self):
@@ -290,6 +344,9 @@ class TestDraft:
             assert "report_draft" in result
             assert "报告正文" in result["report_draft"]
             assert result.get("revision_count", 0) == 0
+            assert "https://real.com/1" in (
+                mock_agent.astep.await_args.kwargs["source_manifest"]
+            )
 
     @pytest.mark.asyncio
     async def test_revision_with_feedback(self, sample_state):
@@ -663,8 +720,8 @@ class TestCiteAndPolish:
             result = await _cite_and_polish(state, {"configurable": {}})
 
             final_content = result["messages"][0].content
-            assert "[材料-00](https://real.com/1)" in final_content
-            assert "[材料-02](https://real.com/3)" in final_content
+            assert "[1](<https://real.com/1>)" in final_content
+            assert "[3](<https://real.com/3>)" in final_content
             assert "[材料-00][材料-02]" not in final_content
             assert len(result["sources_gathered"]) == 2
 
@@ -693,7 +750,7 @@ class TestCiteAndPolish:
             result = await _cite_and_polish(state, {"configurable": {}})
 
             final_content = result["messages"][0].content
-            assert "[材料-00](https://real.com/1)" in final_content
+            assert "[1](<https://real.com/1>)" in final_content
             assert "](" in final_content
             assert "https://real.com/1](https://real.com/1)" not in final_content
 
@@ -734,9 +791,9 @@ class TestCiteAndPolish:
             result = await _cite_and_polish(state, {"configurable": {}})
 
             final_content = result["messages"][0].content
-            assert "[0-0](https://real.com/1)" in final_content
-            assert "[1-1](https://real.com/2)" in final_content
-            assert "[3-7](https://real.com/3)" in final_content
+            assert "[1](<https://real.com/1>)" in final_content
+            assert "[2](<https://real.com/2>)" in final_content
+            assert "[3](<https://real.com/3>)" in final_content
             assert len(result["sources_gathered"]) == 3
 
     @pytest.mark.asyncio
