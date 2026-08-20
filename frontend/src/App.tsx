@@ -5,12 +5,14 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { ProcessedEvent } from "@/components/ActivityTimeline";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { Button } from "@/components/ui/button";
+import { createLocalLangGraphClient } from "@/lib/langgraphClient";
 import { AlertCircle } from "lucide-react";
 
 const ChatMessagesView = lazy(() =>
@@ -45,6 +47,13 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [savedEffort, setSavedEffort] = useState("medium");
   const [savedModel, setSavedModel] = useState("qwen-plus-latest");
+  const langGraphClient = useMemo(
+    () =>
+      createLocalLangGraphClient(
+        import.meta.env.DEV ? "http://localhost:2024" : window.location.origin,
+      ),
+    [],
+  );
   const thread = useStream<{
     messages: Message[];
     initial_search_query_count: number;
@@ -52,7 +61,7 @@ export default function App() {
     reasoning_model: string;
     plan_status: string;
   }>({
-    apiUrl: import.meta.env.DEV ? "http://localhost:2024" : "",
+    client: langGraphClient,
     assistantId: "agent",
     messagesKey: "messages",
     onUpdateEvent: (event: StreamUpdateEvent) => {
@@ -186,13 +195,21 @@ export default function App() {
           id: Date.now().toString(),
         },
       ];
-      thread.submit({
-        messages: newMessages,
-        initial_search_query_count: initial_search_query_count,
-        max_research_loops: max_research_loops,
-        reasoning_model: currentModel,
-        plan_status: awaitingPlanConfirmation,
-      });
+      thread.submit(
+        {
+          messages: newMessages,
+          initial_search_query_count: initial_search_query_count,
+          max_research_loops: max_research_loops,
+          reasoning_model: currentModel,
+          plan_status: awaitingPlanConfirmation,
+        },
+        {
+          // Kimi can have a long time-to-first-token. Keep the run alive when
+          // the SDK replaces an idle SSE connection, then resume its events.
+          onDisconnect: "continue",
+          streamResumable: true,
+        },
+      );
     },
     [awaitingPlanConfirmation, thread, savedEffort, savedModel]
   );

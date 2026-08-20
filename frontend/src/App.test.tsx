@@ -68,6 +68,10 @@ describe("App user flows", () => {
         reasoning_model: "model-a",
         plan_status: "unconfirmed",
       }),
+      {
+        onDisconnect: "continue",
+        streamResumable: true,
+      },
     );
   });
 
@@ -124,6 +128,10 @@ describe("App user flows", () => {
           }),
         ]),
       }),
+      {
+        onDisconnect: "continue",
+        streamResumable: true,
+      },
     );
   });
 });
