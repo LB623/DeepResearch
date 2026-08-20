@@ -1,8 +1,8 @@
 <h1 align="center">🔬 DeepResearch</h1>
 
 <p align="center">
-  <strong>基于 LangGraph 的多阶段深度研究 Agent</strong><br>
-  <sub>融合实时网络检索、事实级长期记忆、双重 Critic 审查与可追溯引用</sub>
+  <strong>可恢复、证据优先的多阶段深度研究 Agent</strong><br>
+  <sub>融合多源与多媒体检索、事实级长期记忆、双重 Critic 审查和可回查引用</sub>
 </p>
 
 <p align="center">
@@ -18,19 +18,20 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/LangGraph-Multi--Stage%20Agent-1C3C3C" alt="LangGraph Multi-Stage Agent">
   <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black" alt="React 19">
+  <img src="https://img.shields.io/badge/Retrieval-DashScope%20%2B%20OmniSeek-177D6B" alt="DashScope and OmniSeek retrieval">
   <img src="https://img.shields.io/badge/Memory-Milvus-00A1EA" alt="Milvus Fact Memory">
   <img src="https://img.shields.io/badge/Recovery-Redis%20Checkpoint-DC382D?logo=redis&logoColor=white" alt="Redis Checkpoint">
   <img src="https://img.shields.io/badge/Quality-make%20verify-brightgreen" alt="make verify">
 </p>
 
 <p align="center">
-  <strong>计划确认</strong> → <strong>深度检索</strong> → <strong>证据反思</strong> → <strong>报告写作</strong> → <strong>审查修订</strong> → <strong>引用校验</strong>
+  <strong>问题输入</strong> → <strong>计划确认</strong> → <strong>多源检索</strong> → <strong>证据反思</strong> → <strong>审查修订</strong> → <strong>引用归一化</strong>
 </p>
 
 <p align="center">
-  <img src="./app.png" width="92%" alt="DeepResearch Web UI">
+  <img src="./docs/assets/deepresearch-ui-current.jpg" width="92%" alt="DeepResearch 当前研究工作台">
   <br>
-  <sub>可视化展示研究计划、检索过程、Agent 状态与最终报告</sub>
+  <sub>当前桌面端界面：研究问题、研究深度、模型选择和研究路径均在同一工作台内完成</sub>
 </p>
 
 ---
@@ -39,17 +40,25 @@
 
 ![DeepResearch Agent 核心亮点](./docs/assets/deepresearch-highlights-v2.png)
 
-| 🧭 **计划确认** | 🔎 **并行深度检索** |
+| 🧭 **计划先行** | 🔎 **多源与多媒体检索** |
 |---|---|
-| 支持用户确认、反馈与重新规划，再进入正式研究。 | 自动拆分问题、去重查询、并行搜索，并由 Research Critic 判断是否补充证据。 |
+| 先生成研究计划，支持确认、反馈与重新规划，再进入正式检索。 | DashScope 与 OmniSeek 可按 `augment`、`fallback`、`only` 策略运行；结果统一去重，并保留图片及可转写媒体句柄。 |
 | 🧠 **事实级长期记忆** | ✍️ **Writer/Critic 循环** |
-| 从 Milvus 召回历史事实，并将新事实写回长期记忆。 | 依次生成大纲、草稿、审查意见和终稿，按反馈迭代修订。 |
-| 🛡️ **事实与引用防护** | ♻️ **Checkpoint 恢复** |
-| 校验章节、专名和 URL，拒绝未知链接与截断终稿。 | 使用稳定 `thread_id` 恢复任务，避免重复外部搜索。 |
+| 从 Milvus 召回历史事实，对结果做生命周期过滤、质量重排和去重，再将新事实写回长期记忆。 | Research Critic 判断证据缺口；Writer Critic 对草稿进行审查并触发有限次修订。 |
+| 🛡️ **来源与引用防护** | ♻️ **可恢复研究任务** |
+| 只把已检索到的真实 URL 写入终稿；数字引用可直接回源，第三方来源显式标记，内部占位链接禁止跳转。 | Redis Checkpoint 持久化图状态和任务预算；前端使用可恢复流继续接收长任务结果。 |
 | 📊 **可复现评测** | 🖥️ **可视化交互** |
-| 提供固定题集、LLM-as-Judge、A/B 与故障注入测试。 | React 前端展示计划、研究过程、状态和最终报告。 |
+| 提供 smoke/core/full 固定题集、离线聚合、输出契约、检索 A/B 与故障注入测试。 | 浅色研究工作台展示计划确认、实时路径、结构化 Markdown 报告、媒体证据和来源索引。 |
 
 > 本项目采用事实级 Memory-Augmented RAG，而不是传统的上传文档问答 RAG。Milvus 保存提取后的事实记录，Redis 分别承担搜索缓存与任务 Checkpoint。
+
+### 当前交互流程
+
+1. 在欢迎页输入研究问题，选择研究深度和推理模型。
+2. Agent 先返回研究计划；用户确认后才启动正式检索，也可以补充反馈要求重规划。
+3. 研究过程中实时展示查询生成、来源汇集、证据反思和终稿整理等节点。
+4. 最终报告以结构化 Markdown 展示；数字引用打开真实来源，报告末尾追加系统核验的来源索引。
+5. OmniSeek 返回图片、音频或视频句柄时，报告会追加经过 URL 校验的多媒体证据区。
 
 ---
 
@@ -105,7 +114,7 @@ Web Search 次数、LLM token、墙钟时间和无进展轮数等单任务预算
 - Node.js `22`
 - Docker 与 Docker Compose
 - OpenAI-compatible LLM 和 Embedding 服务
-- DashScope Application/MCP Web Search 配置
+- 至少一个检索提供方：DashScope Application 或自托管 OmniSeek MCP
 
 ### 1. 安装依赖
 
@@ -156,7 +165,8 @@ curl -fsS http://127.0.0.1:8765/healthz
 cp backend/.env.example backend/.env
 ```
 
-然后至少替换以下模型、搜索与存储配置：
+然后按实际部署替换模型、检索与存储配置。下面同时展示 DashScope 与 OmniSeek；如果使用
+`OMNISEEK_MODE=only`，可以不配置 DashScope：
 
 ```dotenv
 # 研究模型 / 推理模型
@@ -271,7 +281,7 @@ cd ..
 
 默认地址：
 
-- 🌐 Web UI: [http://localhost:5173](http://localhost:5173)
+- 🌐 Web UI: [http://localhost:5173/app/](http://localhost:5173/app/)
 - 🔗 LangGraph API: [http://localhost:2024](http://localhost:2024)
 - 🧩 LangGraph Studio: [https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
 
@@ -286,12 +296,17 @@ cd ..
 | 查询去重 A/B | 状态查询重复率 `50% → 0%` | 10 个固定主题均成功完成；平均状态查询数 `6 → 3` |
 | Checkpoint 故障恢复 | Web Search 调用 `6 → 3` | Critique 节点故障后恢复，最终执行查询数保持为 3 |
 | Prompt Quality Guards | 幻觉题数 `3/5 → 0/5` | 事实约束增强，但固定集均分 `4.36 → 4.24`，综合质量仍需优化 |
+| Milvus 质量重排 | NDCG@5 `24.6% → 39.4%` | 70 个冻结查询、1,000 条受控事实；重复率 `29.4% → 0%` |
+| Writer 对抗语料 | 39/39 判定正确 | 确定性输出契约语料；不调用模型，不代表线上报告整体质量 |
 
 详细报告：
 
 - [查询去重 Benchmark](./docs/reviews/2026-06-16-agent-harness-benchmark.md)
 - [Checkpoint Resume Benchmark](./docs/reviews/2026-06-16-agent-checkpoint-resume-benchmark.md)
 - [Prompt Quality Guards E2E A/B](./docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md)
+- [Milvus 检索重排 A/B](./docs/reviews/2026-08-16-milvus-retrieval-rerank-v2.md)
+- [Writer 输出契约对抗评测](./docs/reviews/2026-08-16-writer-guard-corpus.md)
+- [固定 E2E 评测集设计与成本边界](./docs/reviews/2026-08-19-e2e-fixed-set.md)
 
 ### 运行测试与评测
 
@@ -305,9 +320,13 @@ make backend-test
 # 固定题集端到端与组件级评测
 cd backend
 ../.venv/bin/python -m eval.run_eval \
-  --mode all \
-  --test-set test_set_basic_5.json \
+  --mode e2e \
+  --test-set test_set_e2e.json \
+  --tier smoke \
   --output eval_runs/local_eval.json
+
+# 不调用外部服务的 Writer 输出契约对抗评测
+../.venv/bin/python -m eval.run_guard_eval
 
 # 查询去重 A/B 基准测试
 ../.venv/bin/python -m eval.run_benchmark --variant both
@@ -331,6 +350,9 @@ DeepResearch/
 │   │   ├── budget.py                # 单任务搜索/token/时间预算
 │   │   ├── checkpoint.py            # Redis/Memory Checkpoint
 │   │   ├── resume.py                # 任务恢复辅助接口
+│   │   ├── retrieval.py             # DashScope/OmniSeek 协调、超时、去重与媒体结果
+│   │   ├── retrieval_preflight.py   # OmniSeek MCP 检索验收探针
+│   │   ├── multimodal_preflight.py  # 图片与音视频句柄验收探针
 │   │   ├── sub_agents/
 │   │   │   ├── research_agent.py    # 查询、检索、事实记忆、反思
 │   │   │   └── writer_agent.py      # 大纲、草稿、审查、终稿
@@ -342,9 +364,9 @@ DeepResearch/
 │   └── test/                         # 单元与回归测试
 ├── frontend/                         # React + Vite Web UI
 ├── infrastructure/
-│   ├── milvus/                    # Milvus Docker Compose
-│   ├── omniseek/                  # 固定版本的 OmniSeek MCP sidecar
-│   └── redis/                     # Redis Stack Docker Compose
+│   ├── milvus/                       # Milvus Docker Compose
+│   ├── omniseek/                     # 固定版本的 OmniSeek MCP sidecar
+│   └── redis/                        # Redis Stack Docker Compose
 ├── docs/
 │   ├── assets/                       # README 图片与架构图
 │   ├── plans/                        # 已接受的工程设计与测试缝
@@ -369,6 +391,9 @@ DeepResearch/
 
 - Web Search 至少需要 DashScope Application 或自托管 OmniSeek MCP；两者同时配置时默认并行增强并去重。
 - Milvus 保存提取后的事实记录，不保存原始文档 Chunk。
+- 当前的“多媒体”指 Agent 能检索并展示 OmniSeek 返回的图片、音频和视频证据句柄，不等同于用户上传图片/视频后进行视觉问答。
+- 引用归一化保证链接来自当次检索并阻断内部占位跳转，但不自动证明每个自然语言结论都被对应来源充分蕴含；关键结论仍需人工回查原始来源。
+- Checkpoint 提供状态恢复而非跨 Redis、Milvus 与外部 MCP 的 exactly-once 事务；进程在外部副作用完成后崩溃时，节点仍可能被重放。
 - Prompt Quality Guards 已增强事实约束，但覆盖度、时效性和来源分级仍需继续优化。
 - 生产部署前需要补充鉴权、密钥管理、监控和更严格的安全策略。
 

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000" role="img" aria-labelledby="svg-title svg-desc">
   <title id="svg-title">DeepResearch Agent 系统架构</title>
-  <desc id="svg-desc">展示用户问题经过 React Web UI、Planner、ResearchAgent 和 WriterAgent 生成 Markdown 研究报告，并连接 Milvus、Redis、LangGraph Checkpoint、LLM 与 DashScope Application。</desc>
+  <desc id="svg-desc">展示用户问题经过 React Web UI、Planner、ResearchAgent 和 WriterAgent 生成 Markdown 研究报告，并连接 Milvus、Redis、LangGraph Checkpoint、LLM、DashScope 与 OmniSeek。</desc>
   <defs>
     <marker id="arrow-black" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#111111"/>
@@ -127,16 +127,21 @@
   <text class="label" x="1180" y="835" text-anchor="middle">OpenAI-compatible LLM</text>
   <text class="small" x="1180" y="862" text-anchor="middle">计划、反思与报告生成</text>
 
-  <rect class="box" x="1380" y="790" width="300" height="100"/>
-  <text class="label" x="1530" y="835" text-anchor="middle">DashScope Application</text>
-  <text class="small" x="1530" y="862" text-anchor="middle">实时网页搜索</text>
+  <rect class="box" x="1350" y="790" width="190" height="100"/>
+  <text class="label" x="1445" y="830" text-anchor="middle">DashScope</text>
+  <text class="small" x="1445" y="858" text-anchor="middle">应用级网页搜索</text>
+
+  <rect class="box" x="1560" y="790" width="190" height="100"/>
+  <text class="label" x="1655" y="830" text-anchor="middle">OmniSeek MCP</text>
+  <text class="small" x="1655" y="858" text-anchor="middle">多源与媒体检索</text>
 
   <!-- Infrastructure dependencies: exact only -->
   <path class="dep" d="M 215 790 L 215 700 L 790 700 L 790 226 L 820 226"/>
   <path class="dep" d="M 820 566 L 520 566 L 520 735 L 215 735 L 215 790"/>
 
   <path class="dep" d="M 520 790 L 520 720 L 780 720 L 780 396 L 820 396"/>
-  <path class="dep" d="M 1530 790 L 1530 710 L 1110 710 L 1110 396 L 1060 396"/>
+  <path class="dep" d="M 1445 790 L 1445 710 L 1110 710 L 1110 396 L 1060 396"/>
+  <path class="dep" d="M 1655 790 L 1655 690 L 1135 690 L 1135 405 L 1060 405"/>
 
   <path class="dep" d="M 1180 790 L 1180 760 L 570 760 L 570 385"/>
   <path class="dep" d="M 1180 790 L 1180 730 L 1080 730 L 1080 655"/>
