@@ -107,4 +107,3 @@ run('ffmpeg', [
 
 unlinkSync(bgmRaw);
 unlinkSync(noBgmRaw);
-

@@ -214,6 +214,13 @@ infrastructure/omniseek/inbox/*
 !infrastructure/omniseek/inbox/.gitkeep
 .learnings/
 
+# Local generated deliverables and scratch artifacts
+output/
+tmp/
+
+# Superseded draft retained locally for comparison; canonical set is test_set_e2e.json
+backend/eval/test_set_e2e_50.json
+
 # Credentials and private keys
 *.pem
 *.key
