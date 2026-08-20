@@ -544,7 +544,7 @@ async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     long2short = resolve_urls(response, state["id"])
     sources = []
     for hit in batch.hits:
-        source = {
+        source: dict[str, object] = {
             "short_url": long2short[hit.url],
             "value": hit.url,
             "label": hit.title,
@@ -558,12 +558,16 @@ async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     raw_results = json.dumps(
         [
             {
-                "snippet": i["snippet"],
-                "title": i["title"],
-                "url": long2short[i["url"]],
-                **({"media": i["media"]} if i.get("media") else {}),
+                "snippet": hit.snippet,
+                "title": hit.title,
+                "url": long2short[hit.url],
+                **(
+                    {"media": [asset.as_dict() for asset in hit.media]}
+                    if hit.media
+                    else {}
+                ),
             }
-            for i in response
+            for hit in batch.hits
         ],
         ensure_ascii=False,
         indent=4,
