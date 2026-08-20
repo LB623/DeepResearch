@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 import time
 from typing import Any
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage
@@ -74,6 +75,8 @@ _NAMED_CLAIM_CONTEXT = ("工具", "模型", "平台", "框架", "产品", "系�
 _MARKDOWN_HEADING_RE = re.compile(r"^(#{1,2})\s+(.+?)\s*$", re.MULTILINE)
 _MARKDOWN_URL_RE = re.compile(r"\[[^\]]+\]\((https?://[^)\s]+)\)")
 _MIN_POLISH_LENGTH_RATIO = 0.75
+_MEDIA_KIND_LABELS = {"image": "图片", "video": "视频", "audio": "音频"}
+_MAX_REPORT_MEDIA = 6
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -116,6 +119,7 @@ def _fallback_report(state: OverallState) -> dict:
             "## 已收集证据\n\n"
             f"{evidence}"
         )
+    report = _append_media_evidence(report, state.get("sources_gathered", []))
     return {"messages": [AIMessage(content=report)]}
 
 
@@ -334,6 +338,87 @@ def _source_key(source: dict) -> str:
     return source.get("short_url") or source.get("value") or repr(source)
 
 
+def _safe_http_url(value: object) -> str:
+    url = str(value or "").strip()
+    if not url or len(url) > 2048 or any(char.isspace() for char in url):
+        return ""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return ""
+    if parts.scheme not in {"http", "https"} or not parts.netloc:
+        return ""
+    if parts.username or parts.password:
+        return ""
+    return url
+
+
+def _media_assets(source: dict) -> list[tuple[str, str]]:
+    media = source.get("media")
+    if not isinstance(media, list):
+        return []
+
+    assets: list[tuple[str, str]] = []
+    for item in media[:12]:
+        if not isinstance(item, dict):
+            continue
+        url = _safe_http_url(item.get("url"))
+        kind = str(item.get("kind") or "").casefold()
+        if not url or kind not in _MEDIA_KIND_LABELS:
+            continue
+        assets.append((url, kind))
+        if len(assets) >= 3:
+            break
+    return assets
+
+
+def _markdown_label(value: object) -> str:
+    cleaned = re.sub(r"[\[\]\r\n]+", " ", str(value or "媒体证据"))
+    return re.sub(r"\s+", " ", cleaned).strip()[:120]
+
+
+def _append_media_evidence(report: str, sources: list[dict]) -> str:
+    """Append a deterministic gallery containing only provider-returned media."""
+    blocks: list[str] = []
+    seen: set[str] = set()
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        source_url = _safe_http_url(source.get("value"))
+        label = _markdown_label(source.get("label")) or "媒体证据"
+        for media_url, kind in _media_assets(source):
+            if media_url in seen or media_url in report:
+                continue
+            seen.add(media_url)
+            kind_label = _MEDIA_KIND_LABELS[kind]
+            source_link = (
+                f" · [查看原始来源](<{source_url}>)" if source_url else ""
+            )
+            if kind == "image":
+                blocks.append(
+                    f"### {label}\n\n"
+                    f"![{label}](<{media_url}>)\n\n"
+                    f"{kind_label}证据{source_link}"
+                )
+            else:
+                blocks.append(
+                    f"- [{kind_label}：{label}](<{media_url}>){source_link}"
+                )
+            if len(blocks) >= _MAX_REPORT_MEDIA:
+                break
+        if len(blocks) >= _MAX_REPORT_MEDIA:
+            break
+
+    if not blocks:
+        return report
+    return (
+        report.rstrip()
+        + "\n\n## 多媒体证据\n\n"
+        + "\n\n".join(blocks)
+        + "\n"
+    )
+
+
 def _source_for_material_index(sources: list[dict], index: int) -> dict | None:
     """Resolve `[材料-02]` to the corresponding gathered source.
 
@@ -365,10 +450,13 @@ def _normalize_citations(polished: str, sources: list[dict]) -> tuple[str, list[
     for source in sources:
         short_url = source.get("short_url")
         value = source.get("value")
+        media_urls = [url for url, _ in _media_assets(source)]
         if short_url and value and short_url in polished:
             polished = polished.replace(short_url, value)
             add_source(source)
         elif value and value in polished:
+            add_source(source)
+        elif any(url in polished for url in media_urls):
             add_source(source)
 
     sources_by_pair: dict[tuple[int, int], dict] = {}
@@ -490,6 +578,7 @@ def _polish_rejection_reason(
             for url in (source.get("short_url"), source.get("value"))
             if url
         )
+        allowed_urls.update(url for url, _ in _media_assets(source))
     unknown_urls = _markdown_urls(polished) - allowed_urls
     if unknown_urls:
         return f"unknown citation URL: {sorted(unknown_urls)[0]}"
@@ -532,6 +621,10 @@ async def _cite_and_polish(state: OverallState, config: RunnableConfig) -> dict:
         )
         polished = draft_text
 
+    polished = _append_media_evidence(
+        polished,
+        state.get("sources_gathered", []),
+    )
     polished, unique_sources = _normalize_citations(
         polished,
         state.get("sources_gathered", []),

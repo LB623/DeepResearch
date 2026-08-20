@@ -79,6 +79,19 @@ const mdComponents: Components = {
       {children}
     </a>
   ),
+  img: ({ className, alt, ...props }) => (
+    <img
+      className={cn(
+        "my-5 max-h-[34rem] w-auto max-w-full rounded-xl border border-border bg-secondary/35 object-contain shadow-sm",
+        className,
+      )}
+      alt={alt || "检索到的媒体证据"}
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      {...props}
+    />
+  ),
   strong: ({ className, children, ...props }) => (
     <strong className={cn("font-semibold text-foreground", className)} {...props}>
       {children}

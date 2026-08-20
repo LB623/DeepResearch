@@ -10,6 +10,7 @@ from agent.sub_agents.writer_agent import (
     _CRITIC_REVIEW,
     _DRAFT,
     _OUTLINE,
+    _append_media_evidence,
     _cite_and_polish,
     _critic_review,
     _draft,
@@ -37,6 +38,32 @@ class TestWriterAgentGraphTopology:
         assert _DRAFT in nodes
         assert _CRITIC_REVIEW in nodes
         assert _CITE_AND_POLISH in nodes
+
+
+    def test_media_evidence_gallery_is_bounded_and_rejects_unsafe_urls(self):
+        sources = [
+            {
+                "label": "Vision [demo]",
+                "value": "https://example.com/article",
+                "media": [
+                    {"url": "https://cdn.example.com/figure.png", "kind": "image"},
+                    {"url": "javascript:alert(1)", "kind": "image"},
+                    {
+                        "url": "https://user:secret@cdn.example.com/private.png",
+                        "kind": "image",
+                    },
+                    {"url": "https://cdn.example.com/demo.mp4", "kind": "video"},
+                ],
+            }
+        ]
+
+        report = _append_media_evidence("# Report\n\nEvidence.", sources)
+
+        assert "## 多媒体证据" in report
+        assert "![Vision demo](<https://cdn.example.com/figure.png>)" in report
+        assert "[视频：Vision demo](<https://cdn.example.com/demo.mp4>)" in report
+        assert "javascript:" not in report
+        assert "user:secret" not in report
 
     @pytest.mark.asyncio
     async def test_graph_stops_before_llm_when_token_budget_is_exhausted(
@@ -730,6 +757,44 @@ class TestCiteAndPolish:
 
             assert len(result["sources_gathered"]) == 1
             assert result["sources_gathered"][0]["value"] == "https://real.com/1"
+
+    @pytest.mark.asyncio
+    async def test_verified_media_is_appended_and_retained_as_a_source(
+        self,
+        sample_state,
+    ):
+        state = {
+            **sample_state,
+            "report_draft": "# Report\n\nSupported conclusion.",
+            "sources_gathered": [
+                {
+                    "short_url": "https://search.com/id/0-0",
+                    "value": "https://real.com/1",
+                    "label": "Architecture diagram",
+                    "media": [
+                        {
+                            "url": "https://cdn.real.com/diagram.webp",
+                            "kind": "image",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        with patch("agent.sub_agents.writer_agent.Agent") as mock_agent_cls:
+            mock_agent = MagicMock()
+            mock_agent.astep = AsyncMock(
+                return_value="```markdown\n# Report\n\nSupported conclusion.\n```"
+            )
+            mock_agent_cls.return_value = mock_agent
+
+            result = await _cite_and_polish(state, {"configurable": {}})
+
+        content = result["messages"][0].content
+        assert "## 多媒体证据" in content
+        assert "https://cdn.real.com/diagram.webp" in content
+        assert "https://real.com/1" in content
+        assert result["sources_gathered"] == [state["sources_gathered"][0]]
 
 
 # ═══════════════════════════════════════════════════════════════════════

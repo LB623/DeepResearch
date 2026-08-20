@@ -211,10 +211,12 @@ web_searcher_instructions = """# 角色定义
 	{
 		"snippet": "xxx（返回的相关片段）",
 		"url": "https://xxxx",
-		"title": "xxx（当前返回片段的搜索主题）"
+		"title": "xxx（当前返回片段的搜索主题）",
+		"media": [{"url": "https://xxxx/image.png", "kind": "image"}]
 	}
 ]
 ```
+- `media` 是检索源明确返回的图片、视频或音频地址；可以说明该来源附带多媒体材料，但未经过视觉/转写分析时，不得仅凭 URL 猜测其具体内容。
 
 # Output Format
 你输出的内容是一段放在```text 和 ```之间的文本，并且针对所有引用的内容用标准的markdown下对url进行引用的格式：[代号（可以是网站名，也可以是主题，3-5个字）](url)，下面是一个样例你可以参考
