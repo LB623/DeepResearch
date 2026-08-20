@@ -2,7 +2,17 @@ PYTHON ?= .venv/bin/python
 NPM ?= npm
 UV ?= uv
 
-.PHONY: diff-check backend-lock backend-test backend-lint backend-typecheck frontend-lint frontend-test frontend-build verify
+.PHONY: diff-check backend-lock backend-test backend-lint backend-typecheck frontend-lint frontend-test frontend-build omniseek-up omniseek-rotate-token verify
+
+OMNISEEK_COMPOSE := infrastructure/omniseek/docker-compose.yml
+
+omniseek-up:
+	$(PYTHON) infrastructure/omniseek/bootstrap.py
+	docker compose -f $(OMNISEEK_COMPOSE) up -d
+
+omniseek-rotate-token:
+	$(PYTHON) infrastructure/omniseek/bootstrap.py --rotate
+	docker compose -f $(OMNISEEK_COMPOSE) up -d --force-recreate
 
 diff-check:
 	git diff --check

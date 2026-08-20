@@ -81,6 +81,13 @@ class WebSearchState(TypedDict):
     id: int
     use_omniseek: bool
 
+
+class FallbackSearchState(TypedDict):
+    search_queries: list[str]
+    start_id: int
+    omniseek_remaining: int
+
+
 class PlanState(TypedDict):
     plan: str
 

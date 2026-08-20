@@ -4,6 +4,8 @@ services:
     container_name: deepresearch-omniseek
     restart: unless-stopped
     init: true
+    entrypoint: ["/bin/sh", "/opt/deepresearch/omniseek-entrypoint.sh"]
+    command: ["python", "-m", "omniseek.serve_http"]
     ports:
       - "127.0.0.1:8765:8765"
     environment:
@@ -13,6 +15,7 @@ services:
     volumes:
       - ./data:/root/.omniseek
       - ./inbox:/root/omniseek-inbox
+      - ./container-entrypoint.sh:/opt/deepresearch/omniseek-entrypoint.sh:ro
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8765/healthz"]
       interval: 15s

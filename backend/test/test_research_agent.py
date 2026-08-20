@@ -1,17 +1,19 @@
 """Integration tests for ResearchAgent sub-graph — nodes, routing, and graph topology."""
 
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from agent.retrieval import ProviderFailure, SearchBatch, SearchHit
 from agent.sub_agents.research_agent import (
     _CRITIQUE,
+    _FALLBACK_SEARCH,
     _GENERATE_QUERIES,
     _WEB_SEARCH,
     _critique,
     _dedupe_queries,
+    _fallback_search,
     _fan_out_to_web_search,
     _generate_queries,
     _normalize_query,
@@ -24,6 +26,7 @@ from agent.sub_agents.research_agent import (
 # Graph topology
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestResearchAgentGraphTopology:
     def test_graph_is_compiled(self):
         assert research_agent_graph is not None
@@ -34,6 +37,7 @@ class TestResearchAgentGraphTopology:
         assert "budget_guard" in nodes
         assert _GENERATE_QUERIES in nodes
         assert _WEB_SEARCH in nodes
+        assert _FALLBACK_SEARCH in nodes
         assert _CRITIQUE in nodes
 
 
@@ -86,18 +90,23 @@ class TestResearchAgentBudgets:
                     }
                 ]
 
-        with patch(
-            "agent.sub_agents.research_agent._get_kb_store",
-            return_value=None,
-        ), patch(
-            "agent.sub_agents.research_agent.JsonAgent",
-            FakeJsonBoundary,
-        ), patch(
-            "agent.sub_agents.research_agent.Agent",
-            FakeSummaryBoundary,
-        ), patch(
-            "agent.sub_agents.research_agent.WebSearchAgent",
-            FakeSearchBoundary,
+        with (
+            patch(
+                "agent.sub_agents.research_agent._get_kb_store",
+                return_value=None,
+            ),
+            patch(
+                "agent.sub_agents.research_agent.JsonAgent",
+                FakeJsonBoundary,
+            ),
+            patch(
+                "agent.sub_agents.research_agent.Agent",
+                FakeSummaryBoundary,
+            ),
+            patch(
+                "agent.sub_agents.research_agent.WebSearchAgent",
+                FakeSearchBoundary,
+            ),
         ):
             result = await research_agent_graph.ainvoke(
                 sample_state,
@@ -173,17 +182,22 @@ class TestResearchAgentBudgets:
 # _generate_queries node (async)
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestGenerateQueries:
     def test_generates_queries_with_mocked_json_agent(self, sample_state):
         from agent.tools_and_schemas import SearchQueryList
 
-        with patch("agent.sub_agents.research_agent._get_kb_store", return_value=None), \
-             patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls:
+        with (
+            patch("agent.sub_agents.research_agent._get_kb_store", return_value=None),
+            patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls,
+        ):
             mock_agent = MagicMock()
-            mock_agent.step = MagicMock(return_value=SearchQueryList(
-                query=["q1", "q2"],
-                rationale="test rationale",
-            ))
+            mock_agent.step = MagicMock(
+                return_value=SearchQueryList(
+                    query=["q1", "q2"],
+                    rationale="test rationale",
+                )
+            )
             mock_json_agent_cls.return_value = mock_agent
 
             result = _generate_queries(sample_state, {"configurable": {}})
@@ -200,13 +214,19 @@ class TestGenerateQueries:
             {"fact": "known fact 2", "source_url": "https://s.com/2", "relevance": 0.8},
         ]
 
-        with patch("agent.sub_agents.research_agent._get_kb_store", return_value=mock_store), \
-             patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls:
+        with (
+            patch(
+                "agent.sub_agents.research_agent._get_kb_store", return_value=mock_store
+            ),
+            patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls,
+        ):
             mock_agent = MagicMock()
-            mock_agent.step = MagicMock(return_value=SearchQueryList(
-                query=["q1"],
-                rationale="avoided known facts",
-            ))
+            mock_agent.step = MagicMock(
+                return_value=SearchQueryList(
+                    query=["q1"],
+                    rationale="avoided known facts",
+                )
+            )
             mock_json_agent_cls.return_value = mock_agent
 
             result = _generate_queries(sample_state, {"configurable": {}})
@@ -217,13 +237,20 @@ class TestGenerateQueries:
     def test_kb_failure_does_not_block(self, sample_state):
         from agent.tools_and_schemas import SearchQueryList
 
-        with patch("agent.sub_agents.research_agent._get_kb_store", side_effect=Exception("KB down")), \
-             patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls:
+        with (
+            patch(
+                "agent.sub_agents.research_agent._get_kb_store",
+                side_effect=Exception("KB down"),
+            ),
+            patch("agent.sub_agents.research_agent.JsonAgent") as mock_json_agent_cls,
+        ):
             mock_agent = MagicMock()
-            mock_agent.step = MagicMock(return_value=SearchQueryList(
-                query=["q1"],
-                rationale="kb failed but we continue",
-            ))
+            mock_agent.step = MagicMock(
+                return_value=SearchQueryList(
+                    query=["q1"],
+                    rationale="kb failed but we continue",
+                )
+            )
             mock_json_agent_cls.return_value = mock_agent
 
             result = _generate_queries(sample_state, {"configurable": {}})
@@ -256,6 +283,7 @@ class TestQueryDedupe:
 # ═══════════════════════════════════════════════════════════════════════
 # _fan_out_to_web_search node (sync — pure data transform)
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestFanOutToWebSearch:
     def test_fan_out_creates_one_send_per_query(self):
@@ -299,31 +327,81 @@ class TestFanOutToWebSearch:
 
         assert [send.arg["use_omniseek"] for send in sends] == [True, False, False]
 
+    def test_only_mode_never_routes_queries_without_omniseek_budget(self, monkeypatch):
+        monkeypatch.setenv("OMNISEEK_MCP_URL", "http://localhost:8765/mcp")
+        monkeypatch.setenv("OMNISEEK_TOKEN", "a-secure-token-value")
+        monkeypatch.setenv("OMNISEEK_MODE", "only")
+        state = {
+            "search_query": ["q1", "q2", "q3"],
+            "omniseek_call_count": 3,
+        }
+
+        sends = _fan_out_to_web_search(
+            state,
+            {"configurable": {"max_omniseek_calls": 4}},
+        )
+
+        assert len(sends) == 1
+        assert sends[0].arg["search_query"] == "q1"
+        assert sends[0].arg["use_omniseek"] is True
+
+    def test_fallback_mode_batches_queries_for_dynamic_budget_claims(self, monkeypatch):
+        monkeypatch.setenv("OMNISEEK_MCP_URL", "http://localhost:8765/mcp")
+        monkeypatch.setenv("OMNISEEK_TOKEN", "a-secure-token-value")
+        monkeypatch.setenv("OMNISEEK_MODE", "fallback")
+        state = {
+            "search_query": ["q1", "q2"],
+            "omniseek_call_count": 3,
+        }
+
+        sends = _fan_out_to_web_search(
+            state,
+            {"configurable": {"max_omniseek_calls": 4}},
+        )
+
+        assert len(sends) == 1
+        assert sends[0].node == _FALLBACK_SEARCH
+        assert sends[0].arg["search_queries"] == ["q1", "q2"]
+        assert sends[0].arg["omniseek_remaining"] == 1
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # _web_search node (async)
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestWebSearchNode:
     @pytest.mark.asyncio
     async def test_search_and_summarize_with_results(self, sample_state):
         sample_pages = [
-            {"snippet": "AI chips growing fast", "title": "AI Report", "url": "https://real.com/1"},
+            {
+                "snippet": "AI chips growing fast",
+                "title": "AI Report",
+                "url": "https://real.com/1",
+            },
         ]
 
-        with patch("agent.sub_agents.research_agent.WebSearchAgent") as mock_ws_cls, \
-             patch("agent.sub_agents.research_agent.Agent") as mock_agent_cls, \
-             patch("agent.sub_agents.research_agent._get_kb_store", return_value=None):
+        with (
+            patch("agent.sub_agents.research_agent.WebSearchAgent") as mock_ws_cls,
+            patch("agent.sub_agents.research_agent.Agent") as mock_agent_cls,
+            patch("agent.sub_agents.research_agent._get_kb_store", return_value=None),
+        ):
             mock_searcher = MagicMock()
             mock_searcher.step = MagicMock(return_value=sample_pages)
             mock_ws_cls.return_value = mock_searcher
 
             mock_summarizer = MagicMock()
-            mock_summarizer.step = MagicMock(return_value="```text\nSummarized content\n```")
+            mock_summarizer.step = MagicMock(
+                return_value="```text\nSummarized content\n```"
+            )
             mock_agent_cls.return_value = mock_summarizer
 
             result = await _web_search(
-                {"search_query": "AI chips", "id": 0, "messages": sample_state["messages"]},
+                {
+                    "search_query": "AI chips",
+                    "id": 0,
+                    "messages": sample_state["messages"],
+                },
                 {"configurable": {}},
             )
 
@@ -333,14 +411,20 @@ class TestWebSearchNode:
 
     @pytest.mark.asyncio
     async def test_empty_search_result_handled(self, sample_state):
-        with patch("agent.sub_agents.research_agent.WebSearchAgent") as mock_ws_cls, \
-             patch("agent.sub_agents.research_agent._get_kb_store", return_value=None):
+        with (
+            patch("agent.sub_agents.research_agent.WebSearchAgent") as mock_ws_cls,
+            patch("agent.sub_agents.research_agent._get_kb_store", return_value=None),
+        ):
             mock_searcher = MagicMock()
             mock_searcher.step = MagicMock(return_value=None)
             mock_ws_cls.return_value = mock_searcher
 
             result = await _web_search(
-                {"search_query": "no results", "id": 0, "messages": sample_state["messages"]},
+                {
+                    "search_query": "no results",
+                    "id": 0,
+                    "messages": sample_state["messages"],
+                },
                 {"configurable": {}},
             )
 
@@ -368,14 +452,18 @@ class TestWebSearchNode:
                     failures=(ProviderFailure("omniseek", "TimeoutError"),),
                 )
 
-        with patch(
-            "agent.sub_agents.research_agent._build_search_coordinator",
-            return_value=FakeCoordinator(),
-        ), patch(
-            "agent.sub_agents.research_agent.Agent",
-        ) as mock_agent_cls, patch(
-            "agent.sub_agents.research_agent._get_kb_store",
-            return_value=None,
+        with (
+            patch(
+                "agent.sub_agents.research_agent._build_search_coordinator",
+                return_value=FakeCoordinator(),
+            ),
+            patch(
+                "agent.sub_agents.research_agent.Agent",
+            ) as mock_agent_cls,
+            patch(
+                "agent.sub_agents.research_agent._get_kb_store",
+                return_value=None,
+            ),
         ):
             mock_agent = MagicMock()
             mock_agent.step.return_value = "summary"
@@ -391,10 +479,58 @@ class TestWebSearchNode:
         assert result["sources_gathered"][0]["provider"] == "omniseek"
         assert result["sources_gathered"][0]["source"] == "arxiv"
 
+    @pytest.mark.asyncio
+    async def test_fallback_batch_spends_budget_only_after_actual_fallback(self):
+        results = [
+            {
+                "sources_gathered": [{"value": "https://example.com/q1"}],
+                "executed_queries": ["q1"],
+                "web_search_result": ["dash hit"],
+                "web_search_call_count": 1,
+                "omniseek_call_count": 0,
+            },
+            {
+                "sources_gathered": [{"value": "https://example.com/q2"}],
+                "executed_queries": ["q2"],
+                "web_search_result": ["fallback hit"],
+                "web_search_call_count": 1,
+                "omniseek_call_count": 1,
+            },
+            {
+                "sources_gathered": [],
+                "executed_queries": ["q3"],
+                "web_search_result": ["empty"],
+                "web_search_call_count": 1,
+                "omniseek_call_count": 0,
+            },
+        ]
+        with patch(
+            "agent.sub_agents.research_agent._web_search",
+            new=AsyncMock(side_effect=results),
+        ) as search:
+            result = await _fallback_search(
+                {
+                    "search_queries": ["q1", "q2", "q3"],
+                    "start_id": 4,
+                    "omniseek_remaining": 1,
+                },
+                {"configurable": {}},
+            )
+
+        assert [call.args[0]["use_omniseek"] for call in search.await_args_list] == [
+            True,
+            True,
+            False,
+        ]
+        assert result["omniseek_call_count"] == 1
+        assert result["web_search_call_count"] == 3
+        assert result["executed_queries"] == ["q1", "q2", "q3"]
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # _critique node (async)
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestCritique:
     @pytest.mark.asyncio
@@ -403,11 +539,13 @@ class TestCritique:
 
         with patch("agent.sub_agents.research_agent.JsonAgent") as mock_agent_cls:
             mock_agent = MagicMock()
-            mock_agent.step = MagicMock(return_value=Reflection(
-                is_sufficient=True,
-                knowledge_gap="",
-                follow_up_queries=[],
-            ))
+            mock_agent.step = MagicMock(
+                return_value=Reflection(
+                    is_sufficient=True,
+                    knowledge_gap="",
+                    follow_up_queries=[],
+                )
+            )
             mock_agent_cls.return_value = mock_agent
 
             result = _critique(sample_state, {"configurable": {}})
@@ -421,11 +559,13 @@ class TestCritique:
 
         with patch("agent.sub_agents.research_agent.JsonAgent") as mock_agent_cls:
             mock_agent = MagicMock()
-            mock_agent.step = MagicMock(return_value=Reflection(
-                is_sufficient=False,
-                knowledge_gap="缺少细分市场数据",
-                follow_up_queries=["AI芯片细分市场", "中国AI芯片"],
-            ))
+            mock_agent.step = MagicMock(
+                return_value=Reflection(
+                    is_sufficient=False,
+                    knowledge_gap="缺少细分市场数据",
+                    follow_up_queries=["AI芯片细分市场", "中国AI芯片"],
+                )
+            )
             mock_agent_cls.return_value = mock_agent
 
             result = _critique(sample_state, {"configurable": {}})
@@ -473,6 +613,7 @@ class TestCritique:
 # ═══════════════════════════════════════════════════════════════════════
 # _route_after_critique routing (sync — pure routing)
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestRouteAfterCritique:
     def test_route_when_sufficient(self, sample_state):
@@ -545,6 +686,7 @@ class TestRouteAfterCritique:
 # TestWebSearchKBStorage — KB 存储路径覆盖
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestWebSearchKBStorage:
     """测试 _web_search 节点中 KB 事实存储的错误/边界路径。"""
 
@@ -552,20 +694,23 @@ class TestWebSearchKBStorage:
     async def test_kb_store_facts_on_success(self, sample_state):
         """搜索成功 → 事实被提取并存入 KB。"""
 
-        with patch(
-            "agent.sub_agents.research_agent.WebSearchAgent"
-        ) as mock_searcher_cls, patch(
-            "agent.sub_agents.research_agent.Agent"
-        ) as mock_agent_cls, patch(
-            "agent.sub_agents.research_agent._get_kb_store"
-        ) as mock_get_store, patch(
-            "agent.sub_agents.research_agent._get_kb_extractor"
-        ) as mock_get_extractor:
+        with (
+            patch(
+                "agent.sub_agents.research_agent.WebSearchAgent"
+            ) as mock_searcher_cls,
+            patch("agent.sub_agents.research_agent.Agent") as mock_agent_cls,
+            patch("agent.sub_agents.research_agent._get_kb_store") as mock_get_store,
+            patch(
+                "agent.sub_agents.research_agent._get_kb_extractor"
+            ) as mock_get_extractor,
+        ):
             # 模拟搜索返回
             mock_searcher = MagicMock()
-            mock_searcher.step = MagicMock(return_value=[
-                {"snippet": "test", "title": "test", "url": "https://real.com/1"}
-            ])
+            mock_searcher.step = MagicMock(
+                return_value=[
+                    {"snippet": "test", "title": "test", "url": "https://real.com/1"}
+                ]
+            )
             mock_searcher_cls.return_value = mock_searcher
 
             # 模拟 LLM 汇总
@@ -581,7 +726,11 @@ class TestWebSearchKBStorage:
             # 模拟 extractor 返回事实
             mock_extractor = MagicMock()
             mock_extractor.extract.return_value = [
-                {"fact": "AI芯片市场500亿美元", "source_url": "https://a.com", "confidence": 0.9}
+                {
+                    "fact": "AI芯片市场500亿美元",
+                    "source_url": "https://a.com",
+                    "confidence": 0.9,
+                }
             ]
             mock_extractor.last_token_count = 7
             mock_get_extractor.return_value = mock_extractor
@@ -592,6 +741,7 @@ class TestWebSearchKBStorage:
                 "messages": sample_state["messages"],
             }
             from langchain_core.runnables import RunnableConfig  # noqa
+
             config: RunnableConfig = {"configurable": {}}
 
             result = await _web_search(state, config)
@@ -607,17 +757,19 @@ class TestWebSearchKBStorage:
     @pytest.mark.asyncio
     async def test_kb_store_none_skips_silently(self, sample_state):
         """KB store 为 None → 静默跳过。"""
-        with patch(
-            "agent.sub_agents.research_agent.WebSearchAgent"
-        ) as mock_searcher_cls, patch(
-            "agent.sub_agents.research_agent.Agent"
-        ) as mock_agent_cls, patch(
-            "agent.sub_agents.research_agent._get_kb_store"
-        ) as mock_get_store:
+        with (
+            patch(
+                "agent.sub_agents.research_agent.WebSearchAgent"
+            ) as mock_searcher_cls,
+            patch("agent.sub_agents.research_agent.Agent") as mock_agent_cls,
+            patch("agent.sub_agents.research_agent._get_kb_store") as mock_get_store,
+        ):
             mock_searcher = MagicMock()
-            mock_searcher.step = MagicMock(return_value=[
-                {"snippet": "test", "title": "test", "url": "https://real.com/1"}
-            ])
+            mock_searcher.step = MagicMock(
+                return_value=[
+                    {"snippet": "test", "title": "test", "url": "https://real.com/1"}
+                ]
+            )
             mock_searcher_cls.return_value = mock_searcher
 
             mock_agent = MagicMock()
@@ -632,6 +784,7 @@ class TestWebSearchKBStorage:
                 "messages": sample_state["messages"],
             }
             from langchain_core.runnables import RunnableConfig  # noqa
+
             config: RunnableConfig = {"configurable": {}}
 
             result = await _web_search(state, config)
@@ -641,19 +794,22 @@ class TestWebSearchKBStorage:
     @pytest.mark.asyncio
     async def test_kb_store_exception_is_silent(self, sample_state):
         """KB 存储抛异常 → 静默捕获，不影响搜索结果返回。"""
-        with patch(
-            "agent.sub_agents.research_agent.WebSearchAgent"
-        ) as mock_searcher_cls, patch(
-            "agent.sub_agents.research_agent.Agent"
-        ) as mock_agent_cls, patch(
-            "agent.sub_agents.research_agent._get_kb_store"
-        ) as mock_get_store, patch(
-            "agent.sub_agents.research_agent._get_kb_extractor"
-        ) as mock_get_extractor:
+        with (
+            patch(
+                "agent.sub_agents.research_agent.WebSearchAgent"
+            ) as mock_searcher_cls,
+            patch("agent.sub_agents.research_agent.Agent") as mock_agent_cls,
+            patch("agent.sub_agents.research_agent._get_kb_store") as mock_get_store,
+            patch(
+                "agent.sub_agents.research_agent._get_kb_extractor"
+            ) as mock_get_extractor,
+        ):
             mock_searcher = MagicMock()
-            mock_searcher.step = MagicMock(return_value=[
-                {"snippet": "test", "title": "test", "url": "https://real.com/1"}
-            ])
+            mock_searcher.step = MagicMock(
+                return_value=[
+                    {"snippet": "test", "title": "test", "url": "https://real.com/1"}
+                ]
+            )
             mock_searcher_cls.return_value = mock_searcher
 
             mock_agent = MagicMock()
@@ -676,6 +832,7 @@ class TestWebSearchKBStorage:
                 "messages": sample_state["messages"],
             }
             from langchain_core.runnables import RunnableConfig  # noqa
+
             config: RunnableConfig = {"configurable": {}}
 
             result = await _web_search(state, config)

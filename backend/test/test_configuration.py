@@ -70,9 +70,11 @@ class TestConfigurationDefaults:
         assert cfg.number_of_initial_queries == 2
         assert cfg.max_research_loops == 2
         assert cfg.max_writer_revisions == 3
-        assert cfg.omniseek_mode == "augment"
+        assert not hasattr(cfg, "omniseek_mode")
         assert cfg.max_omniseek_calls == 4
         assert cfg.omniseek_result_limit == 5
+        assert cfg.search_provider_timeout_seconds == 30
+        assert not hasattr(cfg, "omniseek_sources")
         assert isinstance(cfg.query_generator_model, str)
         assert isinstance(cfg.reflection_model, str)
         assert isinstance(cfg.answer_model, str)
@@ -143,6 +145,7 @@ class TestFromRunnableConfig:
                     "omniseek_wait_seconds": 15,
                     "omniseek_request_timeout_seconds": 120,
                     "omniseek_result_limit": 50,
+                    "search_provider_timeout_seconds": 120,
                     "max_elapsed_seconds": 86_400,
                     "max_no_progress_rounds": 20,
                     "max_total_tokens": 2_000_000,
@@ -158,6 +161,7 @@ class TestFromRunnableConfig:
         assert cfg.omniseek_wait_seconds == 3
         assert cfg.omniseek_request_timeout_seconds == 12
         assert cfg.omniseek_result_limit == 5
+        assert cfg.search_provider_timeout_seconds == 30
         assert cfg.max_elapsed_seconds == 900
         assert cfg.max_no_progress_rounds == 2
         assert cfg.max_total_tokens == 120_000
@@ -169,3 +173,26 @@ class TestFromRunnableConfig:
         )
         assert isinstance(cfg.available_models, list)
         assert len(cfg.available_models) > 0
+
+    def test_omniseek_sources_are_not_accepted_from_runnable_config(self):
+        cfg = Configuration.from_runnable_config(
+            {"configurable": {"omniseek_sources": "walled_private_source"}}
+        )
+
+        assert not hasattr(cfg, "omniseek_sources")
+
+    def test_omniseek_mode_is_not_accepted_from_runnable_config(self):
+        cfg = Configuration.from_runnable_config(
+            {"configurable": {"omniseek_mode": "only"}}
+        )
+
+        assert not hasattr(cfg, "omniseek_mode")
+
+    def test_inconsistent_omniseek_timeouts_are_rejected(self):
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError, match="must be at least"):
+            Configuration(
+                omniseek_wait_seconds=15,
+                omniseek_request_timeout_seconds=12,
+            )

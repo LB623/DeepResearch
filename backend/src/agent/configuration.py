@@ -1,9 +1,9 @@
 import json
 import os
-from typing import Any, List, Literal
+from typing import Any, List
 
 from langchain_core.runnables import RunnableConfig
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 _SERVER_CAPPED_FIELDS = {
     "number_of_initial_queries",
@@ -14,6 +14,7 @@ _SERVER_CAPPED_FIELDS = {
     "omniseek_wait_seconds",
     "omniseek_request_timeout_seconds",
     "omniseek_result_limit",
+    "search_provider_timeout_seconds",
     "max_elapsed_seconds",
     "max_no_progress_rounds",
     "max_total_tokens",
@@ -25,8 +26,10 @@ MODEL_ID_PLUS = "deepseek-v4-flash"
 MODEL_ID_MAX = "deepseek-v4-pro"
 MODEL_ID_JUDEG = "deepseek-v4-pro"
 
+
 class ModelConfig(BaseModel):
     """模型配置项"""
+
     model_id: str = Field(..., description="模型ID")
     display_name: str = Field(..., description="显示名称")
     icon: str = Field(default="Zap", description="图标类型(Zap/Cpu)")
@@ -36,8 +39,18 @@ class ModelConfig(BaseModel):
 def load_available_models_from_env() -> List[ModelConfig]:
     """从环境变量加载可用模型列表"""
     default_models = [
-        ModelConfig(model_id=MODEL_ID_FLASH, display_name="DS4-Flash", icon="Zap", icon_color="yellow-400"),
-        ModelConfig(model_id=MODEL_ID_MAX, display_name="DS4-Pro", icon="Cpu", icon_color="purple-400"),
+        ModelConfig(
+            model_id=MODEL_ID_FLASH,
+            display_name="DS4-Flash",
+            icon="Zap",
+            icon_color="yellow-400",
+        ),
+        ModelConfig(
+            model_id=MODEL_ID_MAX,
+            display_name="DS4-Pro",
+            icon="Cpu",
+            icon_color="purple-400",
+        ),
     ]
     models_json = os.getenv("AVAILABLE_MODELS")
 
@@ -60,6 +73,7 @@ def get_default_model_id() -> str:
         return models[0].model_id
     return MODEL_ID_MAX  # 兜底默认值
 
+
 def get_flash_model_id() -> str:
     """获取第一个icon为Zap的模型ID"""
     models = load_available_models_from_env()
@@ -77,8 +91,10 @@ def get_plus_model_id() -> str:
         return models[middle_index].model_id
     return MODEL_ID_PLUS  # 兜底默认值
 
+
 def get_judge_model_id() -> str:
     return MODEL_ID_JUDEG  # 兜底默认值
+
 
 class Configuration(BaseModel):
     """agent的配置."""
@@ -132,16 +148,6 @@ class Configuration(BaseModel):
         description="单个研究任务允许的最大网页搜索次数.",
     )
 
-    omniseek_mode: Literal["off", "augment", "fallback", "only"] = Field(
-        default="augment",
-        description="OmniSeek 检索策略；缺少独立服务凭证时自动使用现有搜索.",
-    )
-
-    omniseek_sources: str = Field(
-        default="",
-        description="逗号分隔的 OmniSeek 数据源白名单；空值表示由服务端选择.",
-    )
-
     omniseek_wait_seconds: float = Field(
         default=3.0,
         ge=0.1,
@@ -167,7 +173,14 @@ class Configuration(BaseModel):
         default=4,
         ge=0,
         le=20,
-        description="单个研究任务允许的最大 OmniSeek 调用次数.",
+        description="单个研究任务允许的最大 OmniSeek 逻辑检索次数.",
+    )
+
+    search_provider_timeout_seconds: float = Field(
+        default=30.0,
+        ge=1.0,
+        le=120.0,
+        description="单个检索提供方允许占用的最大墙钟时间（秒）.",
     )
 
     max_elapsed_seconds: float = Field(
@@ -190,6 +203,15 @@ class Configuration(BaseModel):
         le=2_000_000,
         description="单个研究任务允许累计消耗的最大 LLM token 数.",
     )
+
+    @model_validator(mode="after")
+    def validate_omniseek_timeouts(self) -> "Configuration":
+        if self.omniseek_request_timeout_seconds < self.omniseek_wait_seconds + 2.0:
+            raise ValueError(
+                "OMNISEEK_REQUEST_TIMEOUT_SECONDS must be at least "
+                "OMNISEEK_WAIT_SECONDS + 2"
+            )
+        return self
 
     @classmethod
     def from_runnable_config(
@@ -215,5 +237,7 @@ class Configuration(BaseModel):
         defaults = cls()
         for name in _SERVER_CAPPED_FIELDS:
             if os.environ.get(name.upper()) is None:
-                setattr(parsed, name, min(getattr(parsed, name), getattr(defaults, name)))
-        return parsed
+                setattr(
+                    parsed, name, min(getattr(parsed, name), getattr(defaults, name))
+                )
+        return cls.model_validate(parsed.model_dump())

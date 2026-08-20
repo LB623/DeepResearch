@@ -135,14 +135,18 @@ Checkpoint 使用 Redis Search 索引，因此必须使用 Redis Stack；普通
 如需启用多源感知检索，再启动独立的 OmniSeek sidecar：
 
 ```bash
-docker compose -f infrastructure/omniseek/docker-compose.yml up -d
+make omniseek-up
 curl -fsS http://127.0.0.1:8765/healthz
 ```
 
 镜像固定到 OmniSeek `v0.2.0` 的多架构 OCI digest，端口只绑定本机回环地址。
-首次启动会在 `infrastructure/omniseek/data/credentials/omniseek_http.json`
-生成独立 bearer token。仓库内运行时会自动发现该文件；其他部署布局可设置
-`OMNISEEK_TOKEN_FILE`。该目录已被 Git 忽略，不要把 token 提交到仓库。
+`make omniseek-up` 会先以当前宿主用户在
+`infrastructure/omniseek/data/credentials/omniseek_http.json` 安静生成独立 bearer token，
+再启动容器；token 不会进入 Docker 日志，原生 Linux 上也不会产生 `0600 root:root`
+导致后端不可读的问题。仓库内运行时会自动发现该文件；其他部署布局可设置
+`OMNISEEK_TOKEN_FILE`。凭证目录已被 Git 忽略，不要把 token 提交到仓库。
+
+需要轮换 token 时执行 `make omniseek-rotate-token`；该命令会使现有客户端连接失效并重建 sidecar。
 
 ### 3. 配置环境变量
 
@@ -175,6 +179,9 @@ OMNISEEK_MODE=augment
 OMNISEEK_RESULT_LIMIT=5
 OMNISEEK_WAIT_SECONDS=3
 OMNISEEK_REQUEST_TIMEOUT_SECONDS=12
+OMNISEEK_MAX_CONCURRENCY=8
+DASHSCOPE_MAX_CONCURRENCY=8
+SEARCH_PROVIDER_TIMEOUT_SECONDS=30
 
 # Redis 搜索缓存与任务检查点
 REDIS_URL=redis://localhost:6379/0
@@ -211,6 +218,16 @@ KB_RERANK_CANDIDATE_MULTIPLIER=3
 # 默认不记录请求正文
 LOG_REQUEST_BODY=0
 ```
+
+`OMNISEEK_MODE` 和 `OMNISEEK_SOURCES` 是服务端部署策略，不接受客户端
+`RunnableConfig` 覆盖。`OMNISEEK_SOURCES` 最多配置 16 个名称；留空时由 OmniSeek
+profile 决定可用源。`only` 模式在凭证缺失、配置非法或预算耗尽时会停止检索，绝不
+把查询隐式发送给 DashScope。
+
+搜索次数预算随 LangGraph checkpoint 持久化，约束的是已提交的逻辑调用。外部 MCP
+调用、Milvus 写入与 Redis checkpoint 无法跨系统原子提交；若进程恰好在外部副作用
+完成后、checkpoint 提交前崩溃，恢复可能重放该节点。对严格计费或 exactly-once 有要求
+的部署仍应在外部服务侧使用幂等键或独立的持久调用账本。
 
 > `EMBEDDING_DIM` 必须与 Embedding 模型的实际输出维度及 Milvus Collection 维度一致。
 > `backend/.env.example` 是配置项的唯一完整清单，其中还包含可选模型列表、Web Search 限流和生命周期模式说明。

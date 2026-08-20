@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
 import json
+import threading
 from types import SimpleNamespace
 
 import pytest
 
+import agent.retrieval as retrieval_module
 from agent.retrieval import (
     DashScopeSearchProvider,
     OmniSeekProtocolError,
     OmniSeekSearchProvider,
     SearchCoordinator,
     SearchHit,
+    SearchProviderUnavailable,
     load_omniseek_credentials,
 )
 
@@ -122,6 +127,7 @@ def test_coordinator_requires_a_real_adapter():
 def test_credentials_can_be_loaded_from_server_owned_json(monkeypatch, tmp_path):
     token_file = tmp_path / "omniseek_http.json"
     token_file.write_text('{"token": "a-secure-token-value"}', encoding="utf-8")
+    token_file.chmod(0o600)
     monkeypatch.delenv("OMNISEEK_MCP_URL", raising=False)
     monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
 
@@ -134,9 +140,28 @@ def test_credentials_can_be_loaded_from_server_owned_json(monkeypatch, tmp_path)
 def test_malformed_token_file_fails_closed(monkeypatch, tmp_path):
     token_file = tmp_path / "omniseek_http.json"
     token_file.write_text("not-json", encoding="utf-8")
+    token_file.chmod(0o600)
     monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
 
     assert load_omniseek_credentials(default_token_file=token_file) is None
+
+
+def test_unreadable_home_alias_fails_closed(monkeypatch):
+    monkeypatch.setenv("OMNISEEK_TOKEN_FILE", "~definitely-no-such-user/token.json")
+
+    assert load_omniseek_credentials() is None
+
+
+@pytest.mark.asyncio
+async def test_dashscope_none_is_a_provider_failure():
+    class FailedAgent:
+        def step(self, prompt: str, count: int):
+            return None
+
+    provider = DashScopeSearchProvider(agent_factory=FailedAgent)
+
+    with pytest.raises(SearchProviderUnavailable):
+        await provider.search("topic", 2)
 
 
 @pytest.mark.asyncio
@@ -163,6 +188,61 @@ async def test_coordinator_calls_fallback_only_when_primary_has_no_hits():
     assert primary_batch.providers_attempted == ("primary",)
     assert fallback_batch.providers_attempted == ("empty", "fallback")
     assert fallback_batch.hits == [fallback_hit]
+
+
+@pytest.mark.asyncio
+async def test_coordinator_bounds_a_hung_provider():
+    class HungProvider:
+        name = "hung"
+
+        async def search(self, query: str, limit: int):
+            await asyncio.Event().wait()
+
+    batch = await SearchCoordinator(
+        [HungProvider()],
+        provider_timeout_seconds=0.01,
+    ).search("topic", 5)
+
+    assert batch.hits == []
+    assert batch.failures[0].provider == "hung"
+    assert batch.failures[0].error_type == "TimeoutError"
+
+
+@pytest.mark.asyncio
+async def test_dashscope_timeout_keeps_the_real_sync_call_in_its_capacity_slot(
+    monkeypatch,
+):
+    started = threading.Event()
+    release = threading.Event()
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    monkeypatch.setattr(retrieval_module, "_DASHSCOPE_EXECUTOR", executor)
+    monkeypatch.setattr(
+        retrieval_module,
+        "_DASHSCOPE_SLOTS",
+        threading.BoundedSemaphore(1),
+    )
+
+    class BlockingAgent:
+        def step(self, prompt: str, count: int):
+            del prompt, count
+            started.set()
+            release.wait(timeout=2)
+            return []
+
+    provider = DashScopeSearchProvider(agent_factory=BlockingAgent)
+    try:
+        batch = await SearchCoordinator(
+            [provider],
+            provider_timeout_seconds=0.01,
+        ).search("topic", 5)
+        assert started.is_set()
+        assert batch.failures[0].error_type == "TimeoutError"
+
+        with pytest.raises(SearchProviderUnavailable, match="concurrency limit"):
+            await provider.search("another topic", 5)
+    finally:
+        release.set()
+        executor.shutdown(wait=True)
 
 
 @pytest.mark.asyncio
@@ -274,12 +354,80 @@ async def test_omniseek_adapter_returns_only_safe_protocol_errors():
     assert "private upstream failure" not in str(captured.value)
 
 
+@pytest.mark.asyncio
+async def test_omniseek_adapter_bounds_fields_and_ignores_unsafe_urls():
+    documents = [
+        {
+            "title": "x" * 900,
+            "content": "y" * 9000,
+            "url": "https://example.com/ok",
+            "source": "z" * 500,
+        },
+        {
+            "title": "credentials",
+            "content": "must be ignored",
+            "url": "https://user:secret@example.com/private",
+            "source": "private",
+        },
+        {
+            "title": "oversized URL",
+            "content": "must be ignored",
+            "url": "https://example.com/" + "a" * 3000,
+            "source": "web",
+        },
+    ]
+
+    async def call_tool(name, arguments):
+        del name, arguments
+        return SimpleNamespace(
+            isError=False,
+            structuredContent={"documents": documents},
+            content=[],
+        )
+
+    hits = await OmniSeekSearchProvider(
+        endpoint="http://localhost:8765/mcp",
+        token="a-secure-token-value",
+        tool_caller=call_tool,
+    ).search("topic", 5)
+
+    assert len(hits) == 1
+    assert len(hits[0].title) == 500
+    assert len(hits[0].snippet) == 4000
+    assert len(hits[0].source) == 100
+
+
+@pytest.mark.parametrize(
+    ("sources", "message"),
+    [
+        (["valid", "../private"], "invalid source"),
+        ([f"source-{index}" for index in range(17)], "at most 16"),
+    ],
+)
+def test_omniseek_source_allowlist_is_bounded(sources, message):
+    with pytest.raises(ValueError, match=message):
+        OmniSeekSearchProvider(
+            endpoint="http://localhost:8765/mcp",
+            token="a-secure-token-value",
+            sources=sources,
+        )
+
+
 @pytest.mark.parametrize(
     ("endpoint", "token", "message"),
     [
         ("ftp://localhost/mcp", "a-secure-token-value", "valid HTTP URL"),
-        ("http://user:pass@localhost/mcp", "a-secure-token-value", "must not contain credentials"),
-        ("http://localhost/mcp?token=secret", "a-secure-token-value", "query or fragment"),
+        (
+            "http://user:pass@localhost/mcp",
+            "a-secure-token-value",
+            "must not contain credentials",
+        ),
+        (
+            "http://localhost/mcp?token=secret",
+            "a-secure-token-value",
+            "query or fragment",
+        ),
+        ("http://example.com/mcp", "a-secure-token-value", "requires HTTPS"),
         ("http://localhost/mcp", "short", "at least 16 characters"),
     ],
 )

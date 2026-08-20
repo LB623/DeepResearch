@@ -208,8 +208,10 @@ backend/.langgraph_api
 backend/logs/
 backend/build/
 infrastructure/milvus/volumes/
-infrastructure/omniseek/data/
-infrastructure/omniseek/inbox/
+infrastructure/omniseek/data/*
+!infrastructure/omniseek/data/.gitkeep
+infrastructure/omniseek/inbox/*
+!infrastructure/omniseek/inbox/.gitkeep
 .learnings/
 
 # Credentials and private keys

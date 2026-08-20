@@ -56,7 +56,12 @@ from agent.retrieval import (
     SearchCoordinator,
     load_omniseek_credentials,
 )
-from agent.state import OverallState, QueryGenerationState, WebSearchState
+from agent.state import (
+    FallbackSearchState,
+    OverallState,
+    QueryGenerationState,
+    WebSearchState,
+)
 from agent.tools_and_schemas import Reflection, SearchQueryList
 from agent.utils import get_research_topic, resolve_urls
 
@@ -80,8 +85,10 @@ def _get_kb_extractor() -> FactExtractor:
         _kb_extractor = FactExtractor()
     return _kb_extractor
 
+
 _GENERATE_QUERIES = "generate_queries"
 _WEB_SEARCH = "web_search"
+_FALLBACK_SEARCH = "fallback_search"
 _CRITIQUE = "critique"
 _BUDGET_GUARD = "budget_guard"
 
@@ -174,9 +181,7 @@ def _dedupe_queries(
         return [str(q) for q in queries if str(q).strip()], []
 
     seen = {
-        _normalize_query(q)
-        for q in (executed_queries or [])
-        if _normalize_query(q)
+        _normalize_query(q) for q in (executed_queries or []) if _normalize_query(q)
     }
     kept: list[str] = []
     skipped: list[str] = []
@@ -195,15 +200,28 @@ def _dedupe_queries(
     return kept, skipped
 
 
-def _omniseek_is_configured(configurable: Configuration) -> bool:
+def _omniseek_is_configured() -> bool:
     """Keep service credentials outside runnable config and checkpoint state."""
     return (
-        configurable.omniseek_mode != "off"
-        and load_omniseek_credentials(
-            default_token_file=_DEFAULT_OMNISEEK_TOKEN_FILE
-        )
+        _omniseek_mode() != "off"
+        and load_omniseek_credentials(default_token_file=_DEFAULT_OMNISEEK_TOKEN_FILE)
         is not None
     )
+
+
+def _omniseek_mode() -> str:
+    mode = os.getenv("OMNISEEK_MODE", "augment").strip().lower()
+    return mode if mode in {"off", "augment", "fallback", "only"} else "augment"
+
+
+class _UnavailableSearchProvider:
+    """Fail-closed placeholder used when `only` mode cannot reach OmniSeek."""
+
+    name = "omniseek_unavailable"
+
+    async def search(self, query: str, limit: int):
+        del query, limit
+        return []
 
 
 def _build_search_coordinator(
@@ -211,15 +229,23 @@ def _build_search_coordinator(
     *,
     use_omniseek: bool,
 ) -> SearchCoordinator:
+    mode = _omniseek_mode()
     dashscope = DashScopeSearchProvider(agent_factory=WebSearchAgent)
-    if not use_omniseek or not _omniseek_is_configured(configurable):
-        return SearchCoordinator([dashscope])
+    if not use_omniseek or not _omniseek_is_configured():
+        providers = [_UnavailableSearchProvider()] if mode == "only" else [dashscope]
+        return SearchCoordinator(
+            providers,
+            provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+        )
 
     credentials = load_omniseek_credentials(
         default_token_file=_DEFAULT_OMNISEEK_TOKEN_FILE
     )
     if credentials is None:
-        return SearchCoordinator([dashscope])
+        return SearchCoordinator(
+            [_UnavailableSearchProvider()],
+            provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+        )
     endpoint, token = credentials
 
     try:
@@ -228,7 +254,7 @@ def _build_search_coordinator(
             token=token,
             wait_seconds=configurable.omniseek_wait_seconds,
             request_timeout_seconds=configurable.omniseek_request_timeout_seconds,
-            sources=configurable.omniseek_sources.split(","),
+            sources=os.getenv("OMNISEEK_SOURCES", "").split(","),
             max_results=configurable.omniseek_result_limit,
         )
     except (TypeError, ValueError) as exc:
@@ -236,13 +262,27 @@ def _build_search_coordinator(
             "[Retrieval] OmniSeek configuration rejected error_type={}",
             type(exc).__name__,
         )
-        return SearchCoordinator([dashscope])
+        providers = [_UnavailableSearchProvider()] if mode == "only" else [dashscope]
+        return SearchCoordinator(
+            providers,
+            provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+        )
 
-    if configurable.omniseek_mode == "only":
-        return SearchCoordinator([omniseek])
-    if configurable.omniseek_mode == "fallback":
-        return SearchCoordinator([dashscope], fallback_providers=[omniseek])
-    return SearchCoordinator([dashscope, omniseek])
+    if mode == "only":
+        return SearchCoordinator(
+            [omniseek],
+            provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+        )
+    if mode == "fallback":
+        return SearchCoordinator(
+            [dashscope],
+            fallback_providers=[omniseek],
+            provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+        )
+    return SearchCoordinator(
+        [dashscope, omniseek],
+        provider_timeout_seconds=configurable.search_provider_timeout_seconds,
+    )
 
 
 def _search_sends(
@@ -252,11 +292,29 @@ def _search_sends(
     state: QueryGenerationState | OverallState,
     configurable: Configuration,
 ) -> list[Send]:
+    mode = _omniseek_mode()
     remaining_omniseek = max(
         0,
         configurable.max_omniseek_calls - state.get("omniseek_call_count", 0),
     )
-    omniseek_available = _omniseek_is_configured(configurable)
+    omniseek_available = _omniseek_is_configured()
+    if mode == "only":
+        if not omniseek_available or remaining_omniseek == 0:
+            return []
+        queries = queries[:remaining_omniseek]
+    if mode == "fallback":
+        return [
+            Send(
+                _FALLBACK_SEARCH,
+                {
+                    "search_queries": list(queries),
+                    "start_id": start_id,
+                    "omniseek_remaining": (
+                        remaining_omniseek if omniseek_available else 0
+                    ),
+                },
+            )
+        ]
     return [
         Send(
             _WEB_SEARCH,
@@ -289,12 +347,16 @@ def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
             mode = get_mode()
             topic = get_research_topic(state["messages"])
             freshness = state.get("fresh_level", "medium")
-            max_age = FRESHNESS_MAX_AGE.get(freshness, 30) if should_filter(mode) else None
+            max_age = (
+                FRESHNESS_MAX_AGE.get(freshness, 30) if should_filter(mode) else None
+            )
             decay = should_decay(mode)
             use_lifecycle = mode == KBLifecycleMode.LIFECYCLE
 
             hits = store.query(
-                topic, top_k=20, min_confidence=0.6,
+                topic,
+                top_k=20,
+                min_confidence=0.6,
                 max_age_days=max_age,
                 decay=decay,
                 lifecycle_mode=use_lifecycle,
@@ -304,11 +366,15 @@ def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
                 for h in hits:
                     line = f"- [{h['confidence']:.0%}] {h['fact']}"
                     if should_tag(mode):
-                        age_days = h.get("age_days", (time.time() - h["created_at"]) / 86400)
+                        age_days = h.get(
+                            "age_days", (time.time() - h["created_at"]) / 86400
+                        )
                         age_tag = (
-                            "🕐 刚刚" if age_days < 1 else
-                            f"{age_days:.0f}天前" if age_days < 30 else
-                            f"{age_days / 30:.0f}个月前"
+                            "🕐 刚刚"
+                            if age_days < 1
+                            else f"{age_days:.0f}天前"
+                            if age_days < 30
+                            else f"{age_days / 30:.0f}个月前"
                         )
                         line += f" ({age_tag}, 来源: {h['source_url'][:60]})"
                     else:
@@ -325,7 +391,9 @@ def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
                 logger.info(f"[KB] 检索到 {len(hits)} 个facts 用作查询生成上下文")
     except Exception as exc:
         logger.warning(f"[KB] retrieval skipped: {exc}")
-    logger.info(f"[ResearchAgent] _generate_queries使用模型: {configurable.query_generator_model}")
+    logger.info(
+        f"[ResearchAgent] _generate_queries使用模型: {configurable.query_generator_model}"
+    )
     agent = JsonAgent(model_id=configurable.query_generator_model, keys=SearchQueryList)
     agent.set_step_prompt(query_writer_instructions)
     result = agent.step(
@@ -388,20 +456,20 @@ def _fan_out_to_web_search(
     queries, skipped = _dedupe_queries(queries, state.get("executed_queries", []))
     remaining = max(
         0,
-        configurable.max_web_search_calls
-        - state.get("web_search_call_count", 0),
+        configurable.max_web_search_calls - state.get("web_search_call_count", 0),
     )
     queries = queries[:remaining]
     if skipped:
         logger.info(f"[ResearchAgent] fan-out 跳过 {len(skipped)} 个重复查询")
     if not queries:
         return END
-    return _search_sends(
+    sends = _search_sends(
         queries,
         start_id=0,
         state=state,
         configurable=configurable,
     )
+    return sends or END
 
 
 def _store_summary_facts(
@@ -486,11 +554,16 @@ async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
             source["source"] = hit.source
         sources.append(source)
     raw_results = json.dumps(
-        [{"snippet": i["snippet"], "title": i["title"], "url": long2short[i["url"]]}
-         for i in response],
-        ensure_ascii=False, indent=4,
+        [
+            {"snippet": i["snippet"], "title": i["title"], "url": long2short[i["url"]]}
+            for i in response
+        ],
+        ensure_ascii=False,
+        indent=4,
     )
-    logger.info(f"[ResearchAgent] _web_search 使用模型: {configurable.query_generator_model}")
+    logger.info(
+        f"[ResearchAgent] _web_search 使用模型: {configurable.query_generator_model}"
+    )
     agent = Agent(model_id=configurable.query_generator_model)
     agent.set_step_prompt(web_searcher_instructions)
     summary = await asyncio.to_thread(
@@ -526,6 +599,50 @@ async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     return result
 
 
+async def _fallback_search(state: FallbackSearchState, config: RunnableConfig) -> dict:
+    """Run fallback-mode queries sequentially so only empty primaries claim budget."""
+    remaining = max(0, int(state.get("omniseek_remaining", 0)))
+    start_id = int(state.get("start_id", 0))
+    aggregate: dict[str, Any] = {
+        "sources_gathered": [],
+        "executed_queries": [],
+        "web_search_result": [],
+        "web_search_call_count": 0,
+        "omniseek_call_count": 0,
+        "omniseek_failure_count": 0,
+        "llm_token_count": 0,
+    }
+    if not _query_dedupe_enabled():
+        aggregate["search_query"] = []
+
+    for idx, query in enumerate(state.get("search_queries", [])):
+        result = await _web_search(
+            {
+                "search_query": str(query),
+                "id": start_id + idx,
+                "use_omniseek": remaining > 0,
+            },
+            config,
+        )
+        for key in (
+            "sources_gathered",
+            "executed_queries",
+            "web_search_result",
+            "search_query",
+        ):
+            if key in result:
+                aggregate.setdefault(key, []).extend(result[key])
+        for key in (
+            "web_search_call_count",
+            "omniseek_call_count",
+            "omniseek_failure_count",
+            "llm_token_count",
+        ):
+            aggregate[key] += int(result.get(key, 0))
+        remaining -= min(remaining, int(result.get("omniseek_call_count", 0)))
+    return aggregate
+
+
 def _critique(state: OverallState, config: RunnableConfig) -> dict:
     """评估收集到的信息是否充足。"""
     configurable = Configuration.from_runnable_config(config)
@@ -554,8 +671,12 @@ def _critique(state: OverallState, config: RunnableConfig) -> dict:
             "knowledge_gap": "评估模型暂时不可用，需要继续搜索以补充信息",
             "follow_up_queries": [],
             "research_loop_count": state["research_loop_count"],
-            "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
-            "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
+            "number_of_ran_queries": len(
+                state.get("executed_queries", state.get("search_query", []))
+            ),
+            "max_research_loops": state.get(
+                "max_research_loops", configurable.max_research_loops
+            ),
             "llm_token_count": llm_token_delta,
         }
         reason = _budget_stop_reason(
@@ -600,8 +721,12 @@ def _critique(state: OverallState, config: RunnableConfig) -> dict:
         "knowledge_gap": result.knowledge_gap,
         "follow_up_queries": result.follow_up_queries,
         "research_loop_count": state["research_loop_count"],
-        "number_of_ran_queries": len(state.get("executed_queries", state.get("search_query", []))),
-        "max_research_loops": state.get("max_research_loops", configurable.max_research_loops),
+        "number_of_ran_queries": len(
+            state.get("executed_queries", state.get("search_query", []))
+        ),
+        "max_research_loops": state.get(
+            "max_research_loops", configurable.max_research_loops
+        ),
         "no_progress_rounds": no_progress_rounds,
         "evidence_fingerprint": evidence_fingerprint,
         "llm_token_count": llm_token_delta,
@@ -630,30 +755,36 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
         or state["research_loop_count"] >= max_loops
         or state.get("budget_stop_reason")
     ):
-        logger.info(f"[ResearchAgent] 退出循环，已执行 {state['research_loop_count']} 次")
+        logger.info(
+            f"[ResearchAgent] 退出循环，已执行 {state['research_loop_count']} 次"
+        )
         return END  # ← exits sub-graph, parent takes over
     else:
-        logger.info(f"[ResearchAgent] 继续循环 ({state['research_loop_count']}/{max_loops})")
+        logger.info(
+            f"[ResearchAgent] 继续循环 ({state['research_loop_count']}/{max_loops})"
+        )
         queries, skipped = _dedupe_queries(
             state.get("follow_up_queries", []),
             state.get("executed_queries", []),
         )
         remaining = max(
             0,
-            configurable.max_web_search_calls
-            - state.get("web_search_call_count", 0),
+            configurable.max_web_search_calls - state.get("web_search_call_count", 0),
         )
         queries = queries[:remaining]
         if skipped:
-            logger.info(f"[ResearchAgent] 跳过 {len(skipped)} 个已执行 follow-up 查询: {skipped}")
+            logger.info(
+                f"[ResearchAgent] 跳过 {len(skipped)} 个已执行 follow-up 查询: {skipped}"
+            )
         if not queries:
             return END
-        return _search_sends(
+        sends = _search_sends(
             queries,
             start_id=state["number_of_ran_queries"],
             state=state,
             configurable=configurable,
         )
+        return sends or END
 
 
 _builder = StateGraph(OverallState, context_schema=Configuration)
@@ -661,6 +792,7 @@ _builder = StateGraph(OverallState, context_schema=Configuration)
 _builder.add_node(_BUDGET_GUARD, _budget_guard)
 _builder.add_node(_GENERATE_QUERIES, _generate_queries)
 _builder.add_node(_WEB_SEARCH, _web_search)
+_builder.add_node(_FALLBACK_SEARCH, _fallback_search)
 _builder.add_node(_CRITIQUE, _critique)
 
 _builder.add_edge(START, _BUDGET_GUARD)
@@ -672,9 +804,16 @@ _builder.add_conditional_edges(
 _builder.add_conditional_edges(
     _GENERATE_QUERIES,
     _fan_out_to_web_search,
-    [_WEB_SEARCH, END],
+    [_WEB_SEARCH, _FALLBACK_SEARCH, END],
 )
 _builder.add_edge(_WEB_SEARCH, _CRITIQUE)
-_builder.add_conditional_edges(_CRITIQUE, _route_after_critique, [_WEB_SEARCH, END])
+_builder.add_edge(_FALLBACK_SEARCH, _CRITIQUE)
+_builder.add_conditional_edges(
+    _CRITIQUE,
+    _route_after_critique,
+    [_WEB_SEARCH, _FALLBACK_SEARCH, END],
+)
 
-research_agent_graph = _builder.compile(checkpointer=get_checkpointer(), name="ResearchAgent")
+research_agent_graph = _builder.compile(
+    checkpointer=get_checkpointer(), name="ResearchAgent"
+)

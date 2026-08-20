@@ -8,15 +8,20 @@ LangGraph nodes do not need to understand individual provider contracts.
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
+import ipaddress
 import json
 import math
 import os
+import re
+import threading
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit, urlunsplit
+from weakref import WeakKeyDictionary
 
 import httpx
 from loguru import logger
@@ -25,6 +30,15 @@ from mcp.client.streamable_http import streamable_http_client
 from mcp.types import CallToolResult
 
 from agent.base_agent import WebSearchAgent
+
+_OMNISEEK_SEMAPHORES: WeakKeyDictionary[
+    asyncio.AbstractEventLoop,
+    asyncio.Semaphore,
+] = WeakKeyDictionary()
+_DASHSCOPE_RUNTIME_LOCK = threading.Lock()
+_DASHSCOPE_EXECUTOR: concurrent.futures.ThreadPoolExecutor | None = None
+_DASHSCOPE_SLOTS: threading.BoundedSemaphore | None = None
+_SOURCE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,16 +88,22 @@ def load_omniseek_credentials(
     """Read server-owned credentials without exposing them to graph config/state."""
     endpoint = os.getenv("OMNISEEK_MCP_URL", "").strip()
     token = os.getenv("OMNISEEK_TOKEN", "").strip()
-    configured_file = os.getenv("OMNISEEK_TOKEN_FILE", "").strip()
-    token_file = Path(configured_file).expanduser() if configured_file else default_token_file
-
-    if not token and token_file and token_file.is_file():
-        try:
+    try:
+        configured_file = os.getenv("OMNISEEK_TOKEN_FILE", "").strip()
+        token_file = (
+            Path(configured_file).expanduser()
+            if configured_file
+            else default_token_file
+        )
+        if not token and token_file and token_file.is_file():
+            file_stat = token_file.stat()
+            if os.name == "posix" and file_stat.st_mode & 0o077:
+                return None
             payload = json.loads(token_file.read_text(encoding="utf-8"))
             candidate = payload.get("token") if isinstance(payload, dict) else None
             token = candidate.strip() if isinstance(candidate, str) else ""
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return None
+    except (OSError, RuntimeError, UnicodeError, json.JSONDecodeError):
+        return None
 
     if not token:
         return None
@@ -102,11 +122,22 @@ class DashScopeSearchProvider:
         self._agent_factory = agent_factory
 
     async def search(self, query: str, limit: int) -> list[SearchHit]:
-        response = await asyncio.to_thread(
-            self._agent_factory().step,
-            prompt=query,
-            count=limit,
-        )
+        executor, slots = _dashscope_runtime()
+        if not slots.acquire(blocking=False):
+            raise SearchProviderUnavailable("dashscope concurrency limit reached")
+        try:
+            future = executor.submit(
+                self._agent_factory().step,
+                prompt=query,
+                count=limit,
+            )
+        except BaseException:
+            slots.release()
+            raise
+        future.add_done_callback(lambda _: slots.release())
+        response = await asyncio.wrap_future(future)
+        if response is None:
+            raise SearchProviderUnavailable("dashscope search unavailable")
         if not response:
             return []
 
@@ -114,13 +145,13 @@ class DashScopeSearchProvider:
         for page in response:
             if not isinstance(page, dict):
                 continue
-            url = str(page.get("url") or "").strip()
+            url = _safe_result_url(page.get("url"))
             if not url:
                 continue
             hits.append(
                 SearchHit(
-                    title=str(page.get("title") or "").strip(),
-                    snippet=str(page.get("snippet") or "").strip(),
+                    title=_bounded_text(page.get("title"), 500),
+                    snippet=_bounded_text(page.get("snippet"), 4000),
                     url=url,
                     provider=self.name,
                 )
@@ -130,6 +161,10 @@ class DashScopeSearchProvider:
 
 class OmniSeekProtocolError(RuntimeError):
     """Safe, transport-independent failure at the OmniSeek seam."""
+
+
+class SearchProviderUnavailable(RuntimeError):
+    """A provider failed without carrying upstream response details."""
 
 
 OmniSeekToolCaller = Callable[
@@ -170,11 +205,10 @@ class OmniSeekSearchProvider:
             lower=self._wait_seconds + 2.0,
             upper=120.0,
         )
-        self._sources = tuple(
-            source.strip() for source in sources if source and source.strip()
-        )
+        self._sources = _validated_sources(sources)
         self._staleness = (
-            staleness if staleness in {"fresh", "cached_ok", "cache_only"}
+            staleness
+            if staleness in {"fresh", "cached_ok", "cache_only"}
             else "cached_ok"
         )
         self._semantic = semantic
@@ -205,19 +239,19 @@ class OmniSeekSearchProvider:
             raise OmniSeekProtocolError("omniseek response has no document list")
 
         hits: list[SearchHit] = []
-        for document in documents:
+        for document in documents[: bounded_limit * 4]:
             if not isinstance(document, Mapping):
                 continue
-            url = str(document.get("url") or "").strip()
+            url = _safe_result_url(document.get("url"))
             if not url:
                 continue
             hits.append(
                 SearchHit(
-                    title=str(document.get("title") or "").strip(),
-                    snippet=str(document.get("content") or "").strip()[:4000],
+                    title=_bounded_text(document.get("title"), 500),
+                    snippet=_bounded_text(document.get("content"), 4000),
                     url=url,
                     provider=self.name,
-                    source=str(document.get("source") or "").strip(),
+                    source=_bounded_text(document.get("source"), 100),
                 )
             )
         return hits[:bounded_limit]
@@ -227,30 +261,31 @@ class OmniSeekSearchProvider:
         name: str,
         arguments: dict[str, object],
     ) -> CallToolResult:
-        timeout = httpx.Timeout(
-            self._request_timeout_seconds,
-            connect=min(self._request_timeout_seconds, 5.0),
-        )
-        headers = {"Authorization": f"Bearer {self._token}"}
-        async with httpx.AsyncClient(
-            headers=headers,
-            timeout=timeout,
-            trust_env=False,
-        ) as http_client:
-            async with streamable_http_client(
-                self._endpoint,
-                http_client=http_client,
-                terminate_on_close=False,
-            ) as (read_stream, write_stream, _):
-                async with ClientSession(
-                    read_stream,
-                    write_stream,
-                    read_timeout_seconds=timedelta(
-                        seconds=self._request_timeout_seconds
-                    ),
-                ) as session:
-                    await session.initialize()
-                    return await session.call_tool(name, arguments=arguments)
+        async with _omniseek_semaphore():
+            timeout = httpx.Timeout(
+                self._request_timeout_seconds,
+                connect=min(self._request_timeout_seconds, 5.0),
+            )
+            headers = {"Authorization": f"Bearer {self._token}"}
+            async with httpx.AsyncClient(
+                headers=headers,
+                timeout=timeout,
+                trust_env=False,
+            ) as http_client:
+                async with streamable_http_client(
+                    self._endpoint,
+                    http_client=http_client,
+                    terminate_on_close=False,
+                ) as (read_stream, write_stream, _):
+                    async with ClientSession(
+                        read_stream,
+                        write_stream,
+                        read_timeout_seconds=timedelta(
+                            seconds=self._request_timeout_seconds
+                        ),
+                    ) as session:
+                        await session.initialize()
+                        return await session.call_tool(name, arguments=arguments)
 
 
 class SearchCoordinator:
@@ -261,11 +296,18 @@ class SearchCoordinator:
         providers: Sequence[SearchProvider],
         *,
         fallback_providers: Sequence[SearchProvider] = (),
+        provider_timeout_seconds: float = 30.0,
     ) -> None:
         if not providers and not fallback_providers:
             raise ValueError("at least one search provider is required")
         self._providers = tuple(providers)
         self._fallback_providers = tuple(fallback_providers)
+        self._provider_timeout_seconds = _bounded_seconds(
+            provider_timeout_seconds,
+            name="provider_timeout_seconds",
+            lower=0.01,
+            upper=120.0,
+        )
 
     async def search(self, query: str, limit: int) -> SearchBatch:
         bounded_limit = max(0, int(limit))
@@ -275,12 +317,14 @@ class SearchCoordinator:
             bounded_limit,
         )
         if not hits and self._fallback_providers:
-            fallback_hits, fallback_attempted, fallback_failures = (
-                await self._run_providers(
-                    self._fallback_providers,
-                    query,
-                    bounded_limit,
-                )
+            (
+                fallback_hits,
+                fallback_attempted,
+                fallback_failures,
+            ) = await self._run_providers(
+                self._fallback_providers,
+                query,
+                bounded_limit,
             )
             hits.extend(fallback_hits)
             attempted.extend(fallback_attempted)
@@ -298,7 +342,13 @@ class SearchCoordinator:
         query: str,
         limit: int,
     ) -> tuple[list[SearchHit], list[str], list[ProviderFailure]]:
-        tasks = [provider.search(query, limit) for provider in providers]
+        tasks = [
+            asyncio.wait_for(
+                provider.search(query, limit),
+                timeout=self._provider_timeout_seconds,
+            )
+            for provider in providers
+        ]
         outcomes = await asyncio.gather(*tasks, return_exceptions=True)
 
         hits: list[SearchHit] = []
@@ -363,7 +413,83 @@ def _validated_endpoint(endpoint: str) -> str:
         raise ValueError("OMNISEEK_MCP_URL must not contain credentials")
     if parts.query or parts.fragment:
         raise ValueError("OMNISEEK_MCP_URL must not contain a query or fragment")
+    if parts.scheme == "http" and not _is_loopback_host(parts.hostname or ""):
+        raise ValueError("OMNISEEK_MCP_URL requires HTTPS for non-loopback hosts")
     return value
+
+
+def _is_loopback_host(host: str) -> bool:
+    if host.casefold() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+def _safe_result_url(value: object) -> str:
+    url = str(value or "").strip()
+    if len(url) > 2048:
+        return ""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return ""
+    if parts.scheme not in {"http", "https"} or not parts.netloc:
+        return ""
+    if parts.username or parts.password:
+        return ""
+    return url
+
+
+def _validated_sources(sources: Sequence[str]) -> tuple[str, ...]:
+    cleaned = tuple(
+        dict.fromkeys(source.strip() for source in sources if source.strip())
+    )
+    if len(cleaned) > 16:
+        raise ValueError("OMNISEEK_SOURCES accepts at most 16 source names")
+    if any(not _SOURCE_NAME_PATTERN.fullmatch(source) for source in cleaned):
+        raise ValueError("OMNISEEK_SOURCES contains an invalid source name")
+    return cleaned
+
+
+def _bounded_text(value: object, limit: int) -> str:
+    return str(value or "")[:limit].strip()
+
+
+def _omniseek_semaphore() -> asyncio.Semaphore:
+    loop = asyncio.get_running_loop()
+    semaphore = _OMNISEEK_SEMAPHORES.get(loop)
+    if semaphore is None:
+        raw_limit = os.getenv("OMNISEEK_MAX_CONCURRENCY", "8")
+        try:
+            limit = int(raw_limit)
+        except ValueError:
+            limit = 8
+        semaphore = asyncio.Semaphore(min(max(limit, 1), 64))
+        _OMNISEEK_SEMAPHORES[loop] = semaphore
+    return semaphore
+
+
+def _dashscope_runtime() -> tuple[
+    concurrent.futures.ThreadPoolExecutor,
+    threading.BoundedSemaphore,
+]:
+    global _DASHSCOPE_EXECUTOR, _DASHSCOPE_SLOTS
+    with _DASHSCOPE_RUNTIME_LOCK:
+        if _DASHSCOPE_EXECUTOR is None or _DASHSCOPE_SLOTS is None:
+            raw_limit = os.getenv("DASHSCOPE_MAX_CONCURRENCY", "8")
+            try:
+                limit = int(raw_limit)
+            except ValueError:
+                limit = 8
+            limit = min(max(limit, 1), 64)
+            _DASHSCOPE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+                max_workers=limit,
+                thread_name_prefix="dashscope-search",
+            )
+            _DASHSCOPE_SLOTS = threading.BoundedSemaphore(limit)
+        return _DASHSCOPE_EXECUTOR, _DASHSCOPE_SLOTS
 
 
 def _validated_token(token: str) -> str:
@@ -395,7 +521,11 @@ def _omniseek_payload(result: Any) -> dict[str, Any]:
         return structured
 
     for block in getattr(result, "content", ()) or ():
-        text = block.get("text") if isinstance(block, dict) else getattr(block, "text", None)
+        text = (
+            block.get("text")
+            if isinstance(block, dict)
+            else getattr(block, "text", None)
+        )
         if not isinstance(text, str):
             continue
         try:
