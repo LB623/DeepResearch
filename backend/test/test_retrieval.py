@@ -13,6 +13,7 @@ from agent.retrieval import (
     OmniSeekSearchProvider,
     SearchCoordinator,
     SearchHit,
+    load_omniseek_credentials,
 )
 
 
@@ -116,6 +117,26 @@ def test_coordinator_requires_a_real_adapter():
         assert str(exc) == "at least one search provider is required"
     else:
         raise AssertionError("empty provider list must be rejected")
+
+
+def test_credentials_can_be_loaded_from_server_owned_json(monkeypatch, tmp_path):
+    token_file = tmp_path / "omniseek_http.json"
+    token_file.write_text('{"token": "a-secure-token-value"}', encoding="utf-8")
+    monkeypatch.delenv("OMNISEEK_MCP_URL", raising=False)
+    monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
+
+    assert load_omniseek_credentials(default_token_file=token_file) == (
+        "http://127.0.0.1:8765/mcp",
+        "a-secure-token-value",
+    )
+
+
+def test_malformed_token_file_fails_closed(monkeypatch, tmp_path):
+    token_file = tmp_path / "omniseek_http.json"
+    token_file.write_text("not-json", encoding="utf-8")
+    monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
+
+    assert load_omniseek_credentials(default_token_file=token_file) is None
 
 
 @pytest.mark.asyncio

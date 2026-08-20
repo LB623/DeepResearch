@@ -38,7 +38,12 @@ def mock_env(monkeypatch):
     monkeypatch.delenv("ANSWER_MODEL", raising=False)
     monkeypatch.delenv("OMNISEEK_MCP_URL", raising=False)
     monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
-    monkeypatch.delenv("OMNISEEK_MODE", raising=False)
+    monkeypatch.delenv("OMNISEEK_TOKEN_FILE", raising=False)
+    monkeypatch.setenv("OMNISEEK_MODE", "off")
+    monkeypatch.delenv("OMNISEEK_SOURCES", raising=False)
+    monkeypatch.delenv("OMNISEEK_WAIT_SECONDS", raising=False)
+    monkeypatch.delenv("OMNISEEK_REQUEST_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("OMNISEEK_RESULT_LIMIT", raising=False)
     monkeypatch.delenv("MAX_OMNISEEK_CALLS", raising=False)
 
 

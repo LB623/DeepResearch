@@ -76,6 +76,7 @@
 | Redis Search Cache | 自动降级为进程内缓存；只影响跨进程复用和重启后命中率。 |
 | Redis Checkpoint | 默认失败关闭（fail closed），避免把不可恢复的任务误报为可恢复。仅本地开发可显式设置 `CHECKPOINT_FALLBACK_TO_MEMORY=1`。 |
 | Milvus 事实记忆 | 不中断当前研究；暂停长期记忆读写，并按 `KB_RECONNECT_INTERVAL_SECONDS` 定期重连。 |
+| OmniSeek 检索 | 与现有 DashScope 检索隔离；单次超时或协议错误只记录安全错误类型，并保留其他提供方的结果。未配置时自动使用 DashScope。 |
 
 Web Search 次数、LLM token、墙钟时间和无进展轮数等单任务预算记录在 LangGraph state 中，因此从 Checkpoint 恢复不会重置预算。
 环境变量中的预算值同时是服务端上限：请求可通过 `configurable` 降低预算，但不能将其提高到服务端上限之上。
@@ -88,7 +89,7 @@ Web Search 次数、LLM token、墙钟时间和无进展轮数等单任务预算
 |---|---|
 | Agent 编排 | LangGraph、LangChain |
 | 后端 | Python 3.11+、FastAPI、LangGraph API |
-| 模型接入 | OpenAI-compatible API、DashScope Application |
+| 模型与检索接入 | OpenAI-compatible API、DashScope Application、OmniSeek MCP（可选） |
 | 长期记忆 | Milvus、PyMilvus、Embedding API |
 | 缓存与恢复 | Redis、langgraph-checkpoint-redis |
 | 前端 | React 19、TypeScript、Vite、Tailwind CSS |
@@ -131,6 +132,18 @@ Checkpoint 使用 Redis Search 索引，因此必须使用 Redis Stack；普通
 `redis:7-alpine` 不支持 `FT._LIST`，不能用于 `CHECKPOINT_BACKEND=redis`。
 如果本机已有启用 Redis Search 的兼容服务，可跳过第二条命令。
 
+如需启用多源感知检索，再启动独立的 OmniSeek sidecar：
+
+```bash
+docker compose -f infrastructure/omniseek/docker-compose.yml up -d
+curl -fsS http://127.0.0.1:8765/healthz
+```
+
+镜像固定到 OmniSeek `v0.2.0` 的多架构 OCI digest，端口只绑定本机回环地址。
+首次启动会在 `infrastructure/omniseek/data/credentials/omniseek_http.json`
+生成独立 bearer token。仓库内运行时会自动发现该文件；其他部署布局可设置
+`OMNISEEK_TOKEN_FILE`。该目录已被 Git 忽略，不要把 token 提交到仓库。
+
 ### 3. 配置环境变量
 
 以仓库中的完整模板创建 `backend/.env`：
@@ -155,6 +168,14 @@ REASONING_LLM_BASE_URL=https://your-llm-endpoint/v1
 MCP_API_KEY=your-dashscope-api-key
 MCP_APP_ID=your-web-search-application-id
 
+# 可选 OmniSeek sidecar；token 取自首次启动生成的 omniseek_http.json
+OMNISEEK_MCP_URL=http://127.0.0.1:8765/mcp
+OMNISEEK_TOKEN_FILE=../infrastructure/omniseek/data/credentials/omniseek_http.json
+OMNISEEK_MODE=augment
+OMNISEEK_RESULT_LIMIT=5
+OMNISEEK_WAIT_SECONDS=3
+OMNISEEK_REQUEST_TIMEOUT_SECONDS=12
+
 # Redis 搜索缓存与任务检查点
 REDIS_URL=redis://localhost:6379/0
 CHECKPOINT_BACKEND=redis
@@ -175,6 +196,7 @@ EMBEDDING_DIM=1024
 NUMBER_OF_INITIAL_QUERIES=2
 MAX_RESEARCH_LOOPS=2
 MAX_WEB_SEARCH_CALLS=20
+MAX_OMNISEEK_CALLS=4
 MAX_TOTAL_TOKENS=120000
 MAX_ELAPSED_SECONDS=900
 MAX_NO_PROGRESS_ROUNDS=2
@@ -202,6 +224,16 @@ cd ..
 ```
 
 命令会分别检查 Milvus 与 Embedding，并在任一依赖不可用时返回非零退出码。这是部署就绪探针，不是运行时的强制启动门禁：Milvus 暂时不可用时，Agent 仍可继续研究并在冷却期后重连。Embedding 检查会发送一条固定探针文本，可能产生一次极小的 API 调用费用。
+
+启用 OmniSeek 后，使用真实 MCP 初始化、鉴权和固定检索请求验收服务：
+
+```bash
+cd backend
+../.venv/bin/python -m agent.retrieval_preflight
+cd ..
+```
+
+该探针不输出 token、查询正文、响应正文或内部异常，只输出文档数与来源名；检索会产生真实外部网络请求。
 
 ### 4. 启动应用
 
@@ -291,6 +323,7 @@ DeepResearch/
 ├── frontend/                         # React + Vite Web UI
 ├── infrastructure/
 │   ├── milvus/                    # Milvus Docker Compose
+│   ├── omniseek/                  # 固定版本的 OmniSeek MCP sidecar
 │   └── redis/                     # Redis Stack Docker Compose
 ├── docs/
 │   ├── assets/                       # README 图片与架构图
@@ -314,7 +347,7 @@ DeepResearch/
 
 ## ⚠️ 当前边界
 
-- Web Search 当前依赖 DashScope Application/MCP 配置。
+- Web Search 至少需要 DashScope Application 或自托管 OmniSeek MCP；两者同时配置时默认并行增强并去重。
 - Milvus 保存提取后的事实记录，不保存原始文档 Chunk。
 - Prompt Quality Guards 已增强事实约束，但覆盖度、时效性和来源分级仍需继续优化。
 - 生产部署前需要补充鉴权、密钥管理、监控和更严格的安全策略。

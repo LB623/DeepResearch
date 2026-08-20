@@ -1,0 +1,21 @@
+services:
+  omniseek:
+    image: ghcr.io/battam1111/omniseek:v0.2.0@sha256:632c533261e0406c56cecca1aefe0c8bf53a1e2e28386eb555aa5be02774a6f5
+    container_name: deepresearch-omniseek
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      OMNISEEK_HTTP_HOST: "0.0.0.0"
+      OMNISEEK_HTTP_PORT: "8765"
+      OMNISEEK_CONTACT_EMAIL: "${OMNISEEK_CONTACT_EMAIL:-}"
+    volumes:
+      - ./data:/root/.omniseek
+      - ./inbox:/root/omniseek-inbox
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8765/healthz"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5

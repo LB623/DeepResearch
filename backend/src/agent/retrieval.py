@@ -10,9 +10,11 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import timedelta
+from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit, urlunsplit
 
@@ -63,6 +65,29 @@ class SearchProvider(Protocol):
     name: str
 
     async def search(self, query: str, limit: int) -> list[SearchHit]: ...
+
+
+def load_omniseek_credentials(
+    *,
+    default_token_file: Path | None = None,
+) -> tuple[str, str] | None:
+    """Read server-owned credentials without exposing them to graph config/state."""
+    endpoint = os.getenv("OMNISEEK_MCP_URL", "").strip()
+    token = os.getenv("OMNISEEK_TOKEN", "").strip()
+    configured_file = os.getenv("OMNISEEK_TOKEN_FILE", "").strip()
+    token_file = Path(configured_file).expanduser() if configured_file else default_token_file
+
+    if not token and token_file and token_file.is_file():
+        try:
+            payload = json.loads(token_file.read_text(encoding="utf-8"))
+            candidate = payload.get("token") if isinstance(payload, dict) else None
+            token = candidate.strip() if isinstance(candidate, str) else ""
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return None
+
+    if not token:
+        return None
+    return endpoint or "http://127.0.0.1:8765/mcp", token
 
 
 class DashScopeSearchProvider:

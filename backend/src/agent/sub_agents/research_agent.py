@@ -20,6 +20,7 @@ import os
 import re
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any, cast
 
 from dotenv import load_dotenv
@@ -53,6 +54,7 @@ from agent.retrieval import (
     DashScopeSearchProvider,
     OmniSeekSearchProvider,
     SearchCoordinator,
+    load_omniseek_credentials,
 )
 from agent.state import OverallState, QueryGenerationState, WebSearchState
 from agent.tools_and_schemas import Reflection, SearchQueryList
@@ -82,6 +84,15 @@ _GENERATE_QUERIES = "generate_queries"
 _WEB_SEARCH = "web_search"
 _CRITIQUE = "critique"
 _BUDGET_GUARD = "budget_guard"
+
+_DEFAULT_OMNISEEK_TOKEN_FILE = (
+    Path(__file__).resolve().parents[4]
+    / "infrastructure"
+    / "omniseek"
+    / "data"
+    / "credentials"
+    / "omniseek_http.json"
+)
 
 SEARCH_CALL_LIMIT = "search_call_limit"
 ELAPSED_TIME_LIMIT = "elapsed_time_limit"
@@ -188,8 +199,10 @@ def _omniseek_is_configured(configurable: Configuration) -> bool:
     """Keep service credentials outside runnable config and checkpoint state."""
     return (
         configurable.omniseek_mode != "off"
-        and bool(os.getenv("OMNISEEK_MCP_URL", "").strip())
-        and bool(os.getenv("OMNISEEK_TOKEN", "").strip())
+        and load_omniseek_credentials(
+            default_token_file=_DEFAULT_OMNISEEK_TOKEN_FILE
+        )
+        is not None
     )
 
 
@@ -202,16 +215,23 @@ def _build_search_coordinator(
     if not use_omniseek or not _omniseek_is_configured(configurable):
         return SearchCoordinator([dashscope])
 
+    credentials = load_omniseek_credentials(
+        default_token_file=_DEFAULT_OMNISEEK_TOKEN_FILE
+    )
+    if credentials is None:
+        return SearchCoordinator([dashscope])
+    endpoint, token = credentials
+
     try:
         omniseek = OmniSeekSearchProvider(
-            endpoint=os.environ["OMNISEEK_MCP_URL"],
-            token=os.environ["OMNISEEK_TOKEN"],
+            endpoint=endpoint,
+            token=token,
             wait_seconds=configurable.omniseek_wait_seconds,
             request_timeout_seconds=configurable.omniseek_request_timeout_seconds,
             sources=configurable.omniseek_sources.split(","),
             max_results=configurable.omniseek_result_limit,
         )
-    except (KeyError, TypeError, ValueError) as exc:
+    except (TypeError, ValueError) as exc:
         logger.warning(
             "[Retrieval] OmniSeek configuration rejected error_type={}",
             type(exc).__name__,

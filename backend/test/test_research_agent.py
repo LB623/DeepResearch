@@ -286,6 +286,7 @@ class TestFanOutToWebSearch:
     def test_fan_out_reserves_persisted_omniseek_budget(self, monkeypatch):
         monkeypatch.setenv("OMNISEEK_MCP_URL", "http://localhost:8765/mcp")
         monkeypatch.setenv("OMNISEEK_TOKEN", "a-secure-token-value")
+        monkeypatch.setenv("OMNISEEK_MODE", "augment")
         state = {
             "search_query": ["q1", "q2", "q3"],
             "omniseek_call_count": 3,
