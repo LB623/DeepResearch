@@ -19,9 +19,13 @@ backend/eval/
 ├── prompts.py           # Judge LLM 评分提示词模板（7 套）
 ├── judge.py             # LLM Judge 封装 + Pydantic 评分数据模型
 ├── evaluator.py         # 评估执行器：端到端 + 组件级评估
+├── dataset.py           # 分层固定集词表、校验与加载
+├── aggregate.py         # 离线聚合：均值/标准差/幻觉率/A/B
 ├── run_eval.py          # CLI 命令行入口
 ├── run_retrieval_benchmark.py # Milvus 检索组件确定性 A/B
-├── test_set.json        # 测试用例集（5 个 topic）
+├── test_set_e2e.json    # 正式分层固定集 smoke 5 / core 30 / full 100
+├── test_set_basic_5.json # 历史 5 题 A/B 兼容集
+├── test_set.json        # 含需求澄清反馈的示例集
 └── README.md            # 本文档
 ```
 
@@ -98,6 +102,32 @@ judge.evaluate_citations(sources=..., report=...)
 # 端到端评估所有测试用例
 python -m eval.run_eval --mode e2e
 
+# 日常 smoke（历史 5 题，原生预算）
+python -m eval.run_eval --mode e2e --test-set test_set_e2e.json --tier smoke \
+  --output eval_runs/e2e_smoke.json
+
+# 对齐 2026-06-18 历史 A/B 的 2 queries / 2 loops
+python -m eval.run_eval --mode e2e --test-set test_set_e2e.json --tier smoke \
+  --initial-queries 2 --max-loops 2 --repeat 3 \
+  --output eval_runs/e2e_smoke_r3.json
+
+# 正式 core（30 题，原生预算；成本显著高于 smoke）
+python -m eval.run_eval --mode e2e --test-set test_set_e2e.json --tier core \
+  --repeat 3 --output eval_runs/e2e_core_r3.json
+
+# full 分批，控制真实搜索和 LLM 调用成本（此处运行 core/full 切片第 6-10 题）
+python -m eval.run_eval --mode e2e --test-set test_set_e2e.json --tier full \
+  --offset 5 --limit 5 --output eval_runs/e2e_full_batch_02.json
+
+# 离线聚合（不调用 LLM / Search / Milvus）
+python -m eval.aggregate eval_runs/e2e_full_batch_01.json eval_runs/e2e_full_batch_02.json \
+  --output eval_runs/e2e_full_summary.json
+
+python -m eval.aggregate \
+  --baseline eval_runs/e2e_baseline_core_r3.json \
+  --optimized eval_runs/e2e_guards_core_r3.json \
+  --output eval_runs/e2e_core_ab.json
+
 # 组件级评估
 python -m eval.run_eval --mode comp
 
@@ -140,7 +170,50 @@ cd backend
 
 默认在结束时删除隔离 collection；调试时可追加 `--keep-collection`。
 
-### `test_set.json` — 测试用例集
+### 输出契约回放（不调用外部服务）
+
+对已经落盘的 E2E JSON 做确定性检查：引用 URL 是否落在当次来源、终稿是否残留内部占位。
+
+```bash
+cd backend
+../.venv/bin/python -m eval.run_groundedness \
+  --output eval_runs/output_contract_replay.json \
+  --report ../docs/reviews/2026-08-16-output-contract-eval.md
+```
+
+### Writer 对抗集（不调用外部服务）
+
+用现有 Writer 拒绝函数和契约规则，对固定对抗样本计算召回率与误伤率。
+
+```bash
+cd backend
+../.venv/bin/python -m eval.run_guard_eval \
+  --output eval_runs/guard_corpus_eval.json \
+  --report ../docs/reviews/2026-08-16-writer-guard-corpus.md
+```
+
+### `test_set_e2e.json` — 分层固定 E2E 集
+
+权威固定集为 `e2e_fixed_v2`，冻结日 `2026-06-30`。`case_id`、`tier`、`domain`、`difficulty`、`evaluation_focus` 会进入加载器、E2E JSON 和离线聚合，而不是只停在题目文件里。
+
+| 层 | 题数 | 用途 | 说明 |
+|---|---:|---|---|
+| smoke | 5 | 日常回归 + 历史 A/B 复现 | 即历史 basic-5，topic 与查询预算完全兼容 |
+| core | 30 | 默认正式 A/B | 覆盖 8 个一级领域和 10 个能力维；成本约 5–8 小时/变体 |
+| full | 100 | 覆盖目录 | 只建议单次或分批跑，不要默认做 3 重复 A/B |
+
+一级领域只有 8 个：`ai_tech`、`policy_law`、`science_health`、`energy_climate`、`finance_macro`、`security_safety`、`society_org`、`methods`。能力标签是受控词表，不是开放中文短语。
+
+**简历口径必须区分：**
+
+- 已构建题集：smoke 5 / core 30 / full 100。
+- 已真实运行：目前仍只有历史 5 题 Prompt Quality Guards A/B。
+- 历史 5 题结果：幻觉 `3/5 → 0/5`（v3），均分 `4.36 → 4.24`，只能表述为降低幻觉/加强事实约束。
+- 禁止把 `3/5 → 0/5` 改写成 `0/50`、`0/100` 或“扩展集幻觉率为 0”。core/full 指标必须等真实评测后再更新。
+
+`--repeat` 每次使用独立 `run_id`，聚合仍按 `case_id`。历史只有 `topic` 的 JSON 也可以按题目文本回退配对。
+
+### `test_set.json` — 需求澄清示例集
 
 10 个测试用例（5 个基础 + 5 个带用户反馈的需求澄清测试），覆盖不同领域和难度：
 
@@ -214,7 +287,7 @@ cat eval_report_20260529_143000.json
 }
 ```
 
-也可以不依赖文件，直接 `--topic` 传入。
+也可以不依赖文件，直接 `--topic` 传入。正式回归请使用 `test_set_e2e.json` 的 `--tier`，不要把 `test_set.json` 当成固定 benchmark。
 
 ---
 

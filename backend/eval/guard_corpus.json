@@ -1,0 +1,376 @@
+{
+  "description": "Fixed Writer output-contract corpus. $LONG expands to a deterministic paragraph used only to satisfy length checks.",
+  "cases": [
+    {
+      "id": "trunc-01",
+      "category": "truncation",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "too short",
+      "draft": "# Report\n\n## 1. Overview\n\n$LONG\n\n## 2. Conclusion\n\n$LONG",
+      "polished": "# Report\n\n## 1. Overview\n\n短。\n\n## 2. Conclusion\n\n短。",
+      "sources": []
+    },
+    {
+      "id": "trunc-02",
+      "category": "truncation",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "too short",
+      "draft": "# 市场报告\n\n## 1. 背景\n\n$LONG\n\n## 2. 结论\n\n$LONG",
+      "polished": "# 市场报告\n\n## 1. 背景\n\n摘要。\n\n## 2. 结论\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "trunc-03",
+      "category": "truncation",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "too short",
+      "draft": "# Supply\n\n## 1. Overview\n\n$LONG\n\n## 2. Risks\n\n$LONG\n\n## 3. Conclusion\n\n$LONG",
+      "polished": "# Supply\n\n## 1. Overview\n\n简。\n\n## 2. Risks\n\n简。\n\n## 3. Conclusion\n\n简。",
+      "sources": []
+    },
+    {
+      "id": "trunc-04",
+      "category": "truncation",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "too short",
+      "draft": "# FSD\n\n## 1. Overview\n\n$LONG$LONG\n\n## 2. Conclusion\n\n$LONG",
+      "polished": "# FSD\n\n## 1. Overview\n\n压缩后的概述。\n\n## 2. Conclusion\n\n压缩后的结论。",
+      "sources": []
+    },
+    {
+      "id": "head-01",
+      "category": "missing_heading",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "missing report headings",
+      "draft": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.",
+      "polished": "# Report\n\n## 1. Overview\n\nText.",
+      "sources": []
+    },
+    {
+      "id": "head-02",
+      "category": "missing_heading",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "missing report headings",
+      "draft": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Risks\n\nRisk.\n\n## 3. Conclusion\n\nDone.",
+      "polished": "# Report\n\n## 1. Overview\n\nText.\n\n## 3. Conclusion\n\nDone.",
+      "sources": []
+    },
+    {
+      "id": "head-03",
+      "category": "missing_heading",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "missing report headings",
+      "draft": "# 研究报告\n\n## 1. 背景\n\n正文。\n\n## 2. 结论\n\n结束。",
+      "polished": "## 1. 背景\n\n正文。\n\n## 2. 结论\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "head-04",
+      "category": "missing_heading",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "missing report headings",
+      "draft": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.",
+      "polished": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Final Thoughts\n\nDone.",
+      "sources": []
+    },
+    {
+      "id": "url-01",
+      "category": "unknown_url",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "unknown citation URL",
+      "draft": "# Report\n\n## 1. Overview\n\n见来源。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Overview\n\n见[伪造](https://hallucinated.example/a)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0", "label": "real"}]
+    },
+    {
+      "id": "url-02",
+      "category": "unknown_url",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "unknown citation URL",
+      "draft": "# Report\n\n## 1. Overview\n\n见[真源](https://real.example/a)。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Overview\n\n见[真源](https://real.example/a)和[假源](https://fake.example/b)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0", "label": "real"}]
+    },
+    {
+      "id": "url-03",
+      "category": "unknown_url",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "unknown citation URL",
+      "draft": "# Report\n\n## 1. Overview\n\n正文。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Overview\n\n见[短链残留](https://search.com/id/9-9)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0", "label": "real"}]
+    },
+    {
+      "id": "url-04",
+      "category": "unknown_url",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "unknown citation URL",
+      "draft": "# FSD\n\n## 1. Overview\n\n监管进展。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# FSD\n\n## 1. Overview\n\n见[路透](https://www.reuters.com/invented-fsd-2025)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://www.dongchedi.com/article/1", "short_url": "https://search.com/id/0-1", "label": "dongchedi"}]
+    },
+    {
+      "id": "name-01",
+      "category": "new_named_term",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "new named terms",
+      "draft": "# Report\n\n## 1. Tools\n\n现有工具。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Tools\n\n新增 Kiro 工具。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "name-02",
+      "category": "new_named_term",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "new named terms",
+      "draft": "# Report\n\n## 1. Framework\n\n现有框架。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Framework\n\nTessl 框架开始落地。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "name-03",
+      "category": "new_named_term",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "new named terms",
+      "draft": "# Report\n\n## 1. Product\n\n现有产品。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Product\n\n该产品叫 NeuroForge。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "name-04",
+      "category": "new_named_term",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "new named terms",
+      "draft": "# Report\n\n## 1. Company\n\n现有公司。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Company\n\n公司 AnthropicX 发布了新版本。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "name-05",
+      "category": "new_named_term",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "new named terms",
+      "draft": "# Report\n\n## 1. Model\n\n现有模型。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Model\n\n新模型 CodexPrime 被写入终稿。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "fence-01",
+      "category": "empty_or_fence",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "empty or unterminated",
+      "draft": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.",
+      "polished": "```markdown\n# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.",
+      "sources": []
+    },
+    {
+      "id": "fence-02",
+      "category": "empty_or_fence",
+      "check": "polish",
+      "should_reject": true,
+      "reason_contains": "empty or unterminated",
+      "draft": "# Report\n\n## 1. Overview\n\nText.",
+      "polished": "   ",
+      "sources": []
+    },
+    {
+      "id": "fence-03",
+      "category": "empty_or_fence",
+      "check": "draft",
+      "should_reject": true,
+      "reason_contains": "empty or unterminated",
+      "outline": "## 1. Overview\n## 2. Conclusion",
+      "draft": ""
+    },
+    {
+      "id": "fence-04",
+      "category": "empty_or_fence",
+      "check": "draft",
+      "should_reject": true,
+      "reason_contains": "empty or unterminated",
+      "outline": "## 1. Overview\n## 2. Conclusion",
+      "draft": "```markdown\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone."
+    },
+    {
+      "id": "outline-01",
+      "category": "missing_outline_section",
+      "check": "draft",
+      "should_reject": true,
+      "reason_contains": "missing outline sections",
+      "outline": "## 1. Overview\n## 2. Risks\n## 3. Conclusion",
+      "draft": "## 1. Overview\n\nText.\n\n## 2. Risks\n\nRisk."
+    },
+    {
+      "id": "outline-02",
+      "category": "missing_outline_section",
+      "check": "draft",
+      "should_reject": true,
+      "reason_contains": "missing outline sections",
+      "outline": "## 1. 背景\n## 2. 风险\n## 3. 结论",
+      "draft": "## 1. 背景\n\n正文。\n\n## 3. 结论\n\n结束。"
+    },
+    {
+      "id": "outline-03",
+      "category": "missing_outline_section",
+      "check": "draft",
+      "should_reject": true,
+      "reason_contains": "missing outline sections",
+      "outline": "## 1. Overview\n## 2. Evidence\n## 3. Risks\n## 4. Conclusion",
+      "draft": "## 1. Overview\n\nText.\n\n## 4. Conclusion\n\nDone."
+    },
+    {
+      "id": "term-01",
+      "category": "unsupported_entity",
+      "check": "unsupported_terms",
+      "should_reject": true,
+      "reason_contains": "Kiro",
+      "research_topic": "SDD 与 AGENTS.md",
+      "evidence": "GitHub is supported.",
+      "draft": "Kiro、Tessl 与 GitHub 可用于该流程。"
+    },
+    {
+      "id": "term-02",
+      "category": "unsupported_entity",
+      "check": "unsupported_terms",
+      "should_reject": true,
+      "reason_contains": "NeuroForge",
+      "research_topic": "AI 编程助手市场",
+      "evidence": "Cursor and Copilot are the main tools.",
+      "draft": "NeuroForge 被写成市场第一。"
+    },
+    {
+      "id": "term-03",
+      "category": "unsupported_entity",
+      "check": "unsupported_terms",
+      "should_reject": true,
+      "reason_contains": "MatchAct",
+      "research_topic": "半导体供应链",
+      "evidence": "The CHIPS Act increased subsidies.",
+      "draft": "MatchAct 被写成已通过的法案。"
+    },
+    {
+      "id": "leftover-01",
+      "category": "internal_leftover",
+      "check": "contract",
+      "should_reject": true,
+      "expect_leftover": true,
+      "polished": "# Report\n\n## 1. Overview\n\n安全修复时间缩短[ID 0-0]。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0"}]
+    },
+    {
+      "id": "leftover-02",
+      "category": "internal_leftover",
+      "check": "contract",
+      "should_reject": true,
+      "expect_leftover": true,
+      "polished": "# Report\n\n## 1. Overview\n\n工厂数量上升[来源id/3-1]。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/b", "short_url": "https://search.com/id/3-1"}]
+    },
+    {
+      "id": "leftover-03",
+      "category": "internal_leftover",
+      "check": "contract",
+      "should_reject": true,
+      "expect_leftover": true,
+      "polished": "# Report\n\n## 1. Overview\n\n审批仍未落地[ID/3-2]。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/c", "short_url": "https://search.com/id/3-2"}]
+    },
+    {
+      "id": "leftover-04",
+      "category": "internal_leftover",
+      "check": "contract",
+      "should_reject": true,
+      "expect_leftover": true,
+      "polished": "# Report\n\n## 1. Overview\n\n见[材料-02]继续分析。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/d", "short_url": "https://search.com/id/0-2"}]
+    },
+    {
+      "id": "valid-01",
+      "category": "valid_control",
+      "check": "polish",
+      "should_reject": false,
+      "draft": "# Report\n\n## 1. Overview\n\n见[真源](https://real.example/a)。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Overview\n\n见[真源](https://real.example/a)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0", "label": "real"}]
+    },
+    {
+      "id": "valid-02",
+      "category": "valid_control",
+      "check": "polish",
+      "should_reject": false,
+      "draft": "# Report\n\n## 1. Tools\n\nKiro 工具已经出现在草稿。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Tools\n\nKiro 工具继续作为已有工具讨论。\n\n## 2. Conclusion\n\n结束。",
+      "sources": []
+    },
+    {
+      "id": "valid-03",
+      "category": "valid_control",
+      "check": "polish",
+      "should_reject": false,
+      "draft": "# Report\n\n## 1. Overview\n\n$LONG\n\n## 2. Conclusion\n\n$LONG",
+      "polished": "# Report\n\n## 1. Overview\n\n$LONG\n\n## 2. Conclusion\n\n补充一句后仍保持完整章节。$LONG",
+      "sources": []
+    },
+    {
+      "id": "valid-04",
+      "category": "valid_control",
+      "check": "polish",
+      "should_reject": false,
+      "draft": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.",
+      "polished": "# Report\n\n## 1. Overview\n\nText.\n\n## 2. Conclusion\n\nDone.\n\n## 3. Appendix\n\nExtra.",
+      "sources": []
+    },
+    {
+      "id": "valid-05",
+      "category": "valid_control",
+      "check": "draft",
+      "should_reject": false,
+      "outline": "## 1. Overview\n## 2. Risks\n## 3. Conclusion",
+      "draft": "## 1. Overview\n\nText.\n\n## 2. Risks\n\nRisk.\n\n## 3. Conclusion\n\nDone."
+    },
+    {
+      "id": "valid-06",
+      "category": "valid_control",
+      "check": "unsupported_terms",
+      "should_reject": false,
+      "research_topic": "SDD 与 AGENTS.md",
+      "evidence": "GitHub Spec Kit and OpenSpec are documented.",
+      "draft": "GitHub 与 OpenSpec 都出现在材料中。"
+    },
+    {
+      "id": "valid-07",
+      "category": "valid_control",
+      "check": "contract",
+      "should_reject": false,
+      "polished": "# Report\n\n## 1. Overview\n\n见[真源](https://real.example/a)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0"}]
+    },
+    {
+      "id": "valid-08",
+      "category": "valid_control",
+      "check": "polish",
+      "should_reject": false,
+      "draft": "# Report\n\n## 1. Overview\n\n见[短链](https://search.com/id/0-0)。\n\n## 2. Conclusion\n\n结束。",
+      "polished": "# Report\n\n## 1. Overview\n\n见[短链](https://search.com/id/0-0)。\n\n## 2. Conclusion\n\n结束。",
+      "sources": [{"value": "https://real.example/a", "short_url": "https://search.com/id/0-0"}]
+    }
+  ]
+}

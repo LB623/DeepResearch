@@ -116,6 +116,42 @@ class TopicCfg:
     max_research_loops: int = 2
     user_feedback: str | None = None
     expected_intent: str | None = None
+    case_id: str = ""
+    tier: str = ""
+    domain: str = ""
+    difficulty: str = ""
+    evaluation_focus: list[str] = field(default_factory=list)
+    as_of: str = ""
+    required_aspects: list[str] = field(default_factory=list)
+    risk_flags: list[str] = field(default_factory=list)
+    source_expectations: dict = field(default_factory=dict)
+
+
+def _cfg_metadata(cfg: TopicCfg) -> dict:
+    """Copy dataset metadata that must survive into eval JSON."""
+    return {
+        "topic": cfg.topic,
+        "case_id": cfg.case_id,
+        "tier": cfg.tier,
+        "domain": cfg.domain,
+        "difficulty": cfg.difficulty,
+        "evaluation_focus": list(cfg.evaluation_focus),
+        "as_of": cfg.as_of,
+        "required_aspects": list(cfg.required_aspects),
+        "risk_flags": list(cfg.risk_flags),
+        "source_expectations": dict(cfg.source_expectations),
+        "initial_search_query_count": cfg.initial_search_query_count,
+        "max_research_loops": cfg.max_research_loops,
+    }
+
+
+def apply_cfg_metadata(result, cfg: TopicCfg, *, run_id: str = ""):
+    """Stamp case metadata onto an E2E or component result."""
+    for key, value in _cfg_metadata(cfg).items():
+        setattr(result, key, value)
+    if run_id:
+        result.run_id = run_id
+    return result
 
 
 @dataclass
@@ -128,6 +164,18 @@ class E2EResult:
     judge_token_count: int = 0
     budget_stop_reason: str = ""
     error: str | None = None
+    case_id: str = ""
+    run_id: str = ""
+    tier: str = ""
+    domain: str = ""
+    difficulty: str = ""
+    evaluation_focus: list[str] = field(default_factory=list)
+    as_of: str = ""
+    required_aspects: list[str] = field(default_factory=list)
+    risk_flags: list[str] = field(default_factory=list)
+    source_expectations: dict = field(default_factory=dict)
+    initial_search_query_count: int = 0
+    max_research_loops: int = 0
 
 
 @dataclass
@@ -141,6 +189,18 @@ class ComponentResult:
     citation_score: CitationScore | None = None
     plan_reflection_score: PlanReflectionScore | None = None
     error: str | None = None
+    case_id: str = ""
+    run_id: str = ""
+    tier: str = ""
+    domain: str = ""
+    difficulty: str = ""
+    evaluation_focus: list[str] = field(default_factory=list)
+    as_of: str = ""
+    required_aspects: list[str] = field(default_factory=list)
+    risk_flags: list[str] = field(default_factory=list)
+    source_expectations: dict = field(default_factory=dict)
+    initial_search_query_count: int = 0
+    max_research_loops: int = 0
 
 
 @dataclass
@@ -148,6 +208,12 @@ class EvalReport:
     timestamp: str
     e2e_results: list[E2EResult] = field(default_factory=list)
     component_results: list[ComponentResult] = field(default_factory=list)
+    dataset: str = ""
+    frozen_at: str = ""
+    as_of: str = ""
+    tier: str = ""
+    test_set: str = ""
+    run_ids: list[str] = field(default_factory=list)
 
 
 # ============================================================
@@ -216,7 +282,7 @@ class Evaluator:
                 logger.error(f"端到端评估失败 '{cfg.topic[:60]}': {exc}")
                 error = f"{type(exc).__name__}: {exc}"
                 if result is None:
-                    result = E2EResult(topic=cfg.topic)
+                    result = apply_cfg_metadata(E2EResult(topic=cfg.topic), cfg)
                 result.error = error
                 results.append(result)
         return results
@@ -234,7 +300,12 @@ class Evaluator:
                 results.append(self._eval_one_topic_components(cfg))
             except Exception as exc:
                 logger.error(f"组件级评估失败 '{cfg.topic[:60]}': {exc}")
-                results.append(ComponentResult(topic=cfg.topic, error=str(exc)))
+                results.append(
+                    apply_cfg_metadata(
+                        ComponentResult(topic=cfg.topic, error=str(exc)),
+                        cfg,
+                    )
+                )
         return results
 
     # --------------------------------------------------------
@@ -386,25 +457,31 @@ class Evaluator:
         try:
             result = self._invoke_agent_with_feedback(cfg)
             final_state = result.get("phase2_state", {})
-            return E2EResult(
-                topic=cfg.topic,
-                report=result["report"],
-                sources=result["sources"],
-                llm_token_count=int(final_state.get("llm_token_count", 0)),
-                budget_stop_reason=str(
-                    final_state.get("budget_stop_reason", "")
+            return apply_cfg_metadata(
+                E2EResult(
+                    topic=cfg.topic,
+                    report=result["report"],
+                    sources=result["sources"],
+                    llm_token_count=int(final_state.get("llm_token_count", 0)),
+                    budget_stop_reason=str(
+                        final_state.get("budget_stop_reason", "")
+                    ),
                 ),
+                cfg,
             )
         except Exception as exc:
             logger.error(f"Agent 调用失败: {exc}")
-            return E2EResult(topic=cfg.topic, error=str(exc))
+            return apply_cfg_metadata(
+                E2EResult(topic=cfg.topic, error=str(exc)),
+                cfg,
+            )
 
     # --------------------------------------------------------
     # 内部：单个主题的组件级评估
     # --------------------------------------------------------
 
     def _eval_one_topic_components(self, cfg: TopicCfg) -> ComponentResult:
-        result = ComponentResult(topic=cfg.topic)
+        result = apply_cfg_metadata(ComponentResult(topic=cfg.topic), cfg)
         capture = _CaptureCtx()
 
         # 通过共享辅助方法运行完整流水线（如配置了反馈则处理反馈）
@@ -517,7 +594,19 @@ def format_eval_report(report: EvalReport) -> str:
         for r in report.e2e_results:
             if r.score:
                 scores.append(r.score)
-                lines.append(f"  主题: {r.topic[:80]}")
+                case_label = f"{r.case_id} " if r.case_id else ""
+                lines.append(f"  主题: {case_label}{r.topic[:80]}")
+                if r.run_id or r.tier or r.domain:
+                    extras = []
+                    if r.run_id:
+                        extras.append(f"run={r.run_id}")
+                    if r.tier:
+                        extras.append(f"tier={r.tier}")
+                    if r.domain:
+                        extras.append(f"domain={r.domain}")
+                    if r.difficulty:
+                        extras.append(f"difficulty={r.difficulty}")
+                    lines.append(f"    元数据: {', '.join(extras)}")
                 lines.append(f"    总评分: {r.score.overall_score:.1f}/5")
                 lines.append(f"    事实准确性: {r.score.factual_accuracy.score}/5")
                 lines.append(f"    信息覆盖度: {r.score.information_coverage.score}/5")
@@ -529,7 +618,8 @@ def format_eval_report(report: EvalReport) -> str:
                 )
                 lines.append("")
             elif r.error:
-                lines.append(f"  主题: {r.topic[:80]}  错误: {r.error[:120]}")
+                case_label = f"{r.case_id} " if r.case_id else ""
+                lines.append(f"  主题: {case_label}{r.topic[:80]}  错误: {r.error[:120]}")
                 lines.append("")
 
         if scores:
@@ -542,7 +632,8 @@ def format_eval_report(report: EvalReport) -> str:
         lines.append("--- 组件级得分 ---")
         lines.append("")
         for r in report.component_results:
-            lines.append(f"  主题: {r.topic[:80]}")
+            case_label = f"{r.case_id} " if r.case_id else ""
+            lines.append(f"  主题: {case_label}{r.topic[:80]}")
             if r.plan_score:
                 lines.append(f"    计划:             {r.plan_score.overall_score:.1f}/5")
             if r.plan_reflection_score:

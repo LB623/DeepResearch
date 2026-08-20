@@ -1,0 +1,2920 @@
+{
+  "name": "e2e_fixed_v2",
+  "description": "分层固定 E2E 集：smoke 5 / core 30 / full 100。前 5 题保留历史 basic-5 的 topic 与查询预算；core 按能力覆盖选题，不是按序号 001-020 切片。本文件只定义题目，不代表已经跑过付费评测。",
+  "frozen_at": "2026-06-30",
+  "as_of": "2026-06-30",
+  "tiers": {
+    "smoke": 5,
+    "core": 30,
+    "full": 100
+  },
+  "domains": [
+    "ai_tech",
+    "policy_law",
+    "science_health",
+    "energy_climate",
+    "finance_macro",
+    "security_safety",
+    "society_org",
+    "methods"
+  ],
+  "evaluation_focus_vocab": [
+    "false_premise",
+    "source_conflict",
+    "stat_definition",
+    "legal_timeline",
+    "evidence_grading",
+    "causal_vs_correlational",
+    "long_tail_retrieval",
+    "cross_lingual_sources",
+    "abstention",
+    "primary_sources"
+  ],
+  "topics": [
+    {
+      "case_id": "e2e-001",
+      "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+      "tier": "smoke",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要玩家",
+        "差异化策略",
+        "市场份额口径差异"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-002",
+      "topic": "2025年人民币汇率走势分析及主要影响因素",
+      "tier": "smoke",
+      "domain": "finance_macro",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "汇率走势事实",
+        "主要影响因素",
+        "预测与已发生事实区分"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-003",
+      "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+      "tier": "smoke",
+      "domain": "policy_law",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "中美技术进展",
+        "监管时间线",
+        "安全数据来源"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-004",
+      "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+      "tier": "smoke",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 5,
+      "max_research_loops": 10,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要经济体政策",
+        "产能与投资数据",
+        "政策与产业结果区分"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-005",
+      "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+      "tier": "smoke",
+      "domain": "methods",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "primary_sources"
+      ],
+      "initial_search_query_count": 1,
+      "max_research_loops": 1,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "SDD定义",
+        "AGENTS.md用途",
+        "权威工程文档"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-006",
+      "topic": "截至2026年6月30日，欧盟《人工智能法案》中通用人工智能模型（GPAI）的义务、实施时间线与开源豁免边界是什么？",
+      "tier": "core",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "GPAI义务",
+        "分阶段生效日期",
+        "开源相关例外"
+      ],
+      "risk_flags": [
+        "stale_date",
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-007",
+      "topic": "2024年至2026年6月中国数据跨境流动规则与欧盟GDPR跨境传输机制对比：企业合规路径、适用门槛与主要风险",
+      "tier": "core",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "cross_lingual_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "中国跨境规则时序",
+        "GDPR传输机制",
+        "适用门槛"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-008",
+      "topic": "截至2026年6月，主流AI Agent评测基准如何衡量网页研究、工具调用和长程任务能力？比较其任务设计、指标、数据污染风险与适用边界",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "基准任务设计",
+        "指标含义",
+        "数据污染与适用边界"
+      ],
+      "risk_flags": [
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-009",
+      "topic": "长上下文大模型、传统向量RAG与GraphRAG在企业知识问答中的效果和成本如何比较？基于公开实验说明各自适用条件与证据局限",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "公开实验结果",
+        "成本口径",
+        "适用条件与证据局限"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-010",
+      "topic": "AI编程助手是否提升软件开发生产率？综合随机对照实验、企业现场研究与厂商报告，区分速度、质量和开发者经验指标",
+      "tier": "core",
+      "domain": "ai_tech",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "RCT与现场研究",
+        "速度/质量/体验指标",
+        "厂商报告偏差"
+      ],
+      "risk_flags": [
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-011",
+      "topic": "2024年至2026年6月全球生成式AI投融资规模有多大？对比主要机构统计结果，并解释因交易类型、地域和生成式AI定义不同造成的口径差异",
+      "tier": "core",
+      "domain": "finance_macro",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要机构数字",
+        "统计口径差异",
+        "不可直接加总的原因"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-012",
+      "topic": "钠离子电池相对磷酸铁锂电池是否已具备规模化商业竞争力？截至2026年6月比较能量密度、循环寿命、低温性能、成本与量产进展",
+      "tier": "core",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "关键技术指标",
+        "实验室与量产区分",
+        "成本口径"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-013",
+      "topic": "面向4小时以上电网级储能，锂离子、液流电池、压缩空气和抽水蓄能的技术经济性与部署约束对比",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "统一成本口径",
+        "技术成熟度",
+        "场景约束"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-014",
+      "topic": "GLP-1受体激动剂用于肥胖治疗的长期获益与风险：综合随机对照试验、真实世界研究和主要监管机构安全信息",
+      "tier": "core",
+      "domain": "science_health",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "关键RCT终点",
+        "安全风险",
+        "监管机构信息"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-015",
+      "topic": "人体微塑料暴露会导致哪些健康影响？区分已建立的事实、观察性关联、机制假说和仍缺乏证据的结论",
+      "tier": "core",
+      "domain": "science_health",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "abstention",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "证据分级",
+        "因果与相关",
+        "不能确定的结论"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-016",
+      "topic": "核实并分析这一说法：欧盟《人工智能法案》已经全面禁止企业发布开源大模型。若前提不成立，请纠正前提并说明实际规则",
+      "tier": "core",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "false_premise",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正错误前提",
+        "实际GPAI/开源规则",
+        "生效状态"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-017",
+      "topic": "重建XZ Utils后门事件的关键时间线、技术机制、发现过程和开源供应链治理教训，并区分已证实事实与归因推测",
+      "tier": "core",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "事件时间线",
+        "技术机制",
+        "事实与推测区分"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-018",
+      "topic": "LK-99常温常压超导主张为何未获验证？梳理原始论文、主要复现实验和后续同行评议，说明科学共同体如何修正早期结论",
+      "tier": "core",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading",
+        "long_tail_retrieval"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "原始主张",
+        "复现与负面证据",
+        "结论如何被修正"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-019",
+      "topic": "远程办公对知识工作者生产率和创新的影响是什么？综合实验、自然实验与企业数据，解释结论分歧及外推限制",
+      "tier": "core",
+      "domain": "society_org",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "研究设计比较",
+        "结论分歧",
+        "外推限制"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-020",
+      "topic": "截至2026年6月，主要云厂商和芯片厂商公布的AI推理成本或性能数据是否可以直接横向比较？构建可比口径并指出公开数据无法支持的结论",
+      "tier": "core",
+      "domain": "ai_tech",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "stat_definition",
+        "abstention"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "公开基准差异",
+        "可比口径",
+        "无法支持的结论"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-021",
+      "topic": "生成式AI训练和推理的能源消耗有多大？比较截至2026年6月公开测量、厂商披露与估算模型，并解释为何常见数字难以直接比较",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "abstention"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "测量与估算来源",
+        "口径差异",
+        "不确定区间"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-022",
+      "topic": "开源模型、开放权重模型和源代码可用模型有何区别？比较主流AI模型许可证在商用、再分发和衍生模型方面的限制",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "概念辨析",
+        "许可证原文限制",
+        "适用边界"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-023",
+      "topic": "使用合成数据训练大模型是否会导致模型坍塌？综合理论研究与实证结果，说明数据筛选、真实数据混合和迭代生成的影响",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading",
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "理论与实证区分",
+        "条件性结论",
+        "证据局限"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-024",
+      "topic": "训练扩展定律与测试时计算扩展在大模型能力提升中的作用如何比较？截至2026年6月梳理代表性研究、收益边界和评测争议",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "代表性研究",
+        "收益边界",
+        "评测争议"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-025",
+      "topic": "企业选择向量数据库时应如何比较检索质量、延迟、过滤能力、扩展性与运维成本？评估公开benchmark的可比性和厂商偏差",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "比较维度",
+        "benchmark可比性",
+        "厂商偏差"
+      ],
+      "risk_flags": [
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-026",
+      "topic": "截至2026年6月，Model Context Protocol类工具连接协议的主要安全风险与缓解机制是什么？覆盖身份认证、权限边界、供应链和提示注入",
+      "tier": "core",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "威胁模型",
+        "规范与实现区分",
+        "缓解措施"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-027",
+      "topic": "间接提示注入防御在可调用工具的LLM Agent中有多有效？比较隔离、权限控制、内容检测和人类确认方案的公开攻击评测",
+      "tier": "core",
+      "domain": "security_safety",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "公开攻击评测",
+        "防御有效性",
+        "残余风险"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-028",
+      "topic": "AI生成内容水印能否可靠支持内容溯源？比较文本水印、图像水印和C2PA类内容凭证的鲁棒性、误报与部署条件",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "技术路线",
+        "鲁棒性与误报",
+        "部署条件"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-029",
+      "topic": "截至2026年6月30日，主要司法辖区围绕生成式AI训练数据版权的判决和监管进展是什么？区分已裁判问题与尚未解决的法律争议",
+      "tier": "core",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "cross_lingual_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要判决",
+        "法域比较",
+        "已决与未决"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-030",
+      "topic": "2022年至2026年6月美国对先进AI芯片及制造设备的出口管制如何演变？分析规则变化、适用范围与公开证据支持的产业影响",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "规则版本时序",
+        "适用范围",
+        "影响与因果区分"
+      ],
+      "risk_flags": [
+        "stale_date",
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-031",
+      "topic": "如何核算AI数据中心的碳排放？比较运营排放、硬件隐含排放、用水和电网边际排放口径，并评估主要公开估算的局限",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "核算边界",
+        "不同口径",
+        "公开估算局限"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-032",
+      "topic": "商业核聚变距离并网发电还有多远？截至2026年6月比较主要技术路线、实验里程碑、融资声明与独立机构时间表",
+      "tier": "core",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "abstention",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "实验里程碑",
+        "宣传与证据区分",
+        "独立机构时间表"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-033",
+      "topic": "钙钛矿-硅叠层太阳能电池从实验室效率纪录走向规模量产还面临哪些障碍？分析稳定性、封装、良率、供应链与认证进展",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "实验室与量产区分",
+        "多约束障碍",
+        "认证进展"
+      ],
+      "risk_flags": [
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-034",
+      "topic": "绿色氢能成本下降是否符合早期预测？比较截至2026年6月的项目实际成本、最终投资决策、取消案例与政策补贴影响",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "预测回测",
+        "项目状态",
+        "补贴影响"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-035",
+      "topic": "电动汽车全生命周期碳排放是否一定低于燃油车？比较不同电网结构、车型、电池生产地和使用寿命下的研究结论",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "LCA假设",
+        "情景依赖",
+        "研究结论边界"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-036",
+      "topic": "中国青年失业率统计口径在2023年至2024年发生了什么变化？新旧数据为什么不能直接比较？",
+      "tier": "core",
+      "domain": "finance_macro",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "stat_definition"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "口径变化时间",
+        "新旧数据差异",
+        "不可比原因"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-037",
+      "topic": "美国CPI与PCE价格指数有何区别？为什么它们可能给出不同的通胀读数，美联储更关注哪一项？",
+      "tier": "core",
+      "domain": "finance_macro",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "stat_definition",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "方法差异",
+        "读数为何不同",
+        "美联储偏好的权威表述"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-038",
+      "topic": "全球正在快速去美元化这一判断是否成立？分别用外汇储备、贸易计价、跨境支付和债务融资数据检验，并说明各指标的局限",
+      "tier": "core",
+      "domain": "finance_macro",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "source_conflict",
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "多指标检验",
+        "趋势强度",
+        "指标局限"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-039",
+      "topic": "私人信贷市场扩张是否构成系统性金融风险？分析市场规模、杠杆与流动性结构、违约数据和监管机构观点",
+      "tier": "full",
+      "domain": "finance_macro",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "市场规模口径",
+        "风险结构",
+        "监管机构观点"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-040",
+      "topic": "截至2026年6月，美国、欧盟和香港的稳定币监管框架如何比较？覆盖发行准入、储备资产、赎回、审计和跨境服务",
+      "tier": "core",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "cross_lingual_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "三地制度",
+        "生效状态",
+        "多维比较"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-041",
+      "topic": "个性化mRNA癌症疫苗截至2026年6月取得了哪些临床进展？区分早期试验信号、关键性试验和已获监管批准的适应症",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "临床阶段",
+        "终点解释",
+        "试验与批准区分"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-042",
+      "topic": "靶向淀粉样蛋白的阿尔茨海默病药物带来多大临床获益和哪些安全风险？比较关键试验、监管结论与真实世界实施约束",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "统计与临床意义",
+        "安全风险",
+        "监管结论"
+      ],
+      "risk_flags": [
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-043",
+      "topic": "首批CRISPR基因编辑疗法获批后，临床应用仍受哪些限制？分析疗效证据、安全性、递送方式、制造和可及性",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "获批事实",
+        "长期证据",
+        "实施约束"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-044",
+      "topic": "PFAS暴露的健康风险与监管限值有何证据基础？比较美国和欧盟的主要规则，并解释不同限值不可直接等同于风险阈值",
+      "tier": "core",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "健康证据",
+        "美欧规则",
+        "限值与风险阈值区分"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-045",
+      "topic": "哪些在线错误信息干预真正有效？综合随机对照试验和元分析，比较事实核查、准确性提示、预先辟谣和平台降权的效果与持续性",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "干预类型",
+        "效应量",
+        "外部效度"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-046",
+      "topic": "社交媒体使用是否导致青少年心理健康恶化？区分相关性、因果证据、个体差异与研究测量局限",
+      "tier": "core",
+      "domain": "society_org",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "相关与因果",
+        "证据冲突",
+        "测量局限"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-047",
+      "topic": "四天工作制试点通常报告了哪些结果？这些结果可能受到哪些样本选择、幸存者偏差和测量方式影响？",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "试点结果",
+        "偏差来源",
+        "外推边界"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-048",
+      "topic": "开放数据、预注册、注册报告和重复实验能否缓解科学可重复性危机？比较不同学科的实施证据与局限",
+      "tier": "core",
+      "domain": "methods",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "改革措施",
+        "跨学科证据",
+        "效果边界"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-049",
+      "topic": "波音737 MAX事故暴露了哪些工程、认证和组织治理问题？基于官方调查区分直接原因、促成因素和后续整改",
+      "tier": "core",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "primary_sources"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "官方调查结论",
+        "因果层级",
+        "整改核验"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-050",
+      "topic": "核实并分析这一说法：量子计算机已经破解了互联网使用的RSA加密。说明已实现的实验、经典模拟、密码学威胁门槛与迁移现状",
+      "tier": "core",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "false_premise",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正错误前提",
+        "实验规模",
+        "威胁门槛与迁移"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-051",
+      "topic": "2018年GPT-1论文（Improving Language Understanding by Generative Pre-Training）的作者、机构、核心主张是什么？后续GPT系列有哪些关键结论已经修正或超越该文，需对照原论文而非二手综述",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "原论文元数据",
+        "核心主张",
+        "后续修正"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-052",
+      "topic": "2019年Boeing Starliner首次无人轨道试飞（OFT-1）的官方调查认定了哪些软件与任务缺陷？请基于NASA或Boeing公开文件重建时间线，并与当时媒体叙述区分",
+      "tier": "full",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "官方调查结论",
+        "软件缺陷",
+        "媒体叙述区分"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-053",
+      "topic": "2021年Colonial Pipeline勒索软件事件的CISA与FBI公开时间线是什么？比特币赎金支付与追回金额应以官方或公司声明为准，并标明仍无法核实的媒体细节",
+      "tier": "full",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "官方时间线",
+        "赎金与追回",
+        "未核实细节"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-054",
+      "topic": "IPCC AR6第一工作组对平衡气候敏感度（ECS）的likely区间是多少、如何得出，与AR5有何不同？需引用IPCC报告正文而非新闻转述",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "AR6 ECS区间",
+        "评估方法",
+        "相对AR5变化"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-055",
+      "topic": "欧洲航天局Gaia DR3的正式发布日期、主要数据产品与已知科学限制是什么？请以ESA/Gaia官方文档为准",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "发布日期",
+        "数据产品",
+        "科学限制"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-056",
+      "topic": "中国国家标准《通用硅酸盐水泥》GB 175-2023相对GB 175-2007在强度等级、组分和主要技术指标上改了什么？若找不到标准文本应明确说未检索到全文，而不是凭记忆填数",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "long_tail_retrieval",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "版本差异",
+        "关键指标",
+        "未找到全文时拒答"
+      ],
+      "risk_flags": [
+        "hallucination_prone",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-057",
+      "topic": "2020年至2021年阿斯利康COVID-19疫苗与血栓事件相关的EMA和MHRA官方评估时间线是什么？区分监管结论、暂停/恢复建议与当时媒体归因",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources",
+        "long_tail_retrieval"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "EMA/MHRA时间线",
+        "监管结论",
+        "媒体归因区分"
+      ],
+      "risk_flags": [
+        "stale_date",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-058",
+      "topic": "2023年硅谷银行倒闭后，FDIC与美联储官方事后调查的主要结论是什么？将其与当时媒体对“利率风险/社交媒体挤兑/监管失败”的归因逐项对照",
+      "tier": "full",
+      "domain": "finance_macro",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "primary_sources",
+        "long_tail_retrieval"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "官方调查结论",
+        "媒体归因对照",
+        "未证实说法"
+      ],
+      "risk_flags": [
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-059",
+      "topic": "截至2026年6月30日，日本经济产业省《AI事業者ガイドライン》对生成式AI开发者和使用者提出了哪些义务或建议？请对照日文原文或官方英译，并说明其与欧盟AI Act的约束力差异",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "日文/官方英译要点",
+        "约束力",
+        "与AI Act差异"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "ja",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-060",
+      "topic": "韩国《个人情报保护法》2023年修订对跨境传输、同意和处罚的关键变化是什么？是否存在欧盟GDPR充分性认定，认定范围与例外需依据韩国官方或欧盟文件",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "2023修订要点",
+        "充分性认定状态",
+        "例外"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "ko",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-061",
+      "topic": "德国《建筑物能源法》（GEG）2024年起对新建和既有建筑供暖改造的核心义务是什么？后续修订改了哪些过渡安排？请优先使用德文官方文本或BMWK说明",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "2024核心义务",
+        "过渡安排",
+        "后续修订"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "de",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-062",
+      "topic": "法国国家信息与自由委员会（CNIL）针对ChatGPT/OpenAI处理的决定或处罚时间线是什么？依据法文原文说明法律基础、要求措施与后续状态",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "CNIL决定时间线",
+        "法律基础",
+        "后续状态"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "fr",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-063",
+      "topic": "巴西LGPD与欧盟GDPR在自动化决策解释权、DPO设置和跨境传输机制上有哪些关键差异？请同时使用葡语或官方英译法律文本，避免只用中文二手解读",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "自动化决策权",
+        "DPO",
+        "跨境机制差异"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "pt",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-064",
+      "topic": "截至2026年6月30日，印度《数字个人数据保护法》（DPDP Act 2023）及其实施规则的生效状态是什么？企业跨境数据转移义务哪些已可执行、哪些仍待规则",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "法律与规则生效状态",
+        "已可执行义务",
+        "仍待明确事项"
+      ],
+      "risk_flags": [
+        "stale_date",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-065",
+      "topic": "新加坡PDPA与IMDA生成式AI治理框架对企业的实际约束力有何不同？区分已立法义务、自愿指南和执法案例",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "cross_lingual_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "立法义务",
+        "自愿指南",
+        "执法案例"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-066",
+      "topic": "截至2026年6月30日，澳大利亚《Online Safety Act》对社交平台和数字服务的现有法定义务是什么？拟议修订若尚未通过，不得写成已生效",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "现有法定义务",
+        "拟议与已生效区分",
+        "监管机构职责"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-067",
+      "topic": "核实并分析这一说法：mRNA COVID-19疫苗会改变人体基因组。若前提不成立，请用监管机构说明和分子机制证据纠正，并标明仍不确定的长期问题",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "false_premise",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正错误前提",
+        "机制与监管证据",
+        "剩余不确定性"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-068",
+      "topic": "核实并分析这一说法：中国已经全面禁止比特币挖矿和持有。请按挖矿、交易、持有/保管分层说明实际政策，纠正过度概括的前提",
+      "tier": "full",
+      "domain": "finance_macro",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "false_premise",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正前提",
+        "挖矿/交易/持有分层",
+        "政策文件"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-069",
+      "topic": "核实并分析这一说法：5G毫米波已被证实导致癌症。请区分IARC分类、流行病学证据和机制研究，不得把未确立的关联写成已证实因果",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "false_premise",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正前提",
+        "IARC/流行病证据",
+        "因果边界"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-070",
+      "topic": "核实并分析这一说法：联合国已经通过并生效了一项具有法律约束力的全球塑料条约。请说明谈判截止2026年6月30日的状态，未生效不得写成已生效",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "false_premise",
+        "legal_timeline"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正前提",
+        "谈判/文本状态",
+        "约束力"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-071",
+      "topic": "核实并分析这一说法：贺建奎CRISPR婴儿实验已被证明产生了可遗传的普遍免疫力增强。请基于原论文、调查和后续评论纠正前提，并说明实际编辑目标与未知风险",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "false_premise",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正前提",
+        "实际编辑目标",
+        "未知风险"
+      ],
+      "risk_flags": [
+        "false_premise",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-072",
+      "topic": "核实并分析这一说法：国际空间站已经因为俄罗斯退出而停止运行。请用NASA/Roscosmos/ISS官方状态纠正前提，并说明合作安排的实际变化",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "false_premise",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "纠正前提",
+        "ISS运行状态",
+        "合作安排变化"
+      ],
+      "risk_flags": [
+        "false_premise"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-073",
+      "topic": "全球极端贫困人口有多少？比较世界银行国际贫困线在2017 PPP与2021 PPP、以及2.15美元与3.00美元等口径，解释为什么常见数字不能直接对比",
+      "tier": "full",
+      "domain": "finance_macro",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "不同贫困线数字",
+        "PPP切换",
+        "不可比原因"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-074",
+      "topic": "中国2023年GDP增速在国家统计局、世界银行和IMF之间是否一致？若有差异，说明发布时点、修订机制和口径，而不是任选一个数字当成唯一真相",
+      "tier": "full",
+      "domain": "finance_macro",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "三家数字",
+        "修订机制",
+        "口径与时点"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-075",
+      "topic": "全球军费有多高？为什么SIPRI估计与各国官方国防预算经常不一致？请给出至少两个经济体的对照并解释统计边界",
+      "tier": "full",
+      "domain": "security_safety",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "SIPRI与官方对照",
+        "统计边界",
+        "不可直接等同"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-076",
+      "topic": "2024年全球电动汽车销量是多少？对比IEA、BloombergNEF和中国汽车工业协会等口径，说明是否包含商用车、混动和地区覆盖差异",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要机构数字",
+        "车辆类型口径",
+        "地区覆盖"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-077",
+      "topic": "美国2024财年南部边境“非法入境”人数是多少？区分CBP Southwest land encounters、unique individuals和got-aways，指出媒体常用数字的口径陷阱",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "stat_definition",
+        "source_conflict"
+      ],
+      "initial_search_query_count": 2,
+      "max_research_loops": 2,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "encounters vs unique",
+        "got-aways",
+        "口径陷阱"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-078",
+      "topic": "全球森林面积是在增加还是减少？对比FAO Forest Resources Assessment与全球森林观察/Hansen树冠损失数据，解释定义差异导致的相反叙事",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "source_conflict",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "FAO与Hansen差异",
+        "森林定义",
+        "叙事冲突"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-079",
+      "topic": "ChatGPT有多少周活跃用户？对比OpenAI公开声明与Similarweb、Sensor Tower等第三方估计，说明各口径测量的是什么、哪些不能当成官方用户数",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "source_conflict"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "官方声明",
+        "第三方估计",
+        "口径不可比"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-080",
+      "topic": "全球核电发电量与在建装机规模以IAEA PRIS和World Nuclear Association统计有何差异？指出容量、发电量和“在建”定义上的冲突",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "source_conflict",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "两家统计差异",
+        "在建定义",
+        "发电量vs装机"
+      ],
+      "risk_flags": [
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-081",
+      "topic": "2024年至2026年6月，除已被否定的LK-99外，是否存在被独立实验室重复的常压室温超导体？若只有预印本或单方主张，必须拒绝给出肯定结论",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "abstention",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主张清单",
+        "独立重复情况",
+        "证据不足则拒答"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-082",
+      "topic": "截至2026年6月30日，暗物质直接探测实验是否已经取得5σ发现？列出主要实验的最新公开限值，若没有发现必须明确说尚未发现而不是暗示即将发现",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "abstention",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要实验状态",
+        "是否5σ",
+        "证据不足则拒答"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-083",
+      "topic": "长新冠的全球患病率能否给出一个可靠的单一数字？在说明定义、随访时间和选择偏差后，若不能稳健估计则应拒绝给出点估计",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "abstention",
+        "stat_definition"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "定义差异",
+        "选择偏差",
+        "拒绝不当点估计"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-084",
+      "topic": "“AGI将在2027年前实现”这一预测有哪些可检验依据、哪些只是观点？公开时间线、可操作定义不足时不得把预测写成既成事实",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "可检验依据",
+        "定义问题",
+        "观点与事实区分"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-085",
+      "topic": "现有证据能否支持“深海采矿不会对生态系统造成显著长期损害”？请评估环境基线、试验开采和独立评估；证据不足时必须拒绝该确定结论",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "abstention",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "现有研究",
+        "证据缺口",
+        "拒绝无显著损害的确定结论"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-086",
+      "topic": "通用量子纠错是否已经达到可实用的工程阈值？区分实验室演示、逻辑比特寿命和容错规模，证据仅覆盖演示时不得宣称已经实用",
+      "tier": "full",
+      "domain": "ai_tech",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "abstention",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "实验室演示",
+        "工程阈值",
+        "实用与否的证据边界"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-087",
+      "topic": "截至2026年6月30日，美国《芯片与科学法案》对半导体制造补贴的资金拨付、护栏条款（含回购/利润限制和中国扩产限制）实施到了哪一步？请用商务部/NIST公开文件",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "拨付进展",
+        "护栏条款",
+        "公开文件来源"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-088",
+      "topic": "中国《反垄断法》2022年修订后，“二选一”等平台强制排他行为的违法构成与典型行政处罚/司法案例时间线是什么？请优先使用市场监管总局或裁判文书",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "修订要点",
+        "典型案例时间线",
+        "官方来源"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-089",
+      "topic": "欧盟CSRD与CSDDD对企业可持续披露和尽职调查义务的分阶段生效日期、适用范围和处罚框架是什么？需区分指令通过、成员国转化与实际适用",
+      "tier": "full",
+      "domain": "policy_law",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "cross_lingual_sources"
+      ],
+      "initial_search_query_count": 4,
+      "max_research_loops": 4,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "分阶段生效",
+        "适用范围",
+        "转化与适用区分"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-090",
+      "topic": "美国《通胀削减法案》电动车清洁车辆税收抵免的关键资格规则（含关键矿物、电池组件和FEOC限制）如何随财政部/IRS指南修订？给出截止2026年6月30日的有效版本",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "资格规则",
+        "FEOC限制",
+        "指南修订时序"
+      ],
+      "risk_flags": [
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-091",
+      "topic": "间歇性禁食对减重和代谢指标的证据等级如何？综合随机对照试验、观察性研究和主要指南立场，避免把短期体重变化外推为长期临床获益",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "RCT证据",
+        "观察性研究",
+        "指南立场"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-092",
+      "topic": "长期PM2.5暴露与认知衰退或痴呆风险的证据能否支持因果关系？请比较队列研究、机制研究和残留混杂，说明现有证据的推断限制",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "队列证据",
+        "混杂与机制",
+        "因果推断限制"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-093",
+      "topic": "最低工资上调对就业的影响在Card-Krueger之后形成了哪些主要证据分歧？说明研究设计、外部效度和不能直接外推到所有经济体的原因",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "causal_vs_correlational",
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "主要研究阵营",
+        "设计差异",
+        "外推限制"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-094",
+      "topic": "增加户外活动或减少近距离屏幕时间能否降低儿童近视发生或进展？区分横断面相关、学校干预试验和效应持续性",
+      "tier": "full",
+      "domain": "society_org",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "causal_vs_correlational"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "干预试验",
+        "横断面相关",
+        "效应持续性"
+      ],
+      "risk_flags": [
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en",
+          "zh"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-095",
+      "topic": "益生菌治疗肠易激综合征的证据如何？对比Cochrane或主要胃肠病指南与营销声明，说明菌株、剂量和终点为何不能一概而论",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "evidence_grading"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "系统评价/指南",
+        "营销声明对照",
+        "菌株与终点限制"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "thin_evidence"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-096",
+      "topic": "高压氧治疗长新冠的证据状态是什么？请核对试验注册、样本量、对照和终点；若只有小样本或无对照研究，不得宣称已经证实有效",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "evidence_grading",
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "试验注册与设计",
+        "终点",
+        "证据不足则不作有效结论"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "vendor_bias"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-097",
+      "topic": "2024年7月CrowdStrike配置更新导致的全球中断，公司根因分析与CISA建议分别说了什么？区分直接技术原因、影响规模估计和行业教训",
+      "tier": "full",
+      "domain": "security_safety",
+      "difficulty": "easy",
+      "evaluation_focus": [
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "公司RCA",
+        "CISA建议",
+        "影响估计边界"
+      ],
+      "risk_flags": [
+        "vendor_bias",
+        "numeric_conflict"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-098",
+      "topic": "2023年IARC将阿斯巴甜列为2B组与JECFA重申可接受日摄入量为何能在同一时期并存？请用两个机构的官方说明解释评估问题、证据和结论差异",
+      "tier": "full",
+      "domain": "science_health",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "source_conflict",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "IARC结论",
+        "JECFA结论",
+        "评估问题差异"
+      ],
+      "risk_flags": [
+        "numeric_conflict",
+        "hallucination_prone"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-099",
+      "topic": "截至2026年6月30日，《名古屋议定书》对数字序列信息（DSI）的适用在CBD COP上形成了什么决议或仍处争议？若多边规则未闭合，应拒绝写成已有统一强制制度",
+      "tier": "full",
+      "domain": "methods",
+      "difficulty": "hard",
+      "evaluation_focus": [
+        "legal_timeline",
+        "primary_sources",
+        "abstention"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "COP决议状态",
+        "争议点",
+        "未闭合则拒答统一制度"
+      ],
+      "risk_flags": [
+        "thin_evidence",
+        "stale_date"
+      ],
+      "source_expectations": {
+        "languages": [
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    },
+    {
+      "case_id": "e2e-100",
+      "topic": "福岛处理水排海后，日本官方监测指标与IAEA 2023年审查结论分别是什么？请同时使用日文官方监测或IAEA英文报告，并标明仍存在的科学与社会争议",
+      "tier": "full",
+      "domain": "energy_climate",
+      "difficulty": "medium",
+      "evaluation_focus": [
+        "cross_lingual_sources",
+        "primary_sources"
+      ],
+      "initial_search_query_count": 3,
+      "max_research_loops": 3,
+      "as_of": "2026-06-30",
+      "required_aspects": [
+        "日本官方监测",
+        "IAEA审查结论",
+        "剩余争议"
+      ],
+      "risk_flags": [
+        "jurisdiction_mix"
+      ],
+      "source_expectations": {
+        "languages": [
+          "ja",
+          "en"
+        ],
+        "prefer_primary": true
+      }
+    }
+  ]
+}

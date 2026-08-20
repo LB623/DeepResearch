@@ -1,12 +1,172 @@
 """Regression tests for evaluation harness state/config propagation."""
 
 import json
+from pathlib import Path
 
 from langchain_core.messages import AIMessage
 
 from eval import run_eval
 from eval.evaluator import E2EResult, Evaluator, TopicCfg
 from eval.judge import Judge
+
+EVAL_DIR = Path(__file__).parents[1] / "eval"
+
+
+def test_eval_cli_can_run_a_slice_of_the_expanded_set(tmp_path):
+    captured_topics: list[str] = []
+
+    class SliceEvaluator:
+        def __init__(self, judge_model_id=None):
+            self.judge_model_id = judge_model_id
+
+        def run_e2e(self, cfgs):
+            captured_topics.extend(cfg.topic for cfg in cfgs)
+            return [E2EResult(topic=cfg.topic) for cfg in cfgs]
+
+        def close(self):
+            return None
+
+    output = tmp_path / "slice.json"
+    exit_code = run_eval.main(
+        [
+            "--mode",
+            "e2e",
+            "--test-set",
+            "test_set_e2e.json",
+            "--offset",
+            "5",
+            "--limit",
+            "5",
+            "--output",
+            str(output),
+        ],
+        evaluator_factory=SliceEvaluator,
+    )
+
+    full_set = run_eval.load_test_set("test_set_e2e.json")
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert captured_topics == [cfg.topic for cfg in full_set[5:10]]
+    assert [row["case_id"] for row in payload["e2e_results"]] == [
+        cfg.case_id for cfg in full_set[5:10]
+    ]
+
+
+def test_eval_cli_filters_by_nested_tier_before_offset(tmp_path):
+    captured_ids: list[str] = []
+
+    class TierEvaluator:
+        def __init__(self, judge_model_id=None):
+            self.judge_model_id = judge_model_id
+
+        def run_e2e(self, cfgs):
+            captured_ids.extend(cfg.case_id for cfg in cfgs)
+            return [E2EResult(topic=cfg.topic) for cfg in cfgs]
+
+        def close(self):
+            return None
+
+    output = tmp_path / "tier.json"
+    exit_code = run_eval.main(
+        [
+            "--mode",
+            "e2e",
+            "--test-set",
+            "test_set_e2e.json",
+            "--tier",
+            "smoke",
+            "--output",
+            str(output),
+        ],
+        evaluator_factory=TierEvaluator,
+    )
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert captured_ids == [f"e2e-{index:03d}" for index in range(1, 6)]
+    assert payload["tier"] == "smoke"
+    assert payload["dataset"] == "e2e_fixed_v2"
+    assert payload["run_ids"]
+
+
+def test_eval_cli_repeat_assigns_distinct_run_ids(tmp_path):
+    class RepeatEvaluator:
+        def __init__(self, judge_model_id=None):
+            self.judge_model_id = judge_model_id
+
+        def run_e2e(self, cfgs):
+            return [E2EResult(topic=cfg.topic) for cfg in cfgs]
+
+        def close(self):
+            return None
+
+    output = tmp_path / "repeat.json"
+    exit_code = run_eval.main(
+        [
+            "--mode",
+            "e2e",
+            "--test-set",
+            "test_set_e2e.json",
+            "--tier",
+            "smoke",
+            "--repeat",
+            "2",
+            "--run-id",
+            "abtest",
+            "--output",
+            str(output),
+        ],
+        evaluator_factory=RepeatEvaluator,
+    )
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    run_ids = [row["run_id"] for row in payload["e2e_results"]]
+    case_ids = [row["case_id"] for row in payload["e2e_results"]]
+    assert exit_code == 0
+    assert payload["run_ids"] == ["abtest-r1", "abtest-r2"]
+    assert run_ids == ["abtest-r1"] * 5 + ["abtest-r2"] * 5
+    assert case_ids[:5] == case_ids[5:]
+    assert len(set(case_ids)) == 5
+
+
+def test_invoke_agent_copies_dataset_metadata_into_e2e_result():
+    evaluator = Evaluator()
+    evaluator._invoke_agent_with_feedback = lambda cfg: {
+        "report": "# Complete report",
+        "sources": "[]",
+        "phase2_state": {"llm_token_count": 7, "budget_stop_reason": ""},
+    }
+    cfg = TopicCfg(
+        topic="metadata topic",
+        case_id="e2e-001",
+        tier="smoke",
+        domain="ai_tech",
+        difficulty="medium",
+        evaluation_focus=["stat_definition"],
+        as_of="2026-06-30",
+        required_aspects=["主要玩家"],
+        risk_flags=["vendor_bias"],
+        source_expectations={"languages": ["zh"], "prefer_primary": True},
+        initial_search_query_count=3,
+        max_research_loops=3,
+    )
+
+    try:
+        result = evaluator._invoke_agent(cfg)
+    finally:
+        evaluator.close()
+
+    assert result.case_id == "e2e-001"
+    assert result.tier == "smoke"
+    assert result.domain == "ai_tech"
+    assert result.difficulty == "medium"
+    assert result.evaluation_focus == ["stat_definition"]
+    assert result.as_of == "2026-06-30"
+    assert result.required_aspects == ["主要玩家"]
+    assert result.risk_flags == ["vendor_bias"]
+    assert result.source_expectations["languages"] == ["zh"]
+    assert result.initial_search_query_count == 3
+    assert result.max_research_loops == 3
 
 
 def test_evaluator_passes_topic_limits_into_research_state():

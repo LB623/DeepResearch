@@ -1,0 +1,210 @@
+{
+  "timestamp": "2026-08-20T08:39:48.047758+00:00",
+  "inputs": [
+    {
+      "label": "baseline",
+      "path": "eval_runs/e2e_baseline_basic5_v1.json"
+    },
+    {
+      "label": "guards_v3",
+      "path": "eval_runs/e2e_guardfix_basic5_v3.json"
+    }
+  ],
+  "summaries": [
+    {
+      "label": "baseline",
+      "n": 5,
+      "mean_grounded_url_rate": 1.0,
+      "topics_with_unknown_url": 0,
+      "topics_with_leftover": 0,
+      "total_unknown_urls": 0,
+      "total_leftovers": 0,
+      "topics_missing_conclusion": 3,
+      "per_topic": [
+        {
+          "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+          "char_count": 10292,
+          "citation_count": 56,
+          "unique_url_count": 20,
+          "source_count": 100,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 7,
+          "has_conclusion": true,
+          "unknown_urls": [],
+          "leftover_samples": []
+        },
+        {
+          "topic": "2025年人民币汇率走势分析及主要影响因素",
+          "char_count": 8506,
+          "citation_count": 32,
+          "unique_url_count": 18,
+          "source_count": 94,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 6,
+          "has_conclusion": false,
+          "unknown_urls": [],
+          "leftover_samples": []
+        },
+        {
+          "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+          "char_count": 9578,
+          "citation_count": 42,
+          "unique_url_count": 20,
+          "source_count": 98,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 7,
+          "has_conclusion": true,
+          "unknown_urls": [],
+          "leftover_samples": []
+        },
+        {
+          "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+          "char_count": 10559,
+          "citation_count": 38,
+          "unique_url_count": 18,
+          "source_count": 90,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 6,
+          "has_conclusion": false,
+          "unknown_urls": [],
+          "leftover_samples": []
+        },
+        {
+          "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+          "char_count": 7348,
+          "citation_count": 28,
+          "unique_url_count": 17,
+          "source_count": 97,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 6,
+          "has_conclusion": false,
+          "unknown_urls": [],
+          "leftover_samples": []
+        }
+      ]
+    },
+    {
+      "label": "guards_v3",
+      "n": 5,
+      "mean_grounded_url_rate": 0.9527777777777778,
+      "topics_with_unknown_url": 3,
+      "topics_with_leftover": 4,
+      "total_unknown_urls": 3,
+      "total_leftovers": 41,
+      "topics_missing_conclusion": 2,
+      "per_topic": [
+        {
+          "topic": "2024-2025年全球AI编程助手市场的主要玩家、差异化策略和竞争格局分析",
+          "char_count": 7931,
+          "citation_count": 11,
+          "unique_url_count": 8,
+          "source_count": 95,
+          "unknown_url_count": 1,
+          "grounded_url_rate": 0.875,
+          "leftover_count": 8,
+          "heading_count": 7,
+          "has_conclusion": true,
+          "unknown_urls": [
+            "https://www.sohu.com/a/943865692_121291017]。其他厂商还包括腾讯云CodeBuddy（深度绑定微信生态，据腾讯云官方数据，小程序开发准确率提升125%）、DeepSeek、智谱CodeGeeX等[IDC](https://baijiahao.baidu.com/s?id=1842781821147420833&wfr=spider&for=pc"
+          ],
+          "leftover_samples": [
+            "[ID 0-0]",
+            "[ID 0-1]",
+            "[ID 0-5]",
+            "[ID 0-6]"
+          ]
+        },
+        {
+          "topic": "2025年人民币汇率走势分析及主要影响因素",
+          "char_count": 10331,
+          "citation_count": 60,
+          "unique_url_count": 34,
+          "source_count": 115,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 0,
+          "heading_count": 5,
+          "has_conclusion": false,
+          "unknown_urls": [],
+          "leftover_samples": []
+        },
+        {
+          "topic": "2025年特斯拉FSD（完全自动驾驶）在中美两地的技术进展和监管动态对比",
+          "char_count": 10249,
+          "citation_count": 42,
+          "unique_url_count": 18,
+          "source_count": 93,
+          "unknown_url_count": 1,
+          "grounded_url_rate": 0.9444444444444444,
+          "leftover_count": 4,
+          "heading_count": 6,
+          "has_conclusion": true,
+          "unknown_urls": [
+            "https://baijiahao.baidu.com/s?id=1868199987973109422&wfr=spider&for=pc]。路透社调查也指出特斯拉刻意选取不匹配统计数据[环球网科技](https://www.163.com/dy/article/KVKE3U2I0514R9OJ.html"
+          ],
+          "leftover_samples": [
+            "[ID/3-2]",
+            "[ID/3-1]",
+            "[ID/3-7]"
+          ]
+        },
+        {
+          "topic": "2025年全球半导体供应链重构趋势：主要国家和地区战略对比",
+          "char_count": 15020,
+          "citation_count": 96,
+          "unique_url_count": 29,
+          "source_count": 103,
+          "unknown_url_count": 0,
+          "grounded_url_rate": 1.0,
+          "leftover_count": 19,
+          "heading_count": 6,
+          "has_conclusion": true,
+          "unknown_urls": [],
+          "leftover_samples": [
+            "[来源id/3-1]",
+            "[来源id/3-3]",
+            "[来源id/3-2]",
+            "[来源id/3-0]",
+            "[来源id/3-4]",
+            "[来源id/3-5]",
+            "[来源id/3-6]"
+          ]
+        },
+        {
+          "topic": "规范驱动开发（Specification-Driven Development, SDD）与AGENTS.md的关系及最佳实践",
+          "char_count": 9843,
+          "citation_count": 32,
+          "unique_url_count": 18,
+          "source_count": 95,
+          "unknown_url_count": 1,
+          "grounded_url_rate": 0.9444444444444444,
+          "leftover_count": 10,
+          "heading_count": 7,
+          "has_conclusion": false,
+          "unknown_urls": [
+            "https://blog.csdn.net/sinat_37574187/article/details/156369966]。例如，文件中可以规定“生成的代码不能使用eval("
+          ],
+          "leftover_samples": [
+            "[id/3-9]",
+            "[id/3-0]",
+            "[id/3-3]",
+            "[id/3-5]",
+            "[id/3-2]",
+            "[id/3-4]",
+            "[id/3-8]"
+          ]
+        }
+      ]
+    }
+  ]
+}

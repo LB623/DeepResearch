@@ -1,0 +1,480 @@
+{
+  "timestamp": "2026-08-20T08:40:02.024968+00:00",
+  "corpus": "eval/guard_corpus.json",
+  "summary": {
+    "n": 39,
+    "recall": 1.0,
+    "false_positive_rate": 0.0,
+    "accuracy": 1.0,
+    "reason_mismatch": 0,
+    "by_category": [
+      {
+        "category": "empty_or_fence",
+        "n": 4,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "internal_leftover",
+        "n": 4,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "missing_heading",
+        "n": 4,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "missing_outline_section",
+        "n": 3,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "new_named_term",
+        "n": 5,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "truncation",
+        "n": 4,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "unknown_url",
+        "n": 4,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "unsupported_entity",
+        "n": 3,
+        "recall": 1.0,
+        "false_positive_rate": null,
+        "accuracy": 1.0
+      },
+      {
+        "category": "valid_control",
+        "n": 8,
+        "recall": null,
+        "false_positive_rate": 0.0,
+        "accuracy": 1.0
+      }
+    ],
+    "failures": [],
+    "label_counts": {
+      "truncation": 4,
+      "missing_heading": 4,
+      "unknown_url": 4,
+      "new_named_term": 5,
+      "empty_or_fence": 4,
+      "missing_outline_section": 3,
+      "unsupported_entity": 3,
+      "internal_leftover": 4,
+      "valid_control": 8
+    },
+    "results": [
+      {
+        "case_id": "trunc-01",
+        "category": "truncation",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "output too short (50 < 75% of draft 1486)",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "trunc-02",
+        "category": "truncation",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "output too short (36 < 75% of draft 1470)",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "trunc-03",
+        "category": "truncation",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "output too short (67 < 75% of draft 2221)",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "trunc-04",
+        "category": "truncation",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "output too short (57 < 75% of draft 2203)",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "head-01",
+        "category": "missing_heading",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing report headings: 2. conclusion",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "head-02",
+        "category": "missing_heading",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing report headings: 2. risks",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "head-03",
+        "category": "missing_heading",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing report headings: 研究报告",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "head-04",
+        "category": "missing_heading",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing report headings: 2. conclusion",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "url-01",
+        "category": "unknown_url",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "unknown citation URL: https://hallucinated.example/a",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "url-02",
+        "category": "unknown_url",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "unknown citation URL: https://fake.example/b",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "url-03",
+        "category": "unknown_url",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "unknown citation URL: https://search.com/id/9-9",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "url-04",
+        "category": "unknown_url",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "unknown citation URL: https://www.reuters.com/invented-fsd-2025",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "name-01",
+        "category": "new_named_term",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "new named terms introduced during polish: Kiro",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "name-02",
+        "category": "new_named_term",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "new named terms introduced during polish: Tessl",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "name-03",
+        "category": "new_named_term",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "new named terms introduced during polish: NeuroForge",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "name-04",
+        "category": "new_named_term",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "new named terms introduced during polish: AnthropicX",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "name-05",
+        "category": "new_named_term",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "new named terms introduced during polish: CodexPrime",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "fence-01",
+        "category": "empty_or_fence",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "empty or unterminated markdown output",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "fence-02",
+        "category": "empty_or_fence",
+        "check": "polish",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "empty or unterminated markdown output",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "fence-03",
+        "category": "empty_or_fence",
+        "check": "draft",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "empty or unterminated markdown output",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "fence-04",
+        "category": "empty_or_fence",
+        "check": "draft",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "empty or unterminated markdown output",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "outline-01",
+        "category": "missing_outline_section",
+        "check": "draft",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing outline sections: 3. conclusion",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "outline-02",
+        "category": "missing_outline_section",
+        "check": "draft",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing outline sections: 2. 风险",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "outline-03",
+        "category": "missing_outline_section",
+        "check": "draft",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "missing outline sections: 2. evidence, 3. risks",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "term-01",
+        "category": "unsupported_entity",
+        "check": "unsupported_terms",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "Kiro, Tessl",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "term-02",
+        "category": "unsupported_entity",
+        "check": "unsupported_terms",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "NeuroForge",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "term-03",
+        "category": "unsupported_entity",
+        "check": "unsupported_terms",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "MatchAct",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "leftover-01",
+        "category": "internal_leftover",
+        "check": "contract",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "leftovers=1; unknown_urls=0",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "leftover-02",
+        "category": "internal_leftover",
+        "check": "contract",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "leftovers=1; unknown_urls=0",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "leftover-03",
+        "category": "internal_leftover",
+        "check": "contract",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "leftovers=1; unknown_urls=0",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "leftover-04",
+        "category": "internal_leftover",
+        "check": "contract",
+        "should_reject": true,
+        "rejected": true,
+        "reason": "leftovers=1; unknown_urls=0",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-01",
+        "category": "valid_control",
+        "check": "polish",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-02",
+        "category": "valid_control",
+        "check": "polish",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-03",
+        "category": "valid_control",
+        "check": "polish",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-04",
+        "category": "valid_control",
+        "check": "polish",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-05",
+        "category": "valid_control",
+        "check": "draft",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-06",
+        "category": "valid_control",
+        "check": "unsupported_terms",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-07",
+        "category": "valid_control",
+        "check": "contract",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "leftovers=0; unknown_urls=0",
+        "correct": true,
+        "reason_ok": true
+      },
+      {
+        "case_id": "valid-08",
+        "category": "valid_control",
+        "check": "polish",
+        "should_reject": false,
+        "rejected": false,
+        "reason": "",
+        "correct": true,
+        "reason_ok": true
+      }
+    ]
+  }
+}

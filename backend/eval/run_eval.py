@@ -24,47 +24,37 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
+import uuid
 from datetime import datetime
 from pathlib import Path
 
+from eval.dataset import DatasetMeta, load_dataset, with_runtime_overrides
 from eval.evaluator import (
     EvalReport,
     Evaluator,
     TopicCfg,
+    apply_cfg_metadata,
     format_eval_report,
     save_eval_report,
 )
 
 
 def load_test_set(path: str = "test_set.json") -> list[TopicCfg]:
-    """从 JSON 文件加载测试主题。
+    """从 JSON 文件加载测试主题，保留 case_id 等数据集元数据。
 
     每个主题可以指定可选的 ``initial_search_query_count`` 和
-    ``max_research_loops`` 字段；如果未提供，则使用 Pydantic 默认值（2 / 2）。
+    ``max_research_loops`` 字段；如果未提供，则使用默认值（2 / 2）。
     """
-    full_path = Path(__file__).parent / path
-    if not full_path.exists():
+    try:
+        return load_dataset(path, strict=False).cases
+    except FileNotFoundError:
+        full_path = Path(__file__).parent / path
         print(f"测试集未找到：{full_path}，使用默认主题。")
         return [
             TopicCfg(topic="2024-2025年全球AI编程助手市场的主要玩家和竞争格局分析"),
             TopicCfg(topic="2025年人民币汇率走势分析及主要影响因素"),
         ]
-
-    with open(full_path, encoding="utf-8") as f:
-        data = json.load(f)
-
-    cfgs = []
-    for item in data.get("topics", []):
-        cfgs.append(TopicCfg(
-            topic=item["topic"],
-            initial_search_query_count=item.get("initial_search_query_count", 2),
-            max_research_loops=item.get("max_research_loops", 2),
-            user_feedback=item.get("user_feedback"),
-            expected_intent=item.get("expected_intent"),
-        ))
-    return cfgs
 
 
 def main(argv=None, evaluator_factory=Evaluator) -> int:
@@ -103,6 +93,37 @@ def main(argv=None, evaluator_factory=Evaluator) -> int:
         help="测试集 JSON 文件的路径（相对于 eval/ 目录）",
     )
     parser.add_argument(
+        "--offset",
+        type=int,
+        default=0,
+        help="跳过测试集前 N 个主题，便于分批运行（默认 0）",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="最多运行 N 个主题，便于控制 E2E 评测成本",
+    )
+    parser.add_argument(
+        "--tier",
+        type=str,
+        default=None,
+        choices=["smoke", "core", "full"],
+        help="按嵌套分层筛选：smoke⊂core⊂full（在 offset/limit 之前应用）",
+    )
+    parser.add_argument(
+        "--repeat",
+        type=int,
+        default=1,
+        help="重复运行次数；每次使用独立 run_id，仍按 case_id 聚合",
+    )
+    parser.add_argument(
+        "--run-id",
+        type=str,
+        default=None,
+        help="运行 ID 前缀；重复运行时自动追加 -r1/-r2",
+    )
+    parser.add_argument(
         "--initial-queries",
         type=int,
         default=None,
@@ -130,7 +151,14 @@ def main(argv=None, evaluator_factory=Evaluator) -> int:
 
     args = parser.parse_args(argv)
 
-    # 加载主题
+    if args.offset < 0:
+        parser.error("--offset 必须大于或等于 0")
+    if args.limit is not None and args.limit <= 0:
+        parser.error("--limit 必须大于 0")
+    if args.repeat < 1:
+        parser.error("--repeat 必须大于或等于 1")
+
+    meta = DatasetMeta()
     if args.topic:
         cfgs = [TopicCfg(
             topic=args.topic,
@@ -138,47 +166,104 @@ def main(argv=None, evaluator_factory=Evaluator) -> int:
             expected_intent=args.expected_intent,
         )]
     else:
-        cfgs = load_test_set(args.test_set)
+        try:
+            loaded = load_dataset(
+                args.test_set,
+                tier=args.tier,
+                offset=args.offset,
+                limit=args.limit,
+                strict=None,
+            )
+        except FileNotFoundError:
+            print(
+                f"测试集未找到：{Path(__file__).parent / args.test_set}，"
+                "使用默认主题。"
+            )
+            loaded = None
+            cfgs = [
+                TopicCfg(topic="2024-2025年全球AI编程助手市场的主要玩家和竞争格局分析"),
+                TopicCfg(topic="2025年人民币汇率走势分析及主要影响因素"),
+            ]
+        except ValueError as exc:
+            parser.error(str(exc))
+        else:
+            cfgs = loaded.cases
+            meta = loaded.meta
 
     if not cfgs:
-        print("没有可评估的主题。请使用 --topic 或确保 test_set.json 存在。")
+        print("没有可评估的主题。请使用 --topic 或确保测试集存在。")
         return 1
 
-    # 应用 CLI 覆盖参数
-    if args.initial_queries is not None or args.max_loops is not None:
-        for c in cfgs:
-            if args.initial_queries is not None:
-                c.initial_search_query_count = args.initial_queries
-            if args.max_loops is not None:
-                c.max_research_loops = args.max_loops
+    cfgs = with_runtime_overrides(
+        cfgs,
+        initial_queries=args.initial_queries,
+        max_loops=args.max_loops,
+    )
 
     print(f"正在以 '{args.mode}' 模式评估 {len(cfgs)} 个主题...")
+    if args.tier:
+        print(f"分层: {args.tier}")
+    if args.repeat > 1:
+        print(f"重复: {args.repeat} 次（独立 run_id）")
     print("主题:")
     for c in cfgs:
         extra = ""
         if c.user_feedback:
             extra = f", 反馈='{c.user_feedback[:50]}...', 预期意图={c.expected_intent}"
-        print(f"  - {c.topic[:100]}  (查询数={c.initial_search_query_count}, 循环数={c.max_research_loops}{extra})")
+        identity = f"{c.case_id} " if c.case_id else ""
+        print(
+            f"  - {identity}{c.topic[:100]}  "
+            f"(查询数={c.initial_search_query_count}, "
+            f"循环数={c.max_research_loops}{extra})"
+        )
     print()
 
     evaluator = evaluator_factory(judge_model_id=args.judge_model)
-    report = EvalReport(timestamp=datetime.now().isoformat())
+    base_run_id = args.run_id or uuid.uuid4().hex[:12]
+    run_ids: list[str] = []
+    report = EvalReport(
+        timestamp=datetime.now().isoformat(),
+        dataset=meta.name,
+        frozen_at=meta.frozen_at,
+        as_of=meta.as_of,
+        tier=args.tier or "",
+        test_set=args.test_set if not args.topic else "",
+    )
 
     try:
-        if args.mode in ("e2e", "all"):
-            print("=" * 60)
-            print("  运行端到端评估...")
-            print("=" * 60)
-            report.e2e_results = evaluator.run_e2e(cfgs)
+        for repeat_index in range(args.repeat):
+            run_id = (
+                f"{base_run_id}-r{repeat_index + 1}"
+                if args.repeat > 1
+                else base_run_id
+            )
+            run_ids.append(run_id)
+            if args.repeat > 1:
+                print("=" * 60)
+                print(f"  重复 {repeat_index + 1}/{args.repeat}  run_id={run_id}")
+                print("=" * 60)
+            if args.mode in ("e2e", "all"):
+                print("=" * 60)
+                print("  运行端到端评估...")
+                print("=" * 60)
+                results = evaluator.run_e2e(cfgs)
+                for result, cfg in zip(results, cfgs, strict=True):
+                    apply_cfg_metadata(result, cfg, run_id=run_id)
+                report.e2e_results.extend(results)
 
-        if args.mode in ("comp", "all"):
-            print()
-            print("=" * 60)
-            print("  运行组件级评估...")
-            print("=" * 60)
-            report.component_results = evaluator.run_components(cfgs)
+            if args.mode in ("comp", "all"):
+                print()
+                print("=" * 60)
+                print("  运行组件级评估...")
+                print("=" * 60)
+                results = evaluator.run_components(cfgs)
+                for result, cfg in zip(results, cfgs, strict=True):
+                    apply_cfg_metadata(result, cfg, run_id=run_id)
+                report.component_results.extend(results)
     finally:
         evaluator.close()
+
+    report.run_ids = run_ids
 
     # 打印摘要
     print()
