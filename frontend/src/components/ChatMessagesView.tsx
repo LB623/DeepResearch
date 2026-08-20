@@ -66,8 +66,28 @@ const mdComponents: Components = {
     </p>
   ),
   a: ({ className, children, href, ...props }) => {
+    const isInternalPlaceholder = /^https?:\/\/search\.com\/id\//i.test(
+      href || "",
+    );
     const isCitation =
       typeof children === "string" && /^\d{1,3}$/.test(children);
+
+    if (isInternalPlaceholder) {
+      return (
+        <span
+          className={cn(
+            "mx-1 inline-flex items-center gap-1 rounded-md border border-destructive/20 bg-destructive/[0.06] px-1.5 py-0.5 text-[0.76em] font-medium leading-none text-destructive",
+            className,
+          )}
+          title="内部引用未能映射到真实来源，已禁止跳转"
+          aria-label={`来源未解析：${String(children)}`}
+          {...props}
+        >
+          <span>{children}</span>
+          <span aria-hidden="true">· 来源未解析</span>
+        </span>
+      );
+    }
 
     return (
       <a
