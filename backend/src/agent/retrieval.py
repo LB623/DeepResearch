@@ -39,6 +39,20 @@ _DASHSCOPE_RUNTIME_LOCK = threading.Lock()
 _DASHSCOPE_EXECUTOR: concurrent.futures.ThreadPoolExecutor | None = None
 _DASHSCOPE_SLOTS: threading.BoundedSemaphore | None = None
 _SOURCE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
+_IMAGE_EXTENSIONS = (".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp")
+_VIDEO_EXTENSIONS = (".m4v", ".mkv", ".mov", ".mp4", ".webm")
+_AUDIO_EXTENSIONS = (".aac", ".flac", ".m4a", ".mp3", ".ogg", ".wav")
+
+
+@dataclass(frozen=True, slots=True)
+class MediaAsset:
+    """One bounded, externally hosted media item attached to a search hit."""
+
+    url: str
+    kind: str
+
+    def as_dict(self) -> dict[str, str]:
+        return {"url": self.url, "kind": self.kind}
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,10 +64,18 @@ class SearchHit:
     url: str
     provider: str
     source: str = ""
+    media: tuple[MediaAsset, ...] = ()
 
-    def as_page(self) -> dict[str, str]:
+    def as_page(self) -> dict[str, object]:
         """Return the legacy page shape consumed by the research summarizer."""
-        return {"title": self.title, "snippet": self.snippet, "url": self.url}
+        page: dict[str, object] = {
+            "title": self.title,
+            "snippet": self.snippet,
+            "url": self.url,
+        }
+        if self.media:
+            page["media"] = [asset.as_dict() for asset in self.media]
+        return page
 
 
 @dataclass(frozen=True, slots=True)
@@ -252,6 +274,7 @@ class OmniSeekSearchProvider:
                     url=url,
                     provider=self.name,
                     source=_bounded_text(document.get("source"), 100),
+                    media=_normalized_media(document.get("media")),
                 )
             )
         return hits[:bounded_limit]
@@ -455,6 +478,55 @@ def _validated_sources(sources: Sequence[str]) -> tuple[str, ...]:
 
 def _bounded_text(value: object, limit: int) -> str:
     return str(value or "")[:limit].strip()
+
+
+def _normalized_media(value: object, *, limit: int = 3) -> tuple[MediaAsset, ...]:
+    """Normalize untrusted provider media without materializing unbounded arrays."""
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return ()
+
+    assets: list[MediaAsset] = []
+    seen: set[str] = set()
+    for item in value[: limit * 4]:
+        explicit_kind = ""
+        candidate: object = item
+        if isinstance(item, Mapping):
+            candidate = item.get("url") or item.get("src")
+            explicit_kind = _bounded_text(
+                item.get("kind") or item.get("type"),
+                20,
+            ).casefold()
+        url = _safe_result_url(candidate)
+        if not url or url in seen:
+            continue
+        kind = _media_kind(url, explicit_kind)
+        assets.append(MediaAsset(url=url, kind=kind))
+        seen.add(url)
+        if len(assets) >= limit:
+            break
+    return tuple(assets)
+
+
+def _media_kind(url: str, explicit_kind: str = "") -> str:
+    aliases = {
+        "audio": "audio",
+        "image": "image",
+        "photo": "image",
+        "picture": "image",
+        "video": "video",
+    }
+    if explicit_kind in aliases:
+        return aliases[explicit_kind]
+
+    path = urlsplit(url).path.casefold()
+    if path.endswith(_VIDEO_EXTENSIONS):
+        return "video"
+    if path.endswith(_AUDIO_EXTENSIONS):
+        return "audio"
+    if path.endswith(_IMAGE_EXTENSIONS):
+        return "image"
+    # OmniSeek's document ``media`` field currently carries embedded images.
+    return "image"
 
 
 def _omniseek_semaphore() -> asyncio.Semaphore:

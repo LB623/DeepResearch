@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from agent.retrieval import ProviderFailure, SearchBatch, SearchHit
+from agent.retrieval import MediaAsset, ProviderFailure, SearchBatch, SearchHit
 from agent.sub_agents.research_agent import (
     _CRITIQUE,
     _FALLBACK_SEARCH,
@@ -446,6 +446,12 @@ class TestWebSearchNode:
                             url="https://example.com/paper",
                             provider="omniseek",
                             source="arxiv",
+                            media=(
+                                MediaAsset(
+                                    url="https://cdn.example.com/figure.png",
+                                    kind="image",
+                                ),
+                            ),
                         )
                     ],
                     providers_attempted=("dashscope", "omniseek"),
@@ -478,6 +484,11 @@ class TestWebSearchNode:
         assert result["omniseek_failure_count"] == 1
         assert result["sources_gathered"][0]["provider"] == "omniseek"
         assert result["sources_gathered"][0]["source"] == "arxiv"
+        assert result["sources_gathered"][0]["media"] == [
+            {"url": "https://cdn.example.com/figure.png", "kind": "image"}
+        ]
+        summarizer_payload = mock_agent.step.call_args.kwargs["web_search_result"]
+        assert "https://cdn.example.com/figure.png" in summarizer_payload
 
     @pytest.mark.asyncio
     async def test_fallback_batch_spends_budget_only_after_actual_fallback(self):

@@ -552,10 +552,17 @@ async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
         }
         if hit.source:
             source["source"] = hit.source
+        if hit.media:
+            source["media"] = [asset.as_dict() for asset in hit.media]
         sources.append(source)
     raw_results = json.dumps(
         [
-            {"snippet": i["snippet"], "title": i["title"], "url": long2short[i["url"]]}
+            {
+                "snippet": i["snippet"],
+                "title": i["title"],
+                "url": long2short[i["url"]],
+                **({"media": i["media"]} if i.get("media") else {}),
+            }
             for i in response
         ],
         ensure_ascii=False,

@@ -13,6 +13,7 @@ import pytest
 import agent.retrieval as retrieval_module
 from agent.retrieval import (
     DashScopeSearchProvider,
+    MediaAsset,
     OmniSeekProtocolError,
     OmniSeekSearchProvider,
     SearchCoordinator,
@@ -260,6 +261,10 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
                         "content": "evidence",
                         "url": "https://example.com/paper",
                         "source": "arxiv",
+                        "media": [
+                            "https://cdn.example.com/figure-1.png",
+                            {"url": "https://cdn.example.com/demo.mp4", "kind": "video"},
+                        ],
                     }
                 ]
             },
@@ -298,7 +303,21 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
             url="https://example.com/paper",
             provider="omniseek",
             source="arxiv",
+            media=(
+                MediaAsset(
+                    url="https://cdn.example.com/figure-1.png",
+                    kind="image",
+                ),
+                MediaAsset(
+                    url="https://cdn.example.com/demo.mp4",
+                    kind="video",
+                ),
+            ),
         )
+    ]
+    assert hits[0].as_page()["media"] == [
+        {"url": "https://cdn.example.com/figure-1.png", "kind": "image"},
+        {"url": "https://cdn.example.com/demo.mp4", "kind": "video"},
     ]
 
 
@@ -362,6 +381,14 @@ async def test_omniseek_adapter_bounds_fields_and_ignores_unsafe_urls():
             "content": "y" * 9000,
             "url": "https://example.com/ok",
             "source": "z" * 500,
+            "media": [
+                "https://cdn.example.com/one.jpg",
+                "javascript:alert(1)",
+                "https://user:secret@cdn.example.com/private.png",
+                "https://cdn.example.com/two.webp",
+                "https://cdn.example.com/three.png",
+                "https://cdn.example.com/four.png",
+            ],
         },
         {
             "title": "credentials",
@@ -395,6 +422,11 @@ async def test_omniseek_adapter_bounds_fields_and_ignores_unsafe_urls():
     assert len(hits[0].title) == 500
     assert len(hits[0].snippet) == 4000
     assert len(hits[0].source) == 100
+    assert hits[0].media == (
+        MediaAsset(url="https://cdn.example.com/one.jpg", kind="image"),
+        MediaAsset(url="https://cdn.example.com/two.webp", kind="image"),
+        MediaAsset(url="https://cdn.example.com/three.png", kind="image"),
+    )
 
 
 @pytest.mark.parametrize(
