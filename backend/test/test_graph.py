@@ -40,18 +40,24 @@ class TestMainGraphTopology:
             "messages": [HumanMessage(content="topic")],
             "executed_queries": ["q1"],
             "web_search_call_count": 3,
+            "omniseek_call_count": 2,
+            "omniseek_failure_count": 0,
             "llm_token_count": 40,
         }
         child = {
             **parent,
             "executed_queries": ["q1", "q2"],
             "web_search_call_count": 4,
+            "omniseek_call_count": 3,
+            "omniseek_failure_count": 1,
             "llm_token_count": 55,
         }
 
         assert _subgraph_delta_updates(parent, child) == {
             "executed_queries": ["q2"],
             "web_search_call_count": 1,
+            "omniseek_call_count": 1,
+            "omniseek_failure_count": 1,
             "llm_token_count": 15,
         }
 

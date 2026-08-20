@@ -17,7 +17,7 @@ from agent.retrieval import (
 
 
 class _FakeDashScopeAgent:
-    async def astep(self, prompt: str, count: int):
+    def step(self, prompt: str, count: int):
         assert prompt == "agent memory"
         assert count == 2
         return [
@@ -119,6 +119,32 @@ def test_coordinator_requires_a_real_adapter():
 
 
 @pytest.mark.asyncio
+async def test_coordinator_calls_fallback_only_when_primary_has_no_hits():
+    fallback_hit = SearchHit(
+        title="Fallback",
+        snippet="evidence",
+        url="https://example.com/fallback",
+        provider="fallback",
+    )
+    populated = _StaticProvider("primary", [fallback_hit])
+    empty = _StaticProvider("empty", [])
+    fallback = _StaticProvider("fallback", [fallback_hit])
+
+    primary_batch = await SearchCoordinator(
+        [populated],
+        fallback_providers=[fallback],
+    ).search("topic", 5)
+    fallback_batch = await SearchCoordinator(
+        [empty],
+        fallback_providers=[fallback],
+    ).search("topic", 5)
+
+    assert primary_batch.providers_attempted == ("primary",)
+    assert fallback_batch.providers_attempted == ("empty", "fallback")
+    assert fallback_batch.hits == [fallback_hit]
+
+
+@pytest.mark.asyncio
 async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
     calls: list[tuple[str, dict[str, object]]] = []
 
@@ -144,6 +170,7 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
         token="a-secure-token-value",
         sources=["arxiv", "openalex"],
         wait_seconds=99,
+        max_results=7,
         tool_caller=call_tool,
     )
 
@@ -154,7 +181,7 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
             "omniseek_search",
             {
                 "query": "agent architecture",
-                "limit": 50,
+                "limit": 7,
                 "raw": False,
                 "wait_s": 15.0,
                 "staleness": "cached_ok",

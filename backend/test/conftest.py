@@ -36,6 +36,10 @@ def mock_env(monkeypatch):
     monkeypatch.delenv("QUERY_GENERATOR_MODEL", raising=False)
     monkeypatch.delenv("REFLECTION_MODEL", raising=False)
     monkeypatch.delenv("ANSWER_MODEL", raising=False)
+    monkeypatch.delenv("OMNISEEK_MCP_URL", raising=False)
+    monkeypatch.delenv("OMNISEEK_TOKEN", raising=False)
+    monkeypatch.delenv("OMNISEEK_MODE", raising=False)
+    monkeypatch.delenv("MAX_OMNISEEK_CALLS", raising=False)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -79,6 +83,11 @@ def sample_state():
         "critic_score": 0.0,
         "revision_count": 0,
         "max_revisions": 3,
+        "web_search_call_count": 0,
+        "omniseek_call_count": 0,
+        "omniseek_failure_count": 0,
+        "llm_token_count": 0,
+        "no_progress_rounds": 0,
     }
 
 

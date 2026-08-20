@@ -70,6 +70,9 @@ class TestConfigurationDefaults:
         assert cfg.number_of_initial_queries == 2
         assert cfg.max_research_loops == 2
         assert cfg.max_writer_revisions == 3
+        assert cfg.omniseek_mode == "augment"
+        assert cfg.max_omniseek_calls == 4
+        assert cfg.omniseek_result_limit == 5
         assert isinstance(cfg.query_generator_model, str)
         assert isinstance(cfg.reflection_model, str)
         assert isinstance(cfg.answer_model, str)
@@ -136,6 +139,10 @@ class TestFromRunnableConfig:
                     "max_research_loops": 20,
                     "max_writer_revisions": 20,
                     "max_web_search_calls": 100,
+                    "max_omniseek_calls": 20,
+                    "omniseek_wait_seconds": 15,
+                    "omniseek_request_timeout_seconds": 120,
+                    "omniseek_result_limit": 50,
                     "max_elapsed_seconds": 86_400,
                     "max_no_progress_rounds": 20,
                     "max_total_tokens": 2_000_000,
@@ -147,6 +154,10 @@ class TestFromRunnableConfig:
         assert cfg.max_research_loops == 2
         assert cfg.max_writer_revisions == 3
         assert cfg.max_web_search_calls == 20
+        assert cfg.max_omniseek_calls == 4
+        assert cfg.omniseek_wait_seconds == 3
+        assert cfg.omniseek_request_timeout_seconds == 12
+        assert cfg.omniseek_result_limit == 5
         assert cfg.max_elapsed_seconds == 900
         assert cfg.max_no_progress_rounds == 2
         assert cfg.max_total_tokens == 120_000

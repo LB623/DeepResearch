@@ -184,7 +184,12 @@ _ADDITIVE_LIST_FIELDS = {
     "sources_gathered",
     "follow_up_queries",
 }
-_ADDITIVE_COUNTER_FIELDS = {"web_search_call_count", "llm_token_count"}
+_ADDITIVE_COUNTER_FIELDS = {
+    "web_search_call_count",
+    "omniseek_call_count",
+    "omniseek_failure_count",
+    "llm_token_count",
+}
 
 
 def _subgraph_delta_updates(

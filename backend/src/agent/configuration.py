@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, List
+from typing import Any, List, Literal
 
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
@@ -10,6 +10,10 @@ _SERVER_CAPPED_FIELDS = {
     "max_research_loops",
     "max_writer_revisions",
     "max_web_search_calls",
+    "max_omniseek_calls",
+    "omniseek_wait_seconds",
+    "omniseek_request_timeout_seconds",
+    "omniseek_result_limit",
     "max_elapsed_seconds",
     "max_no_progress_rounds",
     "max_total_tokens",
@@ -126,6 +130,44 @@ class Configuration(BaseModel):
         ge=0,
         le=100,
         description="单个研究任务允许的最大网页搜索次数.",
+    )
+
+    omniseek_mode: Literal["off", "augment", "fallback", "only"] = Field(
+        default="augment",
+        description="OmniSeek 检索策略；缺少独立服务凭证时自动使用现有搜索.",
+    )
+
+    omniseek_sources: str = Field(
+        default="",
+        description="逗号分隔的 OmniSeek 数据源白名单；空值表示由服务端选择.",
+    )
+
+    omniseek_wait_seconds: float = Field(
+        default=3.0,
+        ge=0.1,
+        le=15.0,
+        description="OmniSeek 单次聚合等待时间（秒）.",
+    )
+
+    omniseek_request_timeout_seconds: float = Field(
+        default=12.0,
+        ge=2.1,
+        le=120.0,
+        description="OmniSeek MCP 请求总超时（秒）.",
+    )
+
+    omniseek_result_limit: int = Field(
+        default=5,
+        ge=1,
+        le=50,
+        description="每个查询最多接受的 OmniSeek 结果数.",
+    )
+
+    max_omniseek_calls: int = Field(
+        default=4,
+        ge=0,
+        le=20,
+        description="单个研究任务允许的最大 OmniSeek 调用次数.",
     )
 
     max_elapsed_seconds: float = Field(

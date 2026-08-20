@@ -42,6 +42,8 @@ class OverallState(TypedDict):
     # Per-run cost budget
     run_started_at: float
     web_search_call_count: Annotated[int, operator.add]
+    omniseek_call_count: Annotated[int, operator.add]
+    omniseek_failure_count: Annotated[int, operator.add]
     llm_token_count: Annotated[int, operator.add]
     no_progress_rounds: int
     evidence_fingerprint: str
@@ -68,6 +70,8 @@ class QueryGenerationState(TypedDict):
     executed_queries: list[str]
     skipped_duplicate_queries: list[str]
     web_search_call_count: int
+    omniseek_call_count: int
+    omniseek_failure_count: int
     llm_token_count: int
     budget_stop_reason: str
 
@@ -75,6 +79,7 @@ class QueryGenerationState(TypedDict):
 class WebSearchState(TypedDict):
     search_query: str
     id: int
+    use_omniseek: bool
 
 class PlanState(TypedDict):
     plan: str

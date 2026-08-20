@@ -77,7 +77,11 @@ class DashScopeSearchProvider:
         self._agent_factory = agent_factory
 
     async def search(self, query: str, limit: int) -> list[SearchHit]:
-        response = await self._agent_factory().astep(prompt=query, count=limit)
+        response = await asyncio.to_thread(
+            self._agent_factory().step,
+            prompt=query,
+            count=limit,
+        )
         if not response:
             return []
 
@@ -124,6 +128,7 @@ class OmniSeekSearchProvider:
         sources: Sequence[str] = (),
         staleness: str = "cached_ok",
         semantic: bool | None = False,
+        max_results: int = 10,
         tool_caller: OmniSeekToolCaller | None = None,
     ) -> None:
         self._endpoint = _validated_endpoint(endpoint)
@@ -148,10 +153,11 @@ class OmniSeekSearchProvider:
             else "cached_ok"
         )
         self._semantic = semantic
+        self._max_results = min(max(int(max_results), 1), 50)
         self._tool_caller = tool_caller or self._call_tool
 
     async def search(self, query: str, limit: int) -> list[SearchHit]:
-        bounded_limit = min(max(int(limit), 0), 50)
+        bounded_limit = min(max(int(limit), 0), self._max_results, 50)
         if bounded_limit == 0:
             return []
 
@@ -223,21 +229,56 @@ class OmniSeekSearchProvider:
 
 
 class SearchCoordinator:
-    """Run provider adapters concurrently and return one deduplicated batch."""
+    """Run primary providers, then optional fallbacks, and deduplicate results."""
 
-    def __init__(self, providers: Sequence[SearchProvider]) -> None:
-        if not providers:
+    def __init__(
+        self,
+        providers: Sequence[SearchProvider],
+        *,
+        fallback_providers: Sequence[SearchProvider] = (),
+    ) -> None:
+        if not providers and not fallback_providers:
             raise ValueError("at least one search provider is required")
         self._providers = tuple(providers)
+        self._fallback_providers = tuple(fallback_providers)
 
     async def search(self, query: str, limit: int) -> SearchBatch:
         bounded_limit = max(0, int(limit))
-        tasks = [provider.search(query, bounded_limit) for provider in self._providers]
+        hits, attempted, failures = await self._run_providers(
+            self._providers,
+            query,
+            bounded_limit,
+        )
+        if not hits and self._fallback_providers:
+            fallback_hits, fallback_attempted, fallback_failures = (
+                await self._run_providers(
+                    self._fallback_providers,
+                    query,
+                    bounded_limit,
+                )
+            )
+            hits.extend(fallback_hits)
+            attempted.extend(fallback_attempted)
+            failures.extend(fallback_failures)
+
+        return SearchBatch(
+            hits=_dedupe_hits(hits),
+            providers_attempted=tuple(attempted),
+            failures=tuple(failures),
+        )
+
+    async def _run_providers(
+        self,
+        providers: Sequence[SearchProvider],
+        query: str,
+        limit: int,
+    ) -> tuple[list[SearchHit], list[str], list[ProviderFailure]]:
+        tasks = [provider.search(query, limit) for provider in providers]
         outcomes = await asyncio.gather(*tasks, return_exceptions=True)
 
         hits: list[SearchHit] = []
         failures: list[ProviderFailure] = []
-        for provider, outcome in zip(self._providers, outcomes, strict=True):
+        for provider, outcome in zip(providers, outcomes, strict=True):
             if isinstance(outcome, BaseException):
                 if not isinstance(outcome, Exception):
                     raise outcome
@@ -251,11 +292,7 @@ class SearchCoordinator:
                 continue
             hits.extend(outcome)
 
-        return SearchBatch(
-            hits=_dedupe_hits(hits),
-            providers_attempted=tuple(provider.name for provider in self._providers),
-            failures=tuple(failures),
-        )
+        return hits, [provider.name for provider in providers], failures
 
 
 def _dedupe_hits(hits: Sequence[SearchHit]) -> list[SearchHit]:

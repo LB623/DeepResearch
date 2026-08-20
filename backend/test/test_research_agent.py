@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from agent.retrieval import ProviderFailure, SearchBatch, SearchHit
 from agent.sub_agents.research_agent import (
     _CRITIQUE,
     _GENERATE_QUERIES,
@@ -37,7 +38,8 @@ class TestResearchAgentGraphTopology:
 
 
 class TestResearchAgentBudgets:
-    def test_initial_query_count_is_a_hard_execution_limit(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_initial_query_count_is_a_hard_execution_limit(self, sample_state):
         from agent.tools_and_schemas import Reflection, SearchQueryList
 
         sample_state["initial_search_query_count"] = 1
@@ -97,7 +99,7 @@ class TestResearchAgentBudgets:
             "agent.sub_agents.research_agent.WebSearchAgent",
             FakeSearchBoundary,
         ):
-            result = research_agent_graph.invoke(
+            result = await research_agent_graph.ainvoke(
                 sample_state,
                 config={"configurable": {"max_web_search_calls": 20}},
             )
@@ -281,13 +283,29 @@ class TestFanOutToWebSearch:
         sends = _fan_out_to_web_search(state, {"configurable": {}})
         assert [send.arg["search_query"] for send in sends] == ["q1"]
 
+    def test_fan_out_reserves_persisted_omniseek_budget(self, monkeypatch):
+        monkeypatch.setenv("OMNISEEK_MCP_URL", "http://localhost:8765/mcp")
+        monkeypatch.setenv("OMNISEEK_TOKEN", "a-secure-token-value")
+        state = {
+            "search_query": ["q1", "q2", "q3"],
+            "omniseek_call_count": 3,
+        }
+
+        sends = _fan_out_to_web_search(
+            state,
+            {"configurable": {"max_omniseek_calls": 4}},
+        )
+
+        assert [send.arg["use_omniseek"] for send in sends] == [True, False, False]
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # _web_search node (async)
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestWebSearchNode:
-    def test_search_and_summarize_with_results(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_search_and_summarize_with_results(self, sample_state):
         sample_pages = [
             {"snippet": "AI chips growing fast", "title": "AI Report", "url": "https://real.com/1"},
         ]
@@ -303,7 +321,7 @@ class TestWebSearchNode:
             mock_summarizer.step = MagicMock(return_value="```text\nSummarized content\n```")
             mock_agent_cls.return_value = mock_summarizer
 
-            result = _web_search(
+            result = await _web_search(
                 {"search_query": "AI chips", "id": 0, "messages": sample_state["messages"]},
                 {"configurable": {}},
             )
@@ -312,14 +330,15 @@ class TestWebSearchNode:
             assert "sources_gathered" in result
             assert len(result["sources_gathered"]) == 1
 
-    def test_empty_search_result_handled(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_empty_search_result_handled(self, sample_state):
         with patch("agent.sub_agents.research_agent.WebSearchAgent") as mock_ws_cls, \
              patch("agent.sub_agents.research_agent._get_kb_store", return_value=None):
             mock_searcher = MagicMock()
             mock_searcher.step = MagicMock(return_value=None)
             mock_ws_cls.return_value = mock_searcher
 
-            result = _web_search(
+            result = await _web_search(
                 {"search_query": "no results", "id": 0, "messages": sample_state["messages"]},
                 {"configurable": {}},
             )
@@ -327,6 +346,49 @@ class TestWebSearchNode:
             assert result["sources_gathered"] == []
             assert result["executed_queries"] == ["no results"]
             assert "未找到" in result["web_search_result"][0]
+
+    @pytest.mark.asyncio
+    async def test_omniseek_attempt_and_provenance_are_persisted(self):
+        class FakeCoordinator:
+            async def search(self, query, limit):
+                assert query == "agent memory"
+                assert limit == 10
+                return SearchBatch(
+                    hits=[
+                        SearchHit(
+                            title="Paper",
+                            snippet="evidence",
+                            url="https://example.com/paper",
+                            provider="omniseek",
+                            source="arxiv",
+                        )
+                    ],
+                    providers_attempted=("dashscope", "omniseek"),
+                    failures=(ProviderFailure("omniseek", "TimeoutError"),),
+                )
+
+        with patch(
+            "agent.sub_agents.research_agent._build_search_coordinator",
+            return_value=FakeCoordinator(),
+        ), patch(
+            "agent.sub_agents.research_agent.Agent",
+        ) as mock_agent_cls, patch(
+            "agent.sub_agents.research_agent._get_kb_store",
+            return_value=None,
+        ):
+            mock_agent = MagicMock()
+            mock_agent.step.return_value = "summary"
+            mock_agent_cls.return_value = mock_agent
+
+            result = await _web_search(
+                {"search_query": "agent memory", "id": 0, "use_omniseek": True},
+                {"configurable": {}},
+            )
+
+        assert result["omniseek_call_count"] == 1
+        assert result["omniseek_failure_count"] == 1
+        assert result["sources_gathered"][0]["provider"] == "omniseek"
+        assert result["sources_gathered"][0]["source"] == "arxiv"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -485,7 +547,8 @@ class TestRouteAfterCritique:
 class TestWebSearchKBStorage:
     """测试 _web_search 节点中 KB 事实存储的错误/边界路径。"""
 
-    def test_kb_store_facts_on_success(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_kb_store_facts_on_success(self, sample_state):
         """搜索成功 → 事实被提取并存入 KB。"""
 
         with patch(
@@ -530,7 +593,7 @@ class TestWebSearchKBStorage:
             from langchain_core.runnables import RunnableConfig  # noqa
             config: RunnableConfig = {"configurable": {}}
 
-            result = _web_search(state, config)
+            result = await _web_search(state, config)
 
             # 搜索结果仍然正常返回
             assert "web_search_result" in result
@@ -540,7 +603,8 @@ class TestWebSearchKBStorage:
             mock_store.add_facts.assert_called_once()
             assert result["llm_token_count"] == 18
 
-    def test_kb_store_none_skips_silently(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_kb_store_none_skips_silently(self, sample_state):
         """KB store 为 None → 静默跳过。"""
         with patch(
             "agent.sub_agents.research_agent.WebSearchAgent"
@@ -569,11 +633,12 @@ class TestWebSearchKBStorage:
             from langchain_core.runnables import RunnableConfig  # noqa
             config: RunnableConfig = {"configurable": {}}
 
-            result = _web_search(state, config)
+            result = await _web_search(state, config)
             # 不崩
             assert "web_search_result" in result
 
-    def test_kb_store_exception_is_silent(self, sample_state):
+    @pytest.mark.asyncio
+    async def test_kb_store_exception_is_silent(self, sample_state):
         """KB 存储抛异常 → 静默捕获，不影响搜索结果返回。"""
         with patch(
             "agent.sub_agents.research_agent.WebSearchAgent"
@@ -612,7 +677,7 @@ class TestWebSearchKBStorage:
             from langchain_core.runnables import RunnableConfig  # noqa
             config: RunnableConfig = {"configurable": {}}
 
-            result = _web_search(state, config)
+            result = await _web_search(state, config)
             # 搜索结果仍然返回，不受 KB 异常影响
             assert "web_search_result" in result
             assert len(result["web_search_result"]) > 0

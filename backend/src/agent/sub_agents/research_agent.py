@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import os
@@ -47,6 +48,11 @@ from agent.prompts import (
     query_writer_instructions,
     reflection_instructions,
     web_searcher_instructions,
+)
+from agent.retrieval import (
+    DashScopeSearchProvider,
+    OmniSeekSearchProvider,
+    SearchCoordinator,
 )
 from agent.state import OverallState, QueryGenerationState, WebSearchState
 from agent.tools_and_schemas import Reflection, SearchQueryList
@@ -178,6 +184,73 @@ def _dedupe_queries(
     return kept, skipped
 
 
+def _omniseek_is_configured(configurable: Configuration) -> bool:
+    """Keep service credentials outside runnable config and checkpoint state."""
+    return (
+        configurable.omniseek_mode != "off"
+        and bool(os.getenv("OMNISEEK_MCP_URL", "").strip())
+        and bool(os.getenv("OMNISEEK_TOKEN", "").strip())
+    )
+
+
+def _build_search_coordinator(
+    configurable: Configuration,
+    *,
+    use_omniseek: bool,
+) -> SearchCoordinator:
+    dashscope = DashScopeSearchProvider(agent_factory=WebSearchAgent)
+    if not use_omniseek or not _omniseek_is_configured(configurable):
+        return SearchCoordinator([dashscope])
+
+    try:
+        omniseek = OmniSeekSearchProvider(
+            endpoint=os.environ["OMNISEEK_MCP_URL"],
+            token=os.environ["OMNISEEK_TOKEN"],
+            wait_seconds=configurable.omniseek_wait_seconds,
+            request_timeout_seconds=configurable.omniseek_request_timeout_seconds,
+            sources=configurable.omniseek_sources.split(","),
+            max_results=configurable.omniseek_result_limit,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        logger.warning(
+            "[Retrieval] OmniSeek configuration rejected error_type={}",
+            type(exc).__name__,
+        )
+        return SearchCoordinator([dashscope])
+
+    if configurable.omniseek_mode == "only":
+        return SearchCoordinator([omniseek])
+    if configurable.omniseek_mode == "fallback":
+        return SearchCoordinator([dashscope], fallback_providers=[omniseek])
+    return SearchCoordinator([dashscope, omniseek])
+
+
+def _search_sends(
+    queries: Sequence[str],
+    *,
+    start_id: int,
+    state: QueryGenerationState | OverallState,
+    configurable: Configuration,
+) -> list[Send]:
+    remaining_omniseek = max(
+        0,
+        configurable.max_omniseek_calls - state.get("omniseek_call_count", 0),
+    )
+    omniseek_available = _omniseek_is_configured(configurable)
+    return [
+        Send(
+            _WEB_SEARCH,
+            {
+                "search_query": query,
+                "id": start_id + idx,
+                # Reserve the persisted per-task budget before concurrent fan-out.
+                "use_omniseek": omniseek_available and idx < remaining_omniseek,
+            },
+        )
+        for idx, query in enumerate(queries)
+    ]
+
+
 def _generate_queries(state: OverallState, config: RunnableConfig) -> dict:
     """将研究主题分解为独立的搜索查询。
 
@@ -303,17 +376,63 @@ def _fan_out_to_web_search(
         logger.info(f"[ResearchAgent] fan-out 跳过 {len(skipped)} 个重复查询")
     if not queries:
         return END
-    return [
-        Send(_WEB_SEARCH, {"search_query": q, "id": int(idx)})
-        for idx, q in enumerate(queries)
-    ]
+    return _search_sends(
+        queries,
+        start_id=0,
+        state=state,
+        configurable=configurable,
+    )
 
 
-def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
+def _store_summary_facts(
+    summary: str,
+    *,
+    topic: str,
+    long2short: dict[str, str],
+) -> int:
+    """Persist extracted facts off the event loop; KB failures remain optional."""
+    try:
+        store = _get_kb_store()
+        if not store:
+            return 0
+        extractor = _get_kb_extractor()
+        facts = extractor.extract(summary, research_topic=topic)
+        extractor_tokens = max(
+            0,
+            int(getattr(extractor, "last_token_count", 0) or 0),
+        )
+        if facts:
+            # Restore real URLs so stored evidence never depends on ephemeral aliases.
+            short2long = {short: long for long, short in long2short.items()}
+            for fact in facts:
+                fact["source_url"] = short2long.get(
+                    fact["source_url"],
+                    fact["source_url"],
+                )
+                fact["research_topic"] = topic
+            store.add_facts(facts)
+        return extractor_tokens
+    except Exception as exc:
+        logger.warning(
+            "[KB] skip storage error_type={}",
+            type(exc).__name__,
+        )
+        return 0
+
+
+async def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     """搜索单个查询并汇总结果。"""
     configurable = Configuration.from_runnable_config(config)
-    searcher = WebSearchAgent()
-    response = searcher.step(prompt=state["search_query"], count=10)
+    coordinator = _build_search_coordinator(
+        configurable,
+        use_omniseek=state.get("use_omniseek", False),
+    )
+    batch = await coordinator.search(state["search_query"], 10)
+    response = [hit.as_page() for hit in batch.hits]
+    omniseek_call_count = int("omniseek" in batch.providers_attempted)
+    omniseek_failure_count = sum(
+        failure.provider == "omniseek" for failure in batch.failures
+    )
     result: dict[str, Any]
 
     if not response:
@@ -326,6 +445,8 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
             "executed_queries": [state["search_query"]],
             "web_search_result": [f"未找到关于 '{state['search_query']}' 的搜索结果"],
             "web_search_call_count": 1,
+            "omniseek_call_count": omniseek_call_count,
+            "omniseek_failure_count": omniseek_failure_count,
         }
         if not _query_dedupe_enabled():
             result["search_query"] = [state["search_query"]]
@@ -333,10 +454,17 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
 
     # URL shortening
     long2short = resolve_urls(response, state["id"])
-    sources = [
-        {"short_url": long2short[item["url"]], "value": item["url"], "label": item["title"]}
-        for item in response
-    ]
+    sources = []
+    for hit in batch.hits:
+        source = {
+            "short_url": long2short[hit.url],
+            "value": hit.url,
+            "label": hit.title,
+            "provider": hit.provider,
+        }
+        if hit.source:
+            source["source"] = hit.source
+        sources.append(source)
     raw_results = json.dumps(
         [{"snippet": i["snippet"], "title": i["title"], "url": long2short[i["url"]]}
          for i in response],
@@ -345,7 +473,8 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
     logger.info(f"[ResearchAgent] _web_search 使用模型: {configurable.query_generator_model}")
     agent = Agent(model_id=configurable.query_generator_model)
     agent.set_step_prompt(web_searcher_instructions)
-    summary = agent.step(
+    summary = await asyncio.to_thread(
+        agent.step,
         query=state["search_query"],
         current_date=get_current_date(),
         web_search_result=raw_results,
@@ -356,36 +485,20 @@ def _web_search(state: WebSearchState, config: RunnableConfig) -> dict:
         content_metadata(state["search_query"], label="query"),
     )
 
-    # ── KB/知识库 存储 ────────────────────────────────────────────────
-    extractor_tokens = 0
-    try:
-        store = _get_kb_store()
-        if store:
-            extractor = _get_kb_extractor()
-            topic = state["search_query"]
-            facts = extractor.extract(summary, research_topic=topic)
-            extractor_tokens = max(
-                0,
-                int(getattr(extractor, "last_token_count", 0) or 0),
-            )
-            if facts:
-                # 将短链接还原为真实 URL，避免 KB 中存储不可解析的过期引用
-                short2long = {v: k for k, v in long2short.items()}
-                for f in facts:
-                    f["source_url"] = short2long.get(f["source_url"], f["source_url"])
-                    f["research_topic"] = topic
-                store.add_facts(facts)
-    except Exception as exc:
-        logger.warning(
-            "[KB] skip storage error_type={}",
-            type(exc).__name__,
-        )
+    extractor_tokens = await asyncio.to_thread(
+        _store_summary_facts,
+        summary,
+        topic=state["search_query"],
+        long2short=long2short,
+    )
 
     result = {
         "sources_gathered": sources,
         "executed_queries": [state["search_query"]],
         "web_search_result": [summary],
         "web_search_call_count": 1,
+        "omniseek_call_count": omniseek_call_count,
+        "omniseek_failure_count": omniseek_failure_count,
         "llm_token_count": _agent_total_tokens(agent) + extractor_tokens,
     }
     if not _query_dedupe_enabled():
@@ -515,11 +628,12 @@ def _route_after_critique(state: OverallState, config: RunnableConfig):
             logger.info(f"[ResearchAgent] 跳过 {len(skipped)} 个已执行 follow-up 查询: {skipped}")
         if not queries:
             return END
-        return [
-            Send(_WEB_SEARCH,
-                 {"search_query": q, "id": state["number_of_ran_queries"] + int(idx)})
-            for idx, q in enumerate(queries)
-        ]
+        return _search_sends(
+            queries,
+            start_id=state["number_of_ran_queries"],
+            state=state,
+            configurable=configurable,
+        )
 
 
 _builder = StateGraph(OverallState, context_schema=Configuration)
