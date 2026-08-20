@@ -42,6 +42,7 @@ _SOURCE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
 _IMAGE_EXTENSIONS = (".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp")
 _VIDEO_EXTENSIONS = (".m4v", ".mkv", ".mov", ".mp4", ".webm")
 _AUDIO_EXTENSIONS = (".aac", ".flac", ".m4a", ".mp3", ".ogg", ".wav")
+_VIDEO_HOSTS = ("bilibili.com", "youtu.be", "youtube.com")
 
 
 @dataclass(frozen=True, slots=True)
@@ -267,14 +268,19 @@ class OmniSeekSearchProvider:
             url = _safe_result_url(document.get("url"))
             if not url:
                 continue
+            source = _bounded_text(document.get("source"), 100)
             hits.append(
                 SearchHit(
                     title=_bounded_text(document.get("title"), 500),
                     snippet=_bounded_text(document.get("content"), 4000),
                     url=url,
                     provider=self.name,
-                    source=_bounded_text(document.get("source"), 100),
-                    media=_normalized_media(document.get("media")),
+                    source=source,
+                    media=_normalized_document_media(
+                        document,
+                        page_url=url,
+                        source=source,
+                    ),
                 )
             )
         return hits[:bounded_limit]
@@ -505,6 +511,62 @@ def _normalized_media(value: object, *, limit: int = 3) -> tuple[MediaAsset, ...
         if len(assets) >= limit:
             break
     return tuple(assets)
+
+
+def _normalized_document_media(
+    document: Mapping[str, object],
+    *,
+    page_url: str,
+    source: str,
+    limit: int = 3,
+) -> tuple[MediaAsset, ...]:
+    assets = list(_normalized_media(document.get("media"), limit=limit))
+    seen = {asset.url for asset in assets}
+    metadata = document.get("metadata")
+    handles = metadata.get("handles") if isinstance(metadata, Mapping) else None
+    transcribable = (
+        handles.get("transcribable") if isinstance(handles, Mapping) else None
+    )
+    if isinstance(transcribable, Sequence) and not isinstance(
+        transcribable,
+        (str, bytes),
+    ):
+        for candidate in transcribable[: limit * 4]:
+            url = _safe_result_url(candidate)
+            if not url or url in seen:
+                continue
+            assets.append(
+                MediaAsset(
+                    url=url,
+                    kind=_transcribable_kind(url, source),
+                )
+            )
+            seen.add(url)
+            if len(assets) >= limit:
+                break
+
+    # Older adapters signal transcribability without repeating the page URL.
+    if transcribable is True and page_url not in seen and len(assets) < limit:
+        assets.append(
+            MediaAsset(
+                url=page_url,
+                kind=_transcribable_kind(page_url, source),
+            )
+        )
+    return tuple(assets)
+
+
+def _transcribable_kind(url: str, source: str) -> str:
+    inferred = _media_kind(url)
+    if inferred in {"audio", "video"}:
+        return inferred
+    host = (urlsplit(url).hostname or "").casefold()
+    source_name = source.casefold()
+    if any(host == item or host.endswith(f".{item}") for item in _VIDEO_HOSTS):
+        return "video"
+    if any(token in source_name for token in ("bilibili", "video", "youtube")):
+        return "video"
+    return "audio"
 
 
 def _media_kind(url: str, explicit_kind: str = "") -> str:

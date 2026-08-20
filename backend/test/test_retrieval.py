@@ -265,6 +265,11 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
                             "https://cdn.example.com/figure-1.png",
                             {"url": "https://cdn.example.com/demo.mp4", "kind": "video"},
                         ],
+                        "metadata": {
+                            "handles": {
+                                "transcribable": ["https://example.com/paper"]
+                            }
+                        },
                     }
                 ]
             },
@@ -312,13 +317,60 @@ async def test_omniseek_adapter_calls_ranked_search_with_bounded_arguments():
                     url="https://cdn.example.com/demo.mp4",
                     kind="video",
                 ),
+                MediaAsset(
+                    url="https://example.com/paper",
+                    kind="audio",
+                ),
             ),
         )
     ]
     assert hits[0].as_page()["media"] == [
         {"url": "https://cdn.example.com/figure-1.png", "kind": "image"},
         {"url": "https://cdn.example.com/demo.mp4", "kind": "video"},
+        {"url": "https://example.com/paper", "kind": "audio"},
     ]
+
+
+@pytest.mark.asyncio
+async def test_omniseek_adapter_marks_video_transcription_handles():
+    async def call_tool(name: str, arguments: dict[str, object]):
+        del name, arguments
+        return SimpleNamespace(
+            isError=False,
+            structuredContent={
+                "documents": [
+                    {
+                        "title": "Video evidence",
+                        "content": "A source description.",
+                        "url": "https://www.bilibili.com/video/BV1example",
+                        "source": "bilibili",
+                        "media": ["https://i.example.com/cover.jpg"],
+                        "metadata": {
+                            "handles": {
+                                "transcribable": [
+                                    "https://www.bilibili.com/video/BV1example"
+                                ]
+                            }
+                        },
+                    }
+                ]
+            },
+            content=[],
+        )
+
+    hits = await OmniSeekSearchProvider(
+        endpoint="http://localhost:8765/mcp",
+        token="a-secure-token-value",
+        tool_caller=call_tool,
+    ).search("video topic", 5)
+
+    assert hits[0].media == (
+        MediaAsset(url="https://i.example.com/cover.jpg", kind="image"),
+        MediaAsset(
+            url="https://www.bilibili.com/video/BV1example",
+            kind="video",
+        ),
+    )
 
 
 @pytest.mark.asyncio
