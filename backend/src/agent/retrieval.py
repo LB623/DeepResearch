@@ -8,12 +8,19 @@ LangGraph nodes do not need to understand individual provider contracts.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable, Sequence
+import json
+import math
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Protocol
+from datetime import timedelta
+from typing import Any, Protocol
 from urllib.parse import urlsplit, urlunsplit
 
+import httpx
 from loguru import logger
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
+from mcp.types import CallToolResult
 
 from agent.base_agent import WebSearchAgent
 
@@ -92,6 +99,129 @@ class DashScopeSearchProvider:
         return hits[: max(0, limit)]
 
 
+class OmniSeekProtocolError(RuntimeError):
+    """Safe, transport-independent failure at the OmniSeek seam."""
+
+
+OmniSeekToolCaller = Callable[
+    [str, dict[str, object]],
+    Awaitable[CallToolResult],
+]
+
+
+class OmniSeekSearchProvider:
+    """Bounded MCP adapter for OmniSeek's normalized ranked search."""
+
+    name = "omniseek"
+
+    def __init__(
+        self,
+        *,
+        endpoint: str,
+        token: str,
+        wait_seconds: float = 3.0,
+        request_timeout_seconds: float = 12.0,
+        sources: Sequence[str] = (),
+        staleness: str = "cached_ok",
+        semantic: bool | None = False,
+        tool_caller: OmniSeekToolCaller | None = None,
+    ) -> None:
+        self._endpoint = _validated_endpoint(endpoint)
+        self._token = _validated_token(token)
+        self._wait_seconds = _bounded_seconds(
+            wait_seconds,
+            name="wait_seconds",
+            lower=0.1,
+            upper=15.0,
+        )
+        self._request_timeout_seconds = _bounded_seconds(
+            request_timeout_seconds,
+            name="request_timeout_seconds",
+            lower=self._wait_seconds + 2.0,
+            upper=120.0,
+        )
+        self._sources = tuple(
+            source.strip() for source in sources if source and source.strip()
+        )
+        self._staleness = (
+            staleness if staleness in {"fresh", "cached_ok", "cache_only"}
+            else "cached_ok"
+        )
+        self._semantic = semantic
+        self._tool_caller = tool_caller or self._call_tool
+
+    async def search(self, query: str, limit: int) -> list[SearchHit]:
+        bounded_limit = min(max(int(limit), 0), 50)
+        if bounded_limit == 0:
+            return []
+
+        arguments: dict[str, object] = {
+            "query": query,
+            "limit": bounded_limit,
+            "raw": False,
+            "wait_s": self._wait_seconds,
+            "staleness": self._staleness,
+        }
+        if self._sources:
+            arguments["sources"] = list(self._sources)
+        if self._semantic is not None:
+            arguments["semantic"] = self._semantic
+
+        result = await self._tool_caller("omniseek_search", arguments)
+        payload = _omniseek_payload(result)
+        documents = payload.get("documents")
+        if not isinstance(documents, list):
+            raise OmniSeekProtocolError("omniseek response has no document list")
+
+        hits: list[SearchHit] = []
+        for document in documents:
+            if not isinstance(document, Mapping):
+                continue
+            url = str(document.get("url") or "").strip()
+            if not url:
+                continue
+            hits.append(
+                SearchHit(
+                    title=str(document.get("title") or "").strip(),
+                    snippet=str(document.get("content") or "").strip()[:4000],
+                    url=url,
+                    provider=self.name,
+                    source=str(document.get("source") or "").strip(),
+                )
+            )
+        return hits[:bounded_limit]
+
+    async def _call_tool(
+        self,
+        name: str,
+        arguments: dict[str, object],
+    ) -> CallToolResult:
+        timeout = httpx.Timeout(
+            self._request_timeout_seconds,
+            connect=min(self._request_timeout_seconds, 5.0),
+        )
+        headers = {"Authorization": f"Bearer {self._token}"}
+        async with httpx.AsyncClient(
+            headers=headers,
+            timeout=timeout,
+            trust_env=False,
+        ) as http_client:
+            async with streamable_http_client(
+                self._endpoint,
+                http_client=http_client,
+                terminate_on_close=False,
+            ) as (read_stream, write_stream, _):
+                async with ClientSession(
+                    read_stream,
+                    write_stream,
+                    read_timeout_seconds=timedelta(
+                        seconds=self._request_timeout_seconds
+                    ),
+                ) as session:
+                    await session.initialize()
+                    return await session.call_tool(name, arguments=arguments)
+
+
 class SearchCoordinator:
     """Run provider adapters concurrently and return one deduplicated batch."""
 
@@ -109,6 +239,8 @@ class SearchCoordinator:
         failures: list[ProviderFailure] = []
         for provider, outcome in zip(self._providers, outcomes, strict=True):
             if isinstance(outcome, BaseException):
+                if not isinstance(outcome, Exception):
+                    raise outcome
                 error_type = type(outcome).__name__
                 failures.append(ProviderFailure(provider.name, error_type))
                 logger.warning(
@@ -155,3 +287,59 @@ def _result_key(hit: SearchHit) -> str:
     except ValueError:
         pass
     return f"title:{hit.title.strip().casefold()}|source:{hit.source.casefold()}"
+
+
+def _validated_endpoint(endpoint: str) -> str:
+    value = endpoint.strip()
+    try:
+        parts = urlsplit(value)
+    except ValueError as exc:
+        raise ValueError("OMNISEEK_MCP_URL must be a valid HTTP URL") from exc
+    if parts.scheme not in {"http", "https"} or not parts.netloc:
+        raise ValueError("OMNISEEK_MCP_URL must be a valid HTTP URL")
+    if parts.username or parts.password:
+        raise ValueError("OMNISEEK_MCP_URL must not contain credentials")
+    if parts.query or parts.fragment:
+        raise ValueError("OMNISEEK_MCP_URL must not contain a query or fragment")
+    return value
+
+
+def _validated_token(token: str) -> str:
+    value = token.strip()
+    if len(value) < 16:
+        raise ValueError("OMNISEEK_TOKEN must contain at least 16 characters")
+    return value
+
+
+def _bounded_seconds(
+    value: float,
+    *,
+    name: str,
+    lower: float,
+    upper: float,
+) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be finite")
+    return min(max(parsed, lower), upper)
+
+
+def _omniseek_payload(result: Any) -> dict[str, Any]:
+    if getattr(result, "isError", False):
+        raise OmniSeekProtocolError("omniseek tool call failed")
+
+    structured = getattr(result, "structuredContent", None)
+    if isinstance(structured, dict):
+        return structured
+
+    for block in getattr(result, "content", ()) or ():
+        text = block.get("text") if isinstance(block, dict) else getattr(block, "text", None)
+        if not isinstance(text, str):
+            continue
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    raise OmniSeekProtocolError("omniseek response is not valid structured data")
