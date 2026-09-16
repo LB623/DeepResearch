@@ -1,0 +1,208 @@
+{
+  "schema": "multimodal_retrieval_set_v1",
+  "version": "2026-08-21",
+  "frozen_at": "2026-08-21",
+  "description": "Frozen bilingual set for multimedia evidence retrieval.",
+  "cases": [
+    {
+      "case_id": "img_en_01",
+      "query": "Qwen2.5-VL model architecture figure image",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_en_02",
+      "query": "Segment Anything 2 segmentation example image",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_en_03",
+      "query": "NVIDIA Blackwell GPU architecture diagram image",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_en_04",
+      "query": "AlphaFold 3 protein structure example image",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_en_05",
+      "query": "Stable Diffusion 3 prompt comparison images",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_en_06",
+      "query": "Milvus hybrid search architecture diagram",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_01",
+      "query": "GPT-4o 图像生成官方示例图片",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_02",
+      "query": "Gemini 视觉能力基准测试图表",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_03",
+      "query": "DeepSeek V3 模型架构图",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_04",
+      "query": "Llama 4 模型架构图",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_05",
+      "query": "YOLOv10 目标检测结果图片",
+      "kind": "image"
+    },
+    {
+      "case_id": "img_zh_06",
+      "query": "Qwen-VL OCR 文档理解示例截图",
+      "kind": "image"
+    },
+    {
+      "case_id": "vid_en_01",
+      "query": "OpenAI Sora official demo video",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_en_02",
+      "query": "Google Project Astra official demo video",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_en_03",
+      "query": "Anthropic Claude computer use demo video",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_en_04",
+      "query": "Boston Dynamics electric Atlas demo video",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_en_05",
+      "query": "Figure 02 humanoid robot demo video",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_zh_01",
+      "query": "NVIDIA GR00T 人形机器人演示视频",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_zh_02",
+      "query": "Segment Anything 2 视频分割演示",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_zh_03",
+      "query": "Tesla FSD 无人监督驾驶演示视频",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_zh_04",
+      "query": "Qwen2.5-VL 官方演示视频",
+      "kind": "video"
+    },
+    {
+      "case_id": "vid_zh_05",
+      "query": "DeepSeek R1 技术分享视频",
+      "kind": "video"
+    },
+    {
+      "case_id": "aud_en_01",
+      "query": "Lex Fridman DeepSeek podcast audio",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_en_02",
+      "query": "Dwarkesh Patel AI agents podcast episode",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_en_03",
+      "query": "Latent Space Model Context Protocol podcast audio",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_en_04",
+      "query": "No Priors multimodal models podcast audio",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_en_05",
+      "query": "NVIDIA AI Podcast multimodal model episode audio",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_zh_01",
+      "query": "小宇宙 大模型 Agent 播客音频",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_zh_02",
+      "query": "小宇宙 DeepSeek R1 播客音频",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_zh_03",
+      "query": "AI Agent 长期记忆访谈播客",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_zh_04",
+      "query": "多模态大模型中文播客音频",
+      "kind": "audio"
+    },
+    {
+      "case_id": "aud_zh_05",
+      "query": "RAG 评测方法播客音频",
+      "kind": "audio"
+    },
+    {
+      "case_id": "mix_en_01",
+      "query": "vision-language model architecture image and official demo video",
+      "kind": "mixed"
+    },
+    {
+      "case_id": "mix_en_02",
+      "query": "multimodal RAG paper figures and conference talk video",
+      "kind": "mixed"
+    },
+    {
+      "case_id": "mix_zh_01",
+      "query": "人形机器人技术报告图片和产品演示视频",
+      "kind": "mixed"
+    },
+    {
+      "case_id": "mix_zh_02",
+      "query": "AI Agent 记忆架构图和专家访谈播客",
+      "kind": "mixed"
+    },
+    {
+      "case_id": "neg_en_01",
+      "query": "Python PEP 703 specification text",
+      "kind": "none"
+    },
+    {
+      "case_id": "neg_en_02",
+      "query": "Redis append-only file persistence documentation",
+      "kind": "none"
+    },
+    {
+      "case_id": "neg_zh_01",
+      "query": "LangGraph Checkpoint API 文字文档",
+      "kind": "none"
+    },
+    {
+      "case_id": "neg_zh_02",
+      "query": "Milvus Collection Schema 配置文档",
+      "kind": "none"
+    }
+  ]
+}

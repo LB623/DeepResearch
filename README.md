@@ -189,7 +189,9 @@ OMNISEEK_MODE=augment
 OMNISEEK_RESULT_LIMIT=5
 OMNISEEK_WAIT_SECONDS=3
 OMNISEEK_REQUEST_TIMEOUT_SECONDS=12
-OMNISEEK_MAX_CONCURRENCY=8
+OMNISEEK_MAX_CONCURRENCY=4
+OMNISEEK_WIDE_MAX_CONCURRENCY=2
+OMNISEEK_BROAD_MAX_CONCURRENCY=1
 DASHSCOPE_MAX_CONCURRENCY=8
 SEARCH_PROVIDER_TIMEOUT_SECONDS=30
 
@@ -230,9 +232,12 @@ LOG_REQUEST_BODY=0
 ```
 
 `OMNISEEK_MODE` 和 `OMNISEEK_SOURCES` 是服务端部署策略，不接受客户端
-`RunnableConfig` 覆盖。`OMNISEEK_SOURCES` 最多配置 16 个名称；留空时由 OmniSeek
-profile 决定可用源。`only` 模式在凭证缺失、配置非法或预算耗尽时会停止检索，绝不
-把查询隐式发送给 DashScope。
+`RunnableConfig` 覆盖。`OMNISEEK_SOURCES` 最多配置 16 个名称；显式设置时覆盖自动
+路由。留空时，包含图片、视频或音频意图的查询会进入有界媒体源集合，普通查询继续使用
+OmniSeek profile。广域查询默认串行，窄媒体路由最多并发 4，超过 8 个源的宽路由最多
+并发 2，避免源级 fan-out 挤满 sidecar worker。媒体首轮未命中时最多回退一次，且首轮
+与回退共享 `OMNISEEK_REQUEST_TIMEOUT_SECONDS` 总预算。`only` 模式在凭证缺失、配置
+非法或预算耗尽时会停止检索，绝不把查询隐式发送给 DashScope。
 
 搜索次数预算随 LangGraph checkpoint 持久化，约束的是已提交的逻辑调用。外部 MCP
 调用、Milvus 写入与 Redis checkpoint 无法跨系统原子提交；若进程恰好在外部副作用

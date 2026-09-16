@@ -16,7 +16,7 @@ import os
 import re
 import threading
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Protocol
@@ -31,7 +31,15 @@ from mcp.types import CallToolResult
 
 from agent.base_agent import WebSearchAgent
 
-_OMNISEEK_SEMAPHORES: WeakKeyDictionary[
+_OMNISEEK_BROAD_SEMAPHORES: WeakKeyDictionary[
+    asyncio.AbstractEventLoop,
+    asyncio.Semaphore,
+] = WeakKeyDictionary()
+_OMNISEEK_TARGETED_SEMAPHORES: WeakKeyDictionary[
+    asyncio.AbstractEventLoop,
+    asyncio.Semaphore,
+] = WeakKeyDictionary()
+_OMNISEEK_WIDE_TARGETED_SEMAPHORES: WeakKeyDictionary[
     asyncio.AbstractEventLoop,
     asyncio.Semaphore,
 ] = WeakKeyDictionary()
@@ -43,6 +51,73 @@ _IMAGE_EXTENSIONS = (".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp")
 _VIDEO_EXTENSIONS = (".m4v", ".mkv", ".mov", ".mp4", ".webm")
 _AUDIO_EXTENSIONS = (".aac", ".flac", ".m4a", ".mp3", ".ogg", ".wav")
 _VIDEO_HOSTS = ("bilibili.com", "youtu.be", "youtube.com")
+_AUDIO_PAGE_SOURCES = {
+    "apple_podcasts",
+    "chinese_podcasts",
+    "podcast_index",
+    "xiaoyuzhou",
+}
+_VIDEO_PAGE_SOURCES = {"bilibili", "youtube"}
+_VIDEO_QUERY_PATTERN = re.compile(
+    r"(?:\bvideo\b|\byoutube\b|\bbilibili\b|视频|演示)",
+    re.IGNORECASE,
+)
+_AUDIO_QUERY_PATTERN = re.compile(
+    r"(?:\baudio\b|\bpodcast\b|播客|音频|有声)",
+    re.IGNORECASE,
+)
+_IMAGE_QUERY_PATTERN = re.compile(
+    r"(?:\bimage\b|\bdiagram\b|\bchart\b|\bphoto\b|"
+    r"图片|图像|架构图|示意图|图表|截图)",
+    re.IGNORECASE,
+)
+_RELEVANCE_TERM_PATTERN = re.compile(r"[a-z0-9][a-z0-9_.+-]*|[\u4e00-\u9fff]{2,}")
+_MEDIA_QUERY_STOPWORDS = {
+    "audio",
+    "bilibili",
+    "chart",
+    "demo",
+    "diagram",
+    "image",
+    "images",
+    "official",
+    "photo",
+    "podcast",
+    "video",
+    "youtube",
+    "图片",
+    "图像",
+    "图表",
+    "截图",
+    "播客",
+    "演示",
+    "视频",
+    "音频",
+}
+_DEFAULT_VIDEO_SOURCES = (
+    "bilibili",
+    "youtube",
+    "youtube_channels",
+    "slideslive_talks",
+    "underline_talks",
+    "douyin",
+)
+_DEFAULT_AUDIO_SOURCES = (
+    "podcast_index",
+    "apple_podcasts",
+    "chinese_podcasts",
+    "xiaoyuzhou",
+)
+_DEFAULT_IMAGE_SOURCES = (
+    "cvf_openaccess",
+    "qwen",
+    "xiaohongshu_search",
+    "academic_ai_labs",
+    "frontier_labs",
+    "ai_newsletters",
+    "substack_matrix",
+    "youtube_channels",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -210,7 +285,7 @@ class OmniSeekSearchProvider:
         request_timeout_seconds: float = 12.0,
         sources: Sequence[str] = (),
         staleness: str = "cached_ok",
-        semantic: bool | None = False,
+        semantic: bool | None = None,
         max_results: int = 10,
         tool_caller: OmniSeekToolCaller | None = None,
     ) -> None:
@@ -242,7 +317,10 @@ class OmniSeekSearchProvider:
         bounded_limit = min(max(int(limit), 0), self._max_results, 50)
         if bounded_limit == 0:
             return []
+        deadline = asyncio.get_running_loop().time() + self._request_timeout_seconds
 
+        requested_media = _requested_media_kinds(query)
+        effective_sources = self._sources or _routed_media_sources(requested_media)
         arguments: dict[str, object] = {
             "query": query,
             "limit": bounded_limit,
@@ -250,71 +328,87 @@ class OmniSeekSearchProvider:
             "wait_s": self._wait_seconds,
             "staleness": self._staleness,
         }
-        if self._sources:
-            arguments["sources"] = list(self._sources)
-        if self._semantic is not None:
-            arguments["semantic"] = self._semantic
+        if effective_sources:
+            arguments["sources"] = list(effective_sources)
+        arguments["semantic"] = (
+            self._semantic if self._semantic is not None else bool(requested_media)
+        )
 
-        result = await self._tool_caller("omniseek_search", arguments)
+        source_count = len(effective_sources)
+        initial_budget = max(0.0, deadline - asyncio.get_running_loop().time())
+        async with asyncio.timeout(initial_budget):
+            documents = await self._request_documents(
+                arguments,
+                source_count=source_count,
+            )
+        hits = _omniseek_hits(documents, provider=self.name, limit=bounded_limit)
+        if requested_media and not any(
+            asset.kind in requested_media for hit in hits for asset in hit.media
+        ):
+            remaining_seconds = deadline - asyncio.get_running_loop().time()
+            retry_documents: list[object] = []
+            if remaining_seconds > 0:
+                try:
+                    async with asyncio.timeout(remaining_seconds):
+                        retry_documents = await self._request_documents(
+                            arguments,
+                            source_count=source_count,
+                        )
+                except TimeoutError:
+                    pass
+            retry_hits = _omniseek_hits(
+                retry_documents,
+                provider=self.name,
+                limit=bounded_limit,
+            )
+            hits = list({hit.url: hit for hit in (*hits, *retry_hits)}.values())
+        if requested_media:
+            hits = _prioritize_requested_media(hits, requested_media, query=query)
+        return hits[:bounded_limit]
+
+    async def _request_documents(
+        self,
+        arguments: dict[str, object],
+        *,
+        source_count: int,
+    ) -> list[object]:
+        async with _omniseek_semaphore(source_count=source_count):
+            result = await self._tool_caller("omniseek_search", arguments)
         payload = _omniseek_payload(result)
         documents = payload.get("documents")
         if not isinstance(documents, list):
             raise OmniSeekProtocolError("omniseek response has no document list")
-
-        hits: list[SearchHit] = []
-        for document in documents[: bounded_limit * 4]:
-            if not isinstance(document, Mapping):
-                continue
-            url = _safe_result_url(document.get("url"))
-            if not url:
-                continue
-            source = _bounded_text(document.get("source"), 100)
-            hits.append(
-                SearchHit(
-                    title=_bounded_text(document.get("title"), 500),
-                    snippet=_bounded_text(document.get("content"), 4000),
-                    url=url,
-                    provider=self.name,
-                    source=source,
-                    media=_normalized_document_media(
-                        document,
-                        page_url=url,
-                        source=source,
-                    ),
-                )
-            )
-        return hits[:bounded_limit]
+        return documents
 
     async def _call_tool(
         self,
         name: str,
         arguments: dict[str, object],
     ) -> CallToolResult:
-        async with _omniseek_semaphore():
-            timeout = httpx.Timeout(
-                self._request_timeout_seconds,
-                connect=min(self._request_timeout_seconds, 5.0),
-            )
-            headers = {"Authorization": f"Bearer {self._token}"}
-            async with httpx.AsyncClient(
-                headers=headers,
-                timeout=timeout,
-                trust_env=False,
-            ) as http_client:
-                async with streamable_http_client(
-                    self._endpoint,
-                    http_client=http_client,
-                    terminate_on_close=False,
-                ) as (read_stream, write_stream, _):
-                    async with ClientSession(
-                        read_stream,
-                        write_stream,
-                        read_timeout_seconds=timedelta(
-                            seconds=self._request_timeout_seconds
-                        ),
-                    ) as session:
-                        await session.initialize()
-                        return await session.call_tool(name, arguments=arguments)
+        timeout = httpx.Timeout(
+            self._request_timeout_seconds,
+            connect=min(self._request_timeout_seconds, 5.0),
+        )
+        headers = {"Authorization": f"Bearer {self._token}"}
+        async with httpx.AsyncClient(
+            headers=headers,
+            timeout=timeout,
+            trust_env=False,
+        ) as http_client:
+            async with streamable_http_client(
+                self._endpoint,
+                http_client=http_client,
+                terminate_on_close=False,
+            ) as (read_stream, write_stream, _):
+                async with ClientSession(
+                    read_stream,
+                    write_stream,
+                    read_timeout_seconds=timedelta(
+                        seconds=self._request_timeout_seconds
+                    ),
+                ) as session:
+                    await session.initialize()
+                    return await session.call_tool(name, arguments=arguments)
 
 
 class SearchCoordinator:
@@ -482,6 +576,89 @@ def _validated_sources(sources: Sequence[str]) -> tuple[str, ...]:
     return cleaned
 
 
+def _omniseek_hits(
+    documents: Sequence[object],
+    *,
+    provider: str,
+    limit: int,
+) -> list[SearchHit]:
+    hits: list[SearchHit] = []
+    for document in documents[: limit * 4]:
+        if not isinstance(document, Mapping):
+            continue
+        url = _safe_result_url(document.get("url"))
+        if not url:
+            continue
+        source = _bounded_text(document.get("source"), 100)
+        hits.append(
+            SearchHit(
+                title=_bounded_text(document.get("title"), 500),
+                snippet=_bounded_text(document.get("content"), 4000),
+                url=url,
+                provider=provider,
+                source=source,
+                media=_normalized_document_media(
+                    document,
+                    page_url=url,
+                    source=source,
+                ),
+            )
+        )
+    return hits
+
+
+def _requested_media_kinds(query: str) -> frozenset[str]:
+    requested: set[str] = set()
+    if _VIDEO_QUERY_PATTERN.search(query):
+        requested.add("video")
+    if _AUDIO_QUERY_PATTERN.search(query):
+        requested.add("audio")
+    if _IMAGE_QUERY_PATTERN.search(query):
+        requested.add("image")
+    return frozenset(requested)
+
+
+def _routed_media_sources(requested_media: frozenset[str]) -> tuple[str, ...]:
+    sources: list[str] = []
+    if "video" in requested_media:
+        sources.extend(_DEFAULT_VIDEO_SOURCES)
+    if "audio" in requested_media:
+        sources.extend(_DEFAULT_AUDIO_SOURCES)
+    if "image" in requested_media:
+        sources.extend(_DEFAULT_IMAGE_SOURCES)
+    return tuple(dict.fromkeys(sources))[:16]
+
+
+def _prioritize_requested_media(
+    hits: Sequence[SearchHit],
+    requested_media: frozenset[str],
+    *,
+    query: str,
+) -> list[SearchHit]:
+    normalized = [
+        replace(
+            hit,
+            media=tuple(asset for asset in hit.media if asset.kind in requested_media),
+        )
+        for hit in hits
+    ]
+    return sorted(
+        normalized,
+        key=lambda hit: (not bool(hit.media), -_metadata_relevance(query, hit)),
+    )
+
+
+def _metadata_relevance(query: str, hit: SearchHit) -> int:
+    terms = {
+        term.casefold()
+        for term in _RELEVANCE_TERM_PATTERN.findall(query.casefold())
+        if len(term) > 1 and term.casefold() not in _MEDIA_QUERY_STOPWORDS
+    }
+    title = hit.title.casefold()
+    snippet = hit.snippet.casefold()
+    return sum(3 if term in title else 1 if term in snippet else 0 for term in terms)
+
+
 def _bounded_text(value: object, limit: int) -> str:
     return str(value or "")[:limit].strip()
 
@@ -506,6 +683,8 @@ def _normalized_media(value: object, *, limit: int = 3) -> tuple[MediaAsset, ...
         if not url or url in seen:
             continue
         kind = _media_kind(url, explicit_kind)
+        if not kind:
+            continue
         assets.append(MediaAsset(url=url, kind=kind))
         seen.add(url)
         if len(assets) >= limit:
@@ -553,6 +732,19 @@ def _normalized_document_media(
                 kind=_transcribable_kind(page_url, source),
             )
         )
+        seen.add(page_url)
+    if (
+        source.casefold() in _AUDIO_PAGE_SOURCES
+        and page_url not in seen
+        and len(assets) < limit
+    ):
+        assets.append(MediaAsset(url=page_url, kind="audio"))
+    if (
+        source.casefold() in _VIDEO_PAGE_SOURCES
+        and page_url not in seen
+        and len(assets) < limit
+    ):
+        assets.append(MediaAsset(url=page_url, kind="video"))
     return tuple(assets)
 
 
@@ -587,21 +779,32 @@ def _media_kind(url: str, explicit_kind: str = "") -> str:
         return "audio"
     if path.endswith(_IMAGE_EXTENSIONS):
         return "image"
-    # OmniSeek's document ``media`` field currently carries embedded images.
-    return "image"
+    return ""
 
 
-def _omniseek_semaphore() -> asyncio.Semaphore:
+def _omniseek_semaphore(*, source_count: int) -> asyncio.Semaphore:
     loop = asyncio.get_running_loop()
-    semaphore = _OMNISEEK_SEMAPHORES.get(loop)
+    if source_count == 0:
+        semaphores = _OMNISEEK_BROAD_SEMAPHORES
+        env_name = "OMNISEEK_BROAD_MAX_CONCURRENCY"
+        default_limit = 1
+    elif source_count > 8:
+        semaphores = _OMNISEEK_WIDE_TARGETED_SEMAPHORES
+        env_name = "OMNISEEK_WIDE_MAX_CONCURRENCY"
+        default_limit = 2
+    else:
+        semaphores = _OMNISEEK_TARGETED_SEMAPHORES
+        env_name = "OMNISEEK_MAX_CONCURRENCY"
+        default_limit = 4
+    semaphore = semaphores.get(loop)
     if semaphore is None:
-        raw_limit = os.getenv("OMNISEEK_MAX_CONCURRENCY", "8")
+        raw_limit = os.getenv(env_name, str(default_limit))
         try:
             limit = int(raw_limit)
         except ValueError:
-            limit = 8
+            limit = default_limit
         semaphore = asyncio.Semaphore(min(max(limit, 1), 64))
-        _OMNISEEK_SEMAPHORES[loop] = semaphore
+        semaphores[loop] = semaphore
     return semaphore
 
 

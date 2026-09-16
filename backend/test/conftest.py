@@ -44,6 +44,9 @@ def mock_env(monkeypatch):
     monkeypatch.delenv("OMNISEEK_WAIT_SECONDS", raising=False)
     monkeypatch.delenv("OMNISEEK_REQUEST_TIMEOUT_SECONDS", raising=False)
     monkeypatch.delenv("OMNISEEK_RESULT_LIMIT", raising=False)
+    monkeypatch.delenv("OMNISEEK_MAX_CONCURRENCY", raising=False)
+    monkeypatch.delenv("OMNISEEK_WIDE_MAX_CONCURRENCY", raising=False)
+    monkeypatch.delenv("OMNISEEK_BROAD_MAX_CONCURRENCY", raising=False)
     monkeypatch.delenv("MAX_OMNISEEK_CALLS", raising=False)
 
 

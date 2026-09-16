@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "系统架构 · 谁调用谁，数据存在哪里",
+    "subtitle": "主图控制执行；子图返回状态增量；存储支撑不同能力",
+    "viewBox": [
+      1120,
+      610
+    ]
+  },
+  "components": [
+    {
+      "id": "ui",
+      "label": "React 工作台",
+      "pos": [
+        20,
+        220
+      ],
+      "size": [
+        140,
+        64
+      ],
+      "type": "frontend",
+      "sublabel": "问题 / 确认 / 流式事件"
+    },
+    {
+      "id": "main",
+      "label": "计划与路由",
+      "pos": [
+        220,
+        220
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "generate / confirm / replan"
+    },
+    {
+      "id": "research",
+      "label": "ResearchAgent",
+      "pos": [
+        450,
+        220
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "查询 → 检索 → 反思"
+    },
+    {
+      "id": "writer",
+      "label": "WriterAgent",
+      "pos": [
+        690,
+        220
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "草稿 ⇄ Critic → 终稿"
+    },
+    {
+      "id": "report",
+      "label": "引用报告",
+      "pos": [
+        940,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "type": "frontend",
+      "sublabel": "Markdown + 来源索引"
+    },
+    {
+      "id": "milvus",
+      "label": "Milvus",
+      "pos": [
+        450,
+        60
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "database",
+      "sublabel": "跨任务事实记忆"
+    },
+    {
+      "id": "checkpoint",
+      "label": "Checkpoint",
+      "pos": [
+        220,
+        450
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "database",
+      "sublabel": "thread_id / state / next"
+    },
+    {
+      "id": "cache",
+      "label": "Redis Cache",
+      "pos": [
+        450,
+        450
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "database",
+      "sublabel": "短期搜索结果"
+    },
+    {
+      "id": "search",
+      "label": "Search Providers",
+      "pos": [
+        690,
+        450
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "external",
+      "sublabel": "DashScope / OmniSeek"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LangGraph 主图 · 按顺序调用子图，再合并返回的状态增量",
+      "wraps": [
+        "main",
+        "research",
+        "writer"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "ui",
+      "to": "main",
+      "label": "提交",
+      "variant": "emphasis"
+    },
+    {
+      "from": "main",
+      "to": "research",
+      "label": "确认后",
+      "variant": "emphasis"
+    },
+    {
+      "from": "research",
+      "to": "writer",
+      "label": "证据状态",
+      "variant": "emphasis"
+    },
+    {
+      "from": "writer",
+      "to": "report",
+      "label": "终稿",
+      "variant": "emphasis"
+    },
+    {
+      "from": "research",
+      "to": "milvus",
+      "label": "写入新事实",
+      "variant": "default",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [
+        [
+          410,
+          252
+        ],
+        [
+          410,
+          92
+        ]
+      ],
+      "labelAt": [
+        365,
+        155
+      ]
+    },
+    {
+      "from": "milvus",
+      "to": "research",
+      "label": "召回事实",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [],
+      "labelAt": [
+        580,
+        160
+      ]
+    },
+    {
+      "from": "main",
+      "to": "checkpoint",
+      "label": "保存 / 恢复图状态",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        300,
+        375
+      ]
+    },
+    {
+      "from": "research",
+      "to": "cache",
+      "label": "读写搜索缓存",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        530,
+        365
+      ]
+    },
+    {
+      "from": "research",
+      "to": "search",
+      "label": "搜索请求",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [
+        [
+          655,
+          252
+        ],
+        [
+          655,
+          375
+        ],
+        [
+          770,
+          375
+        ]
+      ],
+      "labelAt": [
+        716,
+        360
+      ]
+    },
+    {
+      "from": "search",
+      "to": "research",
+      "label": "网页 / 来源",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "right",
+      "via": [
+        [
+          640,
+          482
+        ],
+        [
+          640,
+          310
+        ],
+        [
+          630,
+          310
+        ],
+        [
+          630,
+          252
+        ]
+      ],
+      "labelAt": [
+        674,
+        410
+      ]
+    }
+  ],
+  "cards": []
+}

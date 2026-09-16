@@ -1,0 +1,2452 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="DeepResearch 秋招复习图谱：架构、状态、检索、恢复、引用、评测与面试追问。"><title>DeepResearch · 秋招复习图谱</title><style>
+:root{--paper:#f3f6fa;--white:#fff;--ink:#172f45;--muted:#576e80;--blue:#175ec5;--blue-soft:#e9f1fe;--teal:#117e7d;--teal-soft:#e7f5f0;--amber:#925510;--amber-soft:#fff4df;--line:#d5e0e9;--pink:#a54767;--radius:16px}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:28px}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}button,input{font:inherit}button,a,input{ -webkit-tap-highlight-color:transparent}button{cursor:pointer}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:4px}button{border:1px solid var(--line);background:white;color:var(--ink);padding:9px 16px;border-radius:9px;line-height:1.4}button:hover{border-color:var(--blue);color:var(--blue)}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}h1,h2,h3,p{margin-top:0}h2{font-size:30px;line-height:1.4;letter-spacing:-.7px;margin-bottom:12px}h3{font-size:18px;line-height:1.5;margin-bottom:12px}p{margin-bottom:14px}p:last-child{margin-bottom:0}code{font:12px/1.8 "SFMono-Regular",Menlo,Consolas,monospace;background:#edf2f7;border-radius:4px;padding:2px 5px;overflow-wrap:anywhere}small{font-size:12px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:700;color:var(--teal);display:block;margin-bottom:9px}.muted{color:var(--muted);font-size:13px}.sidebar{position:fixed;inset:0 auto 0 0;width:242px;background:#e9f0f6;border-right:1px solid var(--line);padding:30px 20px;display:flex;flex-direction:column;z-index:5;overflow-y:auto}.brand{font:700 22px/1.2 "Avenir Next",sans-serif;letter-spacing:-1px}.brand small{display:block;font:12px/2.5 -apple-system,sans-serif;letter-spacing:2px;color:var(--muted)}.sidebar input{width:100%;border:1px solid #c4d4e0;background:#f9fbfd;padding:10px;border-radius:9px;font-size:13px;margin:20px 0 12px}.nav{display:flex;flex-direction:column;gap:3px}.nav a{padding:6px 10px;border-radius:7px;font-size:13px;color:var(--muted);display:flex;gap:10px}.nav a span{font:11px/2 Menlo,monospace;color:#7b91a3}.nav a:hover,.nav a.active{background:white;color:var(--blue);text-decoration:none}.sidebar-bottom{margin-top:auto;padding-top:26px;font-size:11px;color:var(--muted)}.sidebar-bottom button{width:100%;font-size:12px}.main{margin-left:242px;max-width:1510px;padding:40px 56px 80px}.masthead{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;color:var(--muted);font-size:11px;letter-spacing:1px}.hero{padding:45px 0 26px}.hero h1{font:650 clamp(36px,4.5vw,66px)/1.17 "Avenir Next","PingFang SC",sans-serif;letter-spacing:-2px;margin:15px 0 24px}.hero h1 span{color:var(--blue)}.hero-sub{max-width:770px;color:var(--muted);font-size:17px}.hero-route{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0}.hero-route a{padding:5px 14px;border:1px solid var(--line);border-radius:22px;background:white;font-size:12px}.hero-route a:before{content:"";display:inline-block;width:6px;height:6px;background:var(--teal);border-radius:50%;margin-right:8px}.chapter{padding:36px 0 44px;border-bottom:1px solid var(--line)}.chapter-head{max-width:870px;margin-bottom:25px}.chapter-head p{color:var(--muted)}.pitch{border-left:4px solid var(--blue);background:var(--blue-soft);padding:25px 30px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:24px}.pitch p{font-size:17px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:22px 0}.card,.panel{background:white;border:1px solid var(--line);padding:24px;border-radius:var(--radius);min-width:0}.card p,.panel p{font-size:14px;color:var(--muted)}.note{background:var(--blue-soft);border-left:3px solid var(--blue);padding:17px 20px;margin:22px 0;font-size:14px;border-radius:0 10px 10px 0}.note.warn{background:var(--amber-soft);border-color:var(--amber);color:#704919}.note b{color:inherit}.sources{display:flex;gap:8px 15px;flex-wrap:wrap;font-size:11px;margin-top:22px;overflow-wrap:anywhere}.sources b{color:var(--muted)}.sources a{font-family:Menlo,Consolas,monospace}.architecture{background-color:white;background-image:radial-gradient(#ccdae5 .8px,transparent .8px);background-size:18px 18px;border:1px solid var(--line);border-radius:20px;padding:30px;margin-bottom:15px}.arch-top,.arch-middle{display:flex;align-items:center;gap:14px}.arch-top{justify-content:center;margin-bottom:26px}.arch-top .map-node{max-width:290px}.arch-middle .map-node{flex:1}.map-node{position:relative;width:100%;padding:17px 16px;text-align:left;border-radius:12px;box-shadow:0 4px 0 #e1e9f1;transition:transform .15s}.map-node small{display:block;font-size:10px;color:var(--teal);letter-spacing:1.2px}.map-node strong{display:block;font-size:17px;margin:7px 0;line-height:1.4}.map-node span{font-size:11px;color:var(--muted);display:block}.map-node[aria-pressed="true"]{border:2px solid var(--blue);background:var(--blue-soft);transform:translateY(-2px);box-shadow:0 4px 0 #c2d6f3}.link-arrow{color:var(--blue);font-size:24px;flex-shrink:0}.arch-support{border-top:2px dashed #b5cadb;margin-top:30px;padding-top:25px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.arch-support .map-node{background:#f3f8fb}.detail-panel{padding:22px 25px;border:1px solid #adc9ee;border-radius:14px;background:var(--blue-soft);min-height:168px}.detail-panel h3{color:var(--blue)}.detail-panel p{font-size:14px}.flow{display:flex;gap:20px;margin:26px 0;align-items:stretch}.flow-node{position:relative;flex:1;min-width:0;background:white;border:1px solid var(--line);padding:17px 12px;border-radius:10px}.flow-node:not(:last-child):after{content:'→';position:absolute;right:-17px;top:45%;font-size:15px;color:var(--teal)}.flow-node small{display:block;color:var(--teal);font-family:Menlo,monospace;margin-bottom:12px}.flow-node strong{display:block;line-height:1.5;font-size:14px;margin-bottom:8px}.flow-node span{display:block;font-size:12px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}.split,.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:25px 0}.loop{display:flex;flex-direction:column;align-items:center;gap:8px;margin:15px 0 20px;text-align:center}.loop b{width:100%;background:var(--paper);padding:12px;border-radius:8px;font-size:13px}.loop span{font-size:12px;color:var(--teal)}.tokens{display:flex;flex-direction:column;gap:12px;margin:20px 0}.tokens strong{font-size:22px}.tokens span{font-size:12px;color:var(--muted)}.good{border-top:4px solid var(--teal)}.bad{border-top:4px solid var(--pink)}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin:22px 0}table{border-collapse:collapse;width:100%;background:white;font-size:13px}th{text-align:left;background:#eaf1f7;font-weight:600;white-space:nowrap}th,td{padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}td:first-child{min-width:150px;font-weight:600}td{min-width:180px;overflow-wrap:anywhere}.formula{background:#e6f1f6;border-radius:14px;padding:23px 27px;margin:24px 0}.formula>span{font-family:Menlo,monospace;color:var(--teal);font-size:12px}.formula strong{display:block;font:600 clamp(15px,1.5vw,21px)/1.9 Menlo,monospace;margin:9px 0}.formula em{font-style:normal;color:var(--teal)}.formula small{color:var(--muted);display:block}.simulator{display:grid;grid-template-columns:1fr 1.1fr;gap:25px;padding:28px;border:1px solid var(--line);background:white;border-radius:14px}.simulator p{font-size:13px;color:var(--muted)}.segmented{display:flex;flex-wrap:wrap;gap:7px}.segmented button{font-size:12px}.segmented button[aria-pressed="true"]{background:var(--blue);color:white;border-color:var(--blue)}.sim-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px;font-size:12px}.sim-row span{color:var(--teal)}.sim-row.dup span{color:var(--pink)}.sim-row.expired{color:var(--muted);text-decoration:line-through}.sim-summary{font-size:12px;margin-top:13px;color:var(--muted)}.record{padding:25px;background:white;border:1px solid var(--line);border-radius:14px}.record-fields{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.record p{font-size:14px;color:var(--muted)}.rail{display:flex;gap:14px;margin:18px 0}.rail b{flex:1;border-radius:9px;background:var(--teal-soft);color:var(--teal);font-size:13px;padding:15px;text-align:center}.rail .failure{background:#fae9ef;color:var(--pink)}.large{font:600 35px/1.5 "Avenir Next",sans-serif;color:var(--teal)}.metric-board{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0}.metric-board article{padding:26px;border:1px solid var(--line);border-radius:14px;background:white}.metric-board span{font-size:13px;color:var(--muted)}.metric-board strong{display:block;font:600 clamp(25px,3vw,42px)/1.5 "Avenir Next",sans-serif;color:var(--blue);letter-spacing:-1px}.metric-board small{font-size:20px}.metric-board p{font-size:12px;color:var(--muted)}.bar-pair{display:flex;flex-direction:column;gap:6px;margin-top:16px;background:repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),#e7eef4 calc(25% - 1px),#e7eef4 25%)}.bar-pair i{display:block;height:8px;background:#97abc0;border-radius:4px;min-width:2px}.bar-pair i+i{background:var(--blue)}.judge-chart{background:white;border:1px solid var(--line);border-radius:14px;padding:24px}.judge-row{display:grid;grid-template-columns:95px 1fr 90px;gap:15px;align-items:center;margin-bottom:16px;font-size:12px}.judge-row:last-child{margin:0}.judge-bars{display:flex;flex-direction:column;gap:4px}.judge-bars i{height:8px;border-radius:3px;background:#97abc0}.judge-bars i+i{background:var(--blue)}.quiz{padding:32px;border:1px solid #adc9ee;border-radius:17px;background:var(--blue-soft);margin-bottom:25px}.quiz-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}.quiz h3{font-size:24px;margin-top:20px}.quiz-actions{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 12px}.quiz-actions button{font-size:13px}#quiz-answer{border-top:1px solid #bacfe9;padding-top:18px;line-height:1.9}#quiz-feedback{font-size:12px;color:var(--teal)}.question-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.question-toolbar button{font-size:12px}.question{background:white;border-bottom:1px solid var(--line);padding:15px 18px}.question:first-of-type{border-radius:12px 12px 0 0}.question summary{cursor:pointer;font-size:14px;font-weight:600}.question summary span{font:11px Menlo,monospace;color:var(--teal);margin:0 13px 0 3px}.question summary em{float:right;font-style:normal;color:var(--muted);font-size:11px;font-weight:400}.question p{padding:16px 20px 3px 35px;font-size:14px;color:var(--muted)}footer{padding:35px 0 0;font-size:12px;color:var(--muted)}[hidden]{display:none!important}.no-results{padding:40px;color:var(--muted)}
+@media(min-width:1700px){.main{margin-left:auto;margin-right:auto;padding-left:290px;max-width:1640px}}
+@media(max-width:1150px){.sidebar{width:206px;padding:25px 14px}.main{margin-left:206px;padding:30px}.flow{flex-wrap:wrap}.flow-node{flex:1 1 26%;}.flow-node:nth-child(3):after{display:none}.arch-middle{gap:8px}.map-node strong{font-size:15px}.arch-support{gap:10px}.architecture{padding:22px}.simulator{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{position:relative;width:100%;padding:18px;max-height:none;border-right:0}.sidebar .brand{font-size:21px}.brand small{display:inline;margin-left:13px;font-size:10px}.sidebar input{margin:13px 0 10px}.nav{flex-direction:row;overflow:auto;gap:6px;padding-bottom:4px}.nav a{white-space:nowrap;background:#f9fbfd;padding:7px 11px}.nav a span{display:none}.sidebar-bottom{display:none}.main{margin:0;padding:22px 18px 55px}.masthead{font-size:9px}.hero{padding-top:22px}.hero h1{font-size:40px}.hero-sub{font-size:15px}.chapter{padding:28px 0}h2{font-size:25px}.pitch{padding:22px}.pitch p{font-size:15px}.split,.compare,.metric-board{grid-template-columns:1fr}.architecture{padding:17px}.arch-top,.arch-middle{flex-direction:column;gap:12px}.arch-top .map-node{max-width:none}.arch-top{margin-bottom:12px}.link-arrow{transform:rotate(90deg);font-size:20px;line-height:1}.arch-support{grid-template-columns:1fr;gap:12px}.map-node strong{font-size:17px}.flow{gap:12px}.flow-node{flex:1 1 40%;}.flow-node:after{display:none}.card,.panel{padding:21px}.table-wrap{font-size:12px}th,td{padding:12px}td:first-child{min-width:120px}.rail{flex-wrap:wrap}.rail b{flex:1 1 40%}.quiz{padding:22px}.quiz h3{font-size:20px}.question summary em{display:none}.judge-row{grid-template-columns:75px 1fr 72px;gap:8px;font-size:11px}.judge-chart{padding:16px}.formula{padding:20px}.question-toolbar h3{font-size:15px}.question-toolbar button{font-size:11px}.quiz-top{gap:10px}.quiz-actions{gap:8px}.quiz-actions button{padding:8px 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media print{@page{size:A4;margin:14mm}.sidebar,.hero-route,.quiz,.segmented,.question-toolbar button,.masthead a{display:none!important}.main{margin:0;padding:0;max-width:none}.chapter{display:block!important;padding:18px 0;break-before:auto}.hero{padding:15px 0}.hero h1{font-size:36px}.chapter h2{font-size:25px}.chapter-head{break-after:avoid}body{font-size:11px;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}.card,.panel,.note,.architecture,.metric-board article,.question,.formula,.record{break-inside:avoid}.flow{flex-wrap:wrap}.flow-node{flex:1 1 26%}.sources{font-size:9px}.sources a{color:#486275}.question p{display:block}.question summary{font-size:12px}h3{font-size:16px}.pitch p{font-size:13px}.table-wrap{overflow:visible}table{font-size:10px}td{min-width:0}tr{break-inside:avoid}.split,.compare{gap:12px}.simulator{display:block}.simulator>div:first-child{margin-bottom:15px}.no-results{display:none}.question-toolbar{margin-top:12px}footer{font-size:9px}}
+.graph-switch{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.graph-switch span{font-size:12px;color:var(--muted)}.graph-pane{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:white}.graph-frame{width:100%;height:680px;display:block;border:0}.graph-note{font-size:12px}@media print{.graph-pane[hidden]{display:block!important}.graph-switch{display:none}.graph-frame{height:650px}#graph-execution .graph-frame{height:920px}.graph-pane{break-inside:avoid}}</style></head><body><aside class="sidebar"><a href="#top" class="brand">DeepResearch<small>秋招复习图谱</small></a><label for="search" class="sr-label" hidden>搜索复习内容</label><input id="search" aria-label="搜索复习内容" placeholder="搜索：NDCG / 恢复 / 引用…" type="search"><span id="search-status" role="status" class="muted"></span><nav class="nav" aria-label="复习章节"><a href="#overview"><span>01</span>项目定位</a><a href="#map"><span>02</span>架构总图</a><a href="#workflow"><span>03</span>执行路线</a><a href="#state"><span>04</span>状态与去重</a><a href="#retrieval"><span>05</span>检索重排</a><a href="#memory"><span>06</span>事实与存储</a><a href="#resume"><span>07</span>恢复与预算</a><a href="#citation"><span>08</span>引用与护栏</a><a href="#evaluation"><span>09</span>评测与数字</a><a href="#tradeoffs"><span>10</span>选型与改进</a><a href="#interview"><span>11</span>面试抽题</a><a href="#sources"><span>12</span>复习与索引</a></nav><div class="sidebar-bottom"><button id="print">打印 / 保存为 PDF</button><p>本地代码 + 历史实验记录<br>整理于 2026.09.07<br>离线可用 · 无外部依赖</p></div></aside><main id="top" class="main"><div class="masthead"><span>ENGINEERING FIELD NOTES / 秋招项目复盘</span><a href="https://github.com/LB623/DeepResearch" target="_blank" rel="noopener">GitHub ↗</a></div><header class="hero"><span class="eyebrow">个人项目 · 独立开发 · 面试复习手册</span><h1>研究的每一步，<br><span>都有状态与证据。</span></h1><p class="hero-sub">DeepResearch 多阶段智能研究 Agent<br>把架构讲成一条路线，把难点讲成因果，把数字讲回实验。</p><div class="hero-route"><a href="#map">读架构图</a><a href="#state">讲技术难点</a><a href="#evaluation">核对简历数字</a><a href="#interview">开始面试抽题</a></div></header><div id="empty" class="no-results" hidden>没有匹配章节。试试“状态”“检索”“恢复”，或清空搜索。</div><section id="overview" class="chapter"><header class="chapter-head"><span class="eyebrow">先讲清楚 · 项目定位</span><h2>把开放问题，变成可回查的研究报告</h2><p>复习顺序：先记住主线，再讲一个具体难点，最后用评测和边界收尾。</p></header><div class="pitch"><span class="eyebrow">60 秒开场 · 建议口述</span><p>我独立开发了 DeepResearch，一个基于 LangGraph 的多阶段研究 Agent。它先拆解问题并让用户确认计划，再并行检索、评估证据缺口，最后通过 Writer / Critic 循环生成带引用的报告。我的主要工作是把长任务的状态、事实记忆和评测闭环做扎实：用 Checkpoint 支持恢复，用 Milvus 管理事实及其时效性，并通过受控检索 A/B 和固定题集评测定位问题。最有代表性的优化是查询状态去重和质量感知重排；相关指标都有明确的测试集口径。</p></div><div class="cards"><article class="card"><h3>为什么需要它</h3><p>一次检索回答难以覆盖复杂主题；多轮研究会产生重复状态、过期事实、证据缺口和引用丢失。项目把这些问题显式建模为图状态和路由。</p></article><article class="card"><h3>Agentic RAG 的具体含义</h3><p>LLM 参与制定计划、生成查询、判断证据充分性和决定后续搜索；Milvus 的历史事实给查询生成提供上下文，新事实再写回。不是上传文档后固定检索一次。</p></article><article class="card"><h3>个人职责与范围</h3><p>简历口径：个人项目、独立开发，覆盖主图与子图、事实库、状态恢复、质量护栏和评测。不要额外声称线上用户量、生产 SLA 或商业落地。</p></article></div><div class="note warn"><b>时间线先对齐</b> 简历写 2026.03–2026.07，但所引检索 v2 报告记录于 2026.08.16。若 8 月继续迭代，可据实调整结束时间或单列“8 月补充评测”；不要把 8 月实验说成 7 月已完成。本页按当前本地工作区与历史记录整理，包含尚未提交的检索扩展，不等同于 7 月快照。</div></section><section id="map" class="chapter"><header class="chapter-head"><span class="eyebrow">架构总图 · 点击节点</span><h2>沿着箭头，看清调用、数据和循环</h2><p>两张有向图分别表达系统依赖与实际执行结构。每条关键边都有方向；虚线边的具体含义以标签为准。</p></header><div class="graph-switch" role="group" aria-label="选择图结构"><button class="primary" data-graph="system" aria-pressed="true">系统架构图</button><button data-graph="execution" aria-pressed="false">主图与子图执行图</button><span>点击节点看说明 · 图内可切换明暗主题与导出图片 / SVG</span></div><div class="graph-pane" id="graph-system" ><iframe title="系统架构 · 谁调用谁，数据存在哪里" class="graph-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot; data-theme=&quot;dark&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta name=&quot;generator&quot; content=&quot;archify 2.10.0&quot;&gt;
+  &lt;title&gt;系统架构 · 谁调用谁，数据存在哪里 Diagram&lt;/title&gt;
+  &lt;script&gt;
+    // Resolve the theme before first paint so light-preference users don&#x27;t
+    // see a dark flash. The toolbar script below re-applies with UI state.
+    (function () {
+      try {
+        var theme = null;
+        try {
+          var param = new URLSearchParams(window.location.search).get(&#x27;theme&#x27;);
+          if (param === &#x27;light&#x27; || param === &#x27;dark&#x27;) theme = param;
+        } catch (_) {}
+        if (!theme) {
+          try { theme = localStorage.getItem(&#x27;archify-theme&#x27;); } catch (_) {}
+        }
+        if (theme !== &#x27;light&#x27; &amp;&amp; theme !== &#x27;dark&#x27;) {
+          theme = window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;).matches ? &#x27;light&#x27; : &#x27;dark&#x27;;
+        }
+        document.documentElement.setAttribute(&#x27;data-theme&#x27;, theme);
+      } catch (_) {}
+    })();
+  &lt;/script&gt;
+  &lt;!-- Async font load: a blackholed network must not block first paint.
+       The body font stack falls back to system monospace until it lands. --&gt;
+
+
+  &lt;noscript&gt;
+
+  &lt;/noscript&gt;
+  &lt;style&gt;
+    /* ==========================================================
+       THEME VARIABLES — switch by toggling [data-theme] on &lt;html&gt;
+       ========================================================== */
+    :root,
+    [data-theme=&quot;dark&quot;] {
+      --bg: #020617;
+      --grid: #1e293b;
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+      /* UI chrome (menu hints, footer) needs more contrast than SVG .t-dim accents */
+      --text-faint: #7d8da1;
+
+      --panel: rgba(15, 23, 42, 0.5);
+      --panel-border: #1e293b;
+      --lane-fill: rgba(15, 23, 42, 0.22);
+      --lane-stroke: #334155;
+
+      --arrow: #64748b;
+      --arrow-emphasis: #34d399;
+
+      /* Opaque mask color used behind semi-transparent component fills
+         so the arrows drawn underneath are properly hidden. */
+      --mask: #0f172a;
+
+      --frontend-fill:    rgba(8, 51, 68, 0.4);
+      --frontend-stroke:  #22d3ee;
+      --backend-fill:     rgba(6, 78, 59, 0.4);
+      --backend-stroke:   #34d399;
+      --database-fill:    rgba(76, 29, 149, 0.4);
+      --database-stroke:  #a78bfa;
+      --cloud-fill:       rgba(120, 53, 15, 0.3);
+      --cloud-stroke:     #fbbf24;
+      --security-fill:    rgba(136, 19, 55, 0.4);
+      --security-stroke:  #fb7185;
+      --messagebus-fill:  rgba(251, 146, 60, 0.3);
+      --messagebus-stroke:#fb923c;
+      --external-fill:    rgba(30, 41, 59, 0.5);
+      --external-stroke:  #94a3b8;
+
+      --toolbar-bg:       rgba(15, 23, 42, 0.8);
+      --toolbar-border:   #334155;
+      --toolbar-text:     #e2e8f0;
+      --toolbar-hover:    rgba(15, 23, 42, 0.95);
+      --toolbar-menu-bg:  #0f172a;
+    }
+
+    [data-theme=&quot;light&quot;] {
+      --bg: #f8fafc;
+      --grid: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --text-faint: #64748b;
+
+      --panel: #ffffff;
+      --panel-border: #e2e8f0;
+      --lane-fill: rgba(248, 250, 252, 0.65);
+      --lane-stroke: #cbd5e1;
+
+      --arrow: #94a3b8;
+      --arrow-emphasis: #059669;
+
+      --mask: #ffffff;
+
+      --frontend-fill:    rgba(34, 211, 238, 0.15);
+      --frontend-stroke:  #0891b2;
+      --backend-fill:     rgba(52, 211, 153, 0.18);
+      --backend-stroke:   #059669;
+      --database-fill:    rgba(167, 139, 250, 0.2);
+      --database-stroke:  #7c3aed;
+      --cloud-fill:       rgba(251, 191, 36, 0.18);
+      --cloud-stroke:     #d97706;
+      --security-fill:    rgba(251, 113, 133, 0.15);
+      --security-stroke:  #e11d48;
+      --messagebus-fill:  rgba(251, 146, 60, 0.15);
+      --messagebus-stroke:#ea580c;
+      --external-fill:    rgba(148, 163, 184, 0.18);
+      --external-stroke:  #64748b;
+
+      --toolbar-bg:       rgba(255, 255, 255, 0.92);
+      --toolbar-border:   #cbd5e1;
+      --toolbar-text:     #334155;
+      --toolbar-hover:    #ffffff;
+      --toolbar-menu-bg:  #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace;
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 2rem;
+      color: var(--text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    .header { margin-bottom: 2rem; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--frontend-stroke);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: var(--panel);
+      border-radius: 1rem;
+      border: 1px solid var(--panel-border);
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: min(900px, 100%);
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: 0.75rem;
+      border: 1px solid var(--panel-border);
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan     { background: var(--frontend-stroke); }
+    .card-dot.emerald  { background: var(--backend-stroke); }
+    .card-dot.violet   { background: var(--database-stroke); }
+    .card-dot.amber    { background: var(--cloud-stroke); }
+    .card-dot.rose     { background: var(--security-stroke); }
+    .card-dot.orange   { background: var(--messagebus-stroke); }
+    .card-dot.slate    { background: var(--external-stroke); }
+
+    .card h3 { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+
+    .card ul {
+      list-style: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .card li { margin-bottom: 0.375rem; }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--text-faint);
+      font-size: 0.75rem;
+    }
+
+    /* ==========================================================
+       Print stylesheet — hide interactive controls, force light,
+       drop the grid so the diagram doesn&#x27;t waste ink, use landscape
+       so wide diagrams fit, pack summary cards into 2 columns to
+       avoid an orphan card on a trailing page.
+       ========================================================== */
+    @page { size: landscape; margin: 1.5cm; }
+
+    @media print {
+      /* Force the FULL light palette — including component fills/strokes and
+         lane/arrow colors — so printing from dark theme doesn&#x27;t put neon
+         strokes and translucent dark fills on white paper. */
+      :root, [data-theme=&quot;dark&quot;], [data-theme=&quot;light&quot;] {
+        --bg: #ffffff;
+        --grid: transparent;
+        --panel: #ffffff;
+        --panel-border: #e2e8f0;
+        --text: #0f172a;
+        --text-muted: #475569;
+        --text-dim: #94a3b8;
+        --text-faint: #64748b;
+        --mask: #ffffff;
+        --lane-fill: rgba(248, 250, 252, 0.65);
+        --lane-stroke: #cbd5e1;
+        --arrow: #94a3b8;
+        --arrow-emphasis: #059669;
+        --frontend-fill:    rgba(34, 211, 238, 0.15);
+        --frontend-stroke:  #0891b2;
+        --backend-fill:     rgba(52, 211, 153, 0.18);
+        --backend-stroke:   #059669;
+        --database-fill:    rgba(167, 139, 250, 0.2);
+        --database-stroke:  #7c3aed;
+        --cloud-fill:       rgba(251, 191, 36, 0.18);
+        --cloud-stroke:     #d97706;
+        --security-fill:    rgba(251, 113, 133, 0.15);
+        --security-stroke:  #e11d48;
+        --messagebus-fill:  rgba(251, 146, 60, 0.15);
+        --messagebus-stroke:#ea580c;
+        --external-fill:    rgba(148, 163, 184, 0.18);
+        --external-stroke:  #64748b;
+      }
+      body { background: #ffffff !important; padding: 0; }
+      .container { max-width: none; }
+      .toolbar, .archify-toast, .no-print { display: none !important; }
+      .diagram-container, .card { box-shadow: none; border-color: #e2e8f0; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      /* Ensure elements break sensibly across pages */
+      .card { break-inside: avoid; page-break-inside: avoid; }
+      .diagram-container { break-inside: avoid; page-break-inside: avoid; }
+      h1, .subtitle { color: #0f172a; }
+    }
+
+    /* ==========================================================
+       TOOLBAR (theme toggle + export menu)
+       ========================================================== */
+    .toolbar {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    .toolbar button {
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      border: 1px solid var(--toolbar-border);
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.15s, border-color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .toolbar button:hover {
+      background: var(--toolbar-hover);
+      border-color: var(--arrow);
+    }
+    .toolbar button:focus-visible {
+      outline: 2px solid var(--frontend-stroke);
+      outline-offset: 2px;
+    }
+    .toolbar .export-wrap { position: relative; }
+    .toolbar .export-menu {
+      position: absolute;
+      top: calc(100% + 0.375rem);
+      right: 0;
+      background: var(--toolbar-menu-bg);
+      border: 1px solid var(--toolbar-border);
+      border-radius: 0.5rem;
+      padding: 0.375rem;
+      min-width: 160px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .toolbar .export-menu.open { display: flex; }
+    .toolbar .export-menu button {
+      background: transparent;
+      border: 0;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+    }
+    .toolbar .export-menu button:hover {
+      background: var(--toolbar-hover);
+    }
+    .toolbar .export-menu .hint {
+      color: var(--text-faint);
+      font-size: 0.625rem;
+    }
+    .toolbar .export-menu hr {
+      border: 0;
+      border-top: 1px solid var(--toolbar-border);
+      margin: 0.25rem 0.375rem;
+      opacity: 0.5;
+    }
+
+    /* Toast — brief feedback for actions like &quot;copied&quot; */
+    .archify-toast {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: var(--toolbar-menu-bg);
+      color: var(--text);
+      border: 1px solid var(--toolbar-border);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .archify-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 1rem; }
+      .toolbar {
+        position: static;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+      }
+      .header { margin-bottom: 1.25rem; }
+      .header-row {
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+      h1 {
+        font-size: 1.25rem;
+        line-height: 1.25;
+      }
+      .subtitle {
+        margin-left: 0;
+        font-size: 0.8125rem;
+        line-height: 1.55;
+      }
+      .diagram-container {
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+      }
+      .cards {
+        grid-template-columns: 1fr;
+        margin-top: 1rem;
+      }
+    }
+
+    /* ==========================================================
+       SVG SEMANTIC CLASSES — use these instead of inline fill/stroke
+       ========================================================== */
+    .c-grid       { stroke: var(--grid); fill: none; }
+    .c-mask       { fill: var(--mask); stroke: none; }
+
+    .c-frontend   { fill: var(--frontend-fill);   stroke: var(--frontend-stroke); }
+    .c-backend    { fill: var(--backend-fill);    stroke: var(--backend-stroke); }
+    .c-database   { fill: var(--database-fill);   stroke: var(--database-stroke); }
+    .c-cloud      { fill: var(--cloud-fill);      stroke: var(--cloud-stroke); }
+    .c-security   { fill: var(--security-fill);   stroke: var(--security-stroke); }
+    .c-messagebus { fill: var(--messagebus-fill); stroke: var(--messagebus-stroke); }
+    .c-external   { fill: var(--external-fill);   stroke: var(--external-stroke); }
+
+    /* Text helpers */
+    .t-primary { fill: var(--text); }
+    .t-muted   { fill: var(--text-muted); }
+    .t-dim     { fill: var(--text-dim); }
+    .t-frontend   { fill: var(--frontend-stroke); }
+    .t-backend    { fill: var(--backend-stroke); }
+    .t-database   { fill: var(--database-stroke); }
+    .t-cloud      { fill: var(--cloud-stroke); }
+    .t-security   { fill: var(--security-stroke); }
+    .t-messagebus { fill: var(--messagebus-stroke); }
+    .t-external   { fill: var(--external-stroke); }
+
+    /* Arrows */
+    .a-default   { stroke: var(--arrow); fill: none; }
+    .a-emphasis  { stroke: var(--arrow-emphasis); fill: none; }
+    .a-security  { stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5; }
+    .a-dashed    { stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4; }
+
+    /* Arrowhead markers reference these */
+    .m-default   { fill: var(--arrow); }
+    .m-emphasis  { fill: var(--arrow-emphasis); }
+    .m-security  { fill: var(--security-stroke); }
+    .m-dashed    { fill: var(--database-stroke); }
+
+    /* Dashed boundary variants */
+    .c-security-group { fill: transparent; stroke: var(--security-stroke); stroke-dasharray: 4,4; }
+    .c-region         { fill: rgba(251, 191, 36, 0.05); stroke: var(--cloud-stroke); stroke-dasharray: 8,4; }
+    .c-lane           { fill: var(--lane-fill); stroke: var(--lane-stroke); stroke-dasharray: 6,6; }
+
+    /* Optional trace animation, enabled only by meta.animation = &quot;trace&quot;.
+       Static diagrams do not carry data-animation and render exactly as before. */
+    svg[data-animation=&quot;trace&quot;] [data-animate=&quot;edge&quot;] {
+      stroke-dasharray: 10 8;
+      stroke-dashoffset: 54;
+      animation: archify-edge-flow 2.4s linear infinite;
+      animation-delay: calc(var(--step, 0) * 160ms);
+    }
+    svg[data-animation=&quot;trace&quot;] [data-animate=&quot;node&quot;] {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: archify-node-pulse 3.6s ease-in-out infinite;
+      animation-delay: calc(var(--step, 0) * 160ms);
+    }
+    @keyframes archify-edge-flow {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes archify-node-pulse {
+      0%, 72%, 100% { filter: none; stroke-width: 1.5; }
+      18%, 36% {
+        filter: drop-shadow(0 0 8px var(--arrow-emphasis));
+        stroke-width: 2.4;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      svg[data-animation=&quot;trace&quot;] [data-animate] {
+        animation: none !important;
+        stroke-dashoffset: 0;
+      }
+    }
+  &lt;/style&gt;
+&lt;style&gt;body{padding:60px 16px 15px;min-height:0}.container{max-width:none}.header{display:none}.diagram-container{padding:10px;border:0;border-radius:0}.cards,.footer{display:none}.pulse-dot{animation:none}svg{min-width:850px}.node-hit{fill:transparent;stroke:none;cursor:pointer}.node-hit:hover,.node-hit:focus{stroke:var(--frontend-stroke);stroke-width:3;outline:none}.node-hit.selected{stroke:var(--frontend-stroke);stroke-width:3}svg text{font-family:-apple-system,&quot;PingFang SC&quot;,sans-serif}.toolbar{position:absolute;top:12px;right:16px}@media print{body{padding:0}svg{min-width:0}}&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- Toolbar: theme toggle + export menu (present on every generated diagram)
+       Keyboard: T toggles theme, E opens export menu (when no input focused) --&gt;
+  &lt;div class=&quot;toolbar&quot; role=&quot;toolbar&quot; aria-label=&quot;Diagram actions&quot;&gt;
+    &lt;button id=&quot;btn-theme&quot; type=&quot;button&quot;
+            title=&quot;Toggle theme (T)&quot;
+            aria-label=&quot;Toggle color theme&quot;
+            aria-pressed=&quot;false&quot;&gt;
+      &lt;span id=&quot;theme-icon&quot; aria-hidden=&quot;true&quot;&gt;&amp;#9790;&lt;/span&gt;
+      &lt;span id=&quot;theme-label&quot;&gt;Dark&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;div class=&quot;export-wrap&quot;&gt;
+      &lt;button id=&quot;btn-export&quot; type=&quot;button&quot;
+              title=&quot;Export diagram (E)&quot;
+              aria-label=&quot;Export diagram&quot;
+              aria-haspopup=&quot;menu&quot;
+              aria-expanded=&quot;false&quot;
+              aria-controls=&quot;export-menu&quot;&gt;
+        Export &lt;span aria-hidden=&quot;true&quot;&gt;&amp;#9662;&lt;/span&gt;
+      &lt;/button&gt;
+      &lt;div class=&quot;export-menu&quot; id=&quot;export-menu&quot; role=&quot;menu&quot; aria-label=&quot;Export&quot;&gt;
+        &lt;button data-action=&quot;copy&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Copy to clipboard &lt;span class=&quot;hint&quot;&gt;PNG&lt;/span&gt;&lt;/button&gt;
+        &lt;hr role=&quot;separator&quot;&gt;
+        &lt;button data-format=&quot;png&quot;   type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download PNG&lt;/button&gt;
+        &lt;button data-format=&quot;jpeg&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download JPEG&lt;/button&gt;
+        &lt;button data-format=&quot;webp&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download WebP&lt;/button&gt;
+        &lt;hr role=&quot;separator&quot;&gt;
+        &lt;button data-format=&quot;svg&quot;   type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download SVG &lt;span class=&quot;hint&quot;&gt;vector&lt;/span&gt;&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;!-- Header --&gt;
+    &lt;div class=&quot;header&quot;&gt;
+      &lt;div class=&quot;header-row&quot;&gt;
+        &lt;div class=&quot;pulse-dot&quot;&gt;&lt;/div&gt;
+        &lt;h1&gt;系统架构 · 谁调用谁，数据存在哪里&lt;/h1&gt;
+      &lt;/div&gt;
+      &lt;p class=&quot;subtitle&quot;&gt;主图控制执行；子图返回状态增量；存储支撑不同能力&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Main Diagram --&gt;
+    &lt;div class=&quot;diagram-container&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 1120 610&quot; role=&quot;img&quot; aria-label=&quot;系统架构 · 谁调用谁，数据存在哪里 — 主图控制执行；子图返回状态增量；存储支撑不同能力 (architecture diagram)&quot;&gt;
+        &lt;!-- Definitions --&gt;
+        &lt;defs&gt;
+          &lt;marker id=&quot;arrowhead&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-default&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-emphasis&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-emphasis&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-security&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-security&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-dashed&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-dashed&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;pattern id=&quot;grid&quot; width=&quot;40&quot; height=&quot;40&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+            &lt;path d=&quot;M 40 0 L 0 0 0 40&quot; class=&quot;c-grid&quot; stroke-width=&quot;0.5&quot;/&gt;
+          &lt;/pattern&gt;
+        &lt;/defs&gt;
+
+        &lt;!-- Background Grid --&gt;
+        &lt;rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;url(#grid)&quot; /&gt;
+
+        &lt;!-- Boundaries (behind everything) --&gt;
+        &lt;rect x=&quot;190&quot; y=&quot;190&quot; width=&quot;690&quot; height=&quot;114&quot; rx=&quot;12&quot; class=&quot;c-region&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;198&quot; y=&quot;208&quot; class=&quot;t-cloud&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;LangGraph 主图 · 按顺序调用子图，再合并返回的状态增量&lt;/text&gt;
+
+        &lt;!-- Connection paths (before components for correct z-order) --&gt;
+        &lt;path d=&quot;M 160 252 L 220 252&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 380 252 L 450 252&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 610 252 L 690 252&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 850 252 L 940 252&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 450 252 L 418 252 Q 410 252 410 244 L 410 100 Q 410 92 418 92 L 450 92&quot; class=&quot;a-default&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead)&quot;/&gt;
+        &lt;path d=&quot;M 530 124 L 530 220&quot; class=&quot;a-default&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead)&quot;/&gt;
+        &lt;path d=&quot;M 300 284 L 300 450&quot; class=&quot;a-dashed&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-dashed)&quot;/&gt;
+        &lt;path d=&quot;M 530 284 L 530 450&quot; class=&quot;a-dashed&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-dashed)&quot;/&gt;
+        &lt;path d=&quot;M 610 252 L 647 252 Q 655 252 655 260 L 655 367 Q 655 375 663 375 L 762 375 Q 770 375 770 383 L 770 450&quot; class=&quot;a-default&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead)&quot;/&gt;
+        &lt;path d=&quot;M 690 482 L 648 482 Q 640 482 640 474 L 640 315 Q 640 310 635 310 L 635 310 Q 630 310 630 305 L 630 260 Q 630 252 622 252 L 610 252&quot; class=&quot;a-dashed&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-dashed)&quot;/&gt;
+
+        &lt;!-- Components --&gt;
+        &lt;rect x=&quot;20&quot; y=&quot;220&quot; width=&quot;140&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;20&quot; y=&quot;220&quot; width=&quot;140&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;90&quot; y=&quot;250&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;React 工作台&lt;/text&gt;
+        &lt;text x=&quot;90&quot; y=&quot;266&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;问题 / 确认 / 流式事件&lt;/text&gt;
+
+        &lt;rect x=&quot;220&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;220&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;300&quot; y=&quot;250&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;计划与路由&lt;/text&gt;
+        &lt;text x=&quot;300&quot; y=&quot;266&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;generate / confirm / replan&lt;/text&gt;
+
+        &lt;rect x=&quot;450&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;450&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;250&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;ResearchAgent&lt;/text&gt;
+        &lt;text x=&quot;530&quot; y=&quot;266&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;查询 → 检索 → 反思&lt;/text&gt;
+
+        &lt;rect x=&quot;690&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;690&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;770&quot; y=&quot;250&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;WriterAgent&lt;/text&gt;
+        &lt;text x=&quot;770&quot; y=&quot;266&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;草稿 ⇄ Critic → 终稿&lt;/text&gt;
+
+        &lt;rect x=&quot;940&quot; y=&quot;220&quot; width=&quot;150&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;940&quot; y=&quot;220&quot; width=&quot;150&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;1015&quot; y=&quot;250&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;引用报告&lt;/text&gt;
+        &lt;text x=&quot;1015&quot; y=&quot;266&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;Markdown + 来源索引&lt;/text&gt;
+
+        &lt;rect x=&quot;450&quot; y=&quot;60&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;450&quot; y=&quot;60&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-database&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;90&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;Milvus&lt;/text&gt;
+        &lt;text x=&quot;530&quot; y=&quot;106&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;跨任务事实记忆&lt;/text&gt;
+
+        &lt;rect x=&quot;220&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;220&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-database&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;300&quot; y=&quot;480&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;Checkpoint&lt;/text&gt;
+        &lt;text x=&quot;300&quot; y=&quot;496&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;thread_id / state / next&lt;/text&gt;
+
+        &lt;rect x=&quot;450&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;450&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-database&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;480&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;Redis Cache&lt;/text&gt;
+        &lt;text x=&quot;530&quot; y=&quot;496&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;短期搜索结果&lt;/text&gt;
+
+        &lt;rect x=&quot;690&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;690&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-external&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;770&quot; y=&quot;480&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;Search Providers&lt;/text&gt;
+        &lt;text x=&quot;770&quot; y=&quot;496&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;DashScope / OmniSeek&lt;/text&gt;
+
+        &lt;!-- Connection labels --&gt;
+        &lt;rect x=&quot;175&quot; y=&quot;232&quot; width=&quot;30&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;190&quot; y=&quot;242&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;提交&lt;/text&gt;
+        &lt;rect x=&quot;395.6&quot; y=&quot;232&quot; width=&quot;38.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;415&quot; y=&quot;242&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;确认后&lt;/text&gt;
+        &lt;rect x=&quot;625.8&quot; y=&quot;232&quot; width=&quot;48.4&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;650&quot; y=&quot;242&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;证据状态&lt;/text&gt;
+        &lt;rect x=&quot;880&quot; y=&quot;232&quot; width=&quot;30&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;895&quot; y=&quot;242&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;终稿&lt;/text&gt;
+        &lt;rect x=&quot;336&quot; y=&quot;145&quot; width=&quot;58&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;365&quot; y=&quot;155&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;写入新事实&lt;/text&gt;
+        &lt;rect x=&quot;555.8&quot; y=&quot;150&quot; width=&quot;48.4&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;580&quot; y=&quot;160&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;召回事实&lt;/text&gt;
+        &lt;rect x=&quot;254.2&quot; y=&quot;365&quot; width=&quot;91.6&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;300&quot; y=&quot;375&quot; class=&quot;t-messagebus&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;保存 / 恢复图状态&lt;/text&gt;
+        &lt;rect x=&quot;496.2&quot; y=&quot;355&quot; width=&quot;67.6&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;365&quot; class=&quot;t-messagebus&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;读写搜索缓存&lt;/text&gt;
+        &lt;rect x=&quot;691.8&quot; y=&quot;350&quot; width=&quot;48.4&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;716&quot; y=&quot;360&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;搜索请求&lt;/text&gt;
+        &lt;rect x=&quot;642.6&quot; y=&quot;400&quot; width=&quot;62.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;674&quot; y=&quot;410&quot; class=&quot;t-messagebus&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;网页 / 来源&lt;/text&gt;
+
+        &lt;!-- Legend --&gt;
+        &lt;text x=&quot;40&quot; y=&quot;581&quot; class=&quot;t-primary&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;Legend&lt;/text&gt;
+        &lt;rect x=&quot;40&quot; y=&quot;586&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;60&quot; y=&quot;594&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;Frontend&lt;/text&gt;
+        &lt;rect x=&quot;138&quot; y=&quot;586&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-backend&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;158&quot; y=&quot;594&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;Backend&lt;/text&gt;
+        &lt;rect x=&quot;231&quot; y=&quot;586&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-database&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;251&quot; y=&quot;594&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;Database&lt;/text&gt;
+        &lt;rect x=&quot;329&quot; y=&quot;586&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-external&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;349&quot; y=&quot;594&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;External&lt;/text&gt;
+      &lt;rect x=&quot;20&quot; y=&quot;220&quot; width=&quot;140&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 React 工作台 说明&quot; data-detail=&quot;ui&quot;/&gt;&lt;rect x=&quot;220&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 计划与路由 说明&quot; data-detail=&quot;main&quot;/&gt;&lt;rect x=&quot;450&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 ResearchAgent 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;rect x=&quot;690&quot; y=&quot;220&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 WriterAgent 说明&quot; data-detail=&quot;writer&quot;/&gt;&lt;rect x=&quot;940&quot; y=&quot;220&quot; width=&quot;150&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 引用报告 说明&quot; data-detail=&quot;report&quot;/&gt;&lt;rect x=&quot;450&quot; y=&quot;60&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 Milvus 说明&quot; data-detail=&quot;milvus&quot;/&gt;&lt;rect x=&quot;220&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 Checkpoint 说明&quot; data-detail=&quot;checkpoint&quot;/&gt;&lt;rect x=&quot;450&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 Redis Cache 说明&quot; data-detail=&quot;cache&quot;/&gt;&lt;rect x=&quot;690&quot; y=&quot;450&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 Search Providers 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;/svg&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Info Cards --&gt;
+    &lt;div class=&quot;cards&quot;&gt;
+
+    &lt;/div&gt;
+
+    &lt;!-- Footer --&gt;
+    &lt;p class=&quot;footer&quot;&gt;
+      Architecture diagram &amp;bull; Built with Archify&lt;span class=&quot;no-print&quot;&gt; &amp;bull; Press &lt;kbd&gt;T&lt;/kbd&gt; for theme and &lt;kbd&gt;E&lt;/kbd&gt; for export&lt;/span&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    /* ============================================================
+       Theme toggle — persists to localStorage, respects system pref
+       ============================================================ */
+    var Archify = {};
+
+    Archify.theme = (function () {
+      var STORAGE_KEY = &#x27;archify-theme&#x27;;
+      var html = document.documentElement;
+      var btn = document.getElementById(&#x27;btn-theme&#x27;);
+      var icon = document.getElementById(&#x27;theme-icon&#x27;);
+      var label = document.getElementById(&#x27;theme-label&#x27;);
+
+      // localStorage can throw (blocked cookies, sandboxed iframes); the whole
+      // script element dies on an uncaught error, so guard every access.
+      function readStored() {
+        try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; }
+      }
+      function writeStored(value) {
+        try { localStorage.setItem(STORAGE_KEY, value); } catch (_) {}
+      }
+      function urlOverride() {
+        // URL param wins (useful for deterministic screenshots / share links)
+        try {
+          var param = new URLSearchParams(window.location.search).get(&#x27;theme&#x27;);
+          if (param === &#x27;light&#x27; || param === &#x27;dark&#x27;) return param;
+        } catch (_) {}
+        return null;
+      }
+
+      function resolveInitial() {
+        var fromUrl = urlOverride();
+        if (fromUrl) return fromUrl;
+        var saved = readStored();
+        if (saved === &#x27;light&#x27; || saved === &#x27;dark&#x27;) return saved;
+        return window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;).matches ? &#x27;light&#x27; : &#x27;dark&#x27;;
+      }
+
+      function apply(theme) {
+        html.setAttribute(&#x27;data-theme&#x27;, theme);
+        icon.textContent = theme === &#x27;dark&#x27; ? &#x27;\u263E&#x27; : &#x27;\u263C&#x27;;
+        label.textContent = theme === &#x27;dark&#x27; ? &#x27;Dark&#x27; : &#x27;Light&#x27;;
+        btn.setAttribute(&#x27;aria-pressed&#x27;, theme === &#x27;light&#x27; ? &#x27;true&#x27; : &#x27;false&#x27;);
+      }
+
+      function toggle() {
+        var next = html.getAttribute(&#x27;data-theme&#x27;) === &#x27;dark&#x27; ? &#x27;light&#x27; : &#x27;dark&#x27;;
+        apply(next);
+        writeStored(next);
+      }
+
+      apply(resolveInitial());
+      btn.addEventListener(&#x27;click&#x27;, toggle);
+
+      // Follow live OS theme changes while the user has no explicit preference.
+      try {
+        var media = window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;);
+        var onChange = function (e) {
+          var saved = readStored();
+          if (urlOverride() || saved === &#x27;light&#x27; || saved === &#x27;dark&#x27;) return;
+          apply(e.matches ? &#x27;light&#x27; : &#x27;dark&#x27;);
+        };
+        if (media.addEventListener) media.addEventListener(&#x27;change&#x27;, onChange);
+        else if (media.addListener) media.addListener(onChange);
+      } catch (_) {}
+
+      return { toggle: toggle };
+    })();
+
+    /* ============================================================
+       Export — PNG / JPEG / WebP / SVG (download) and Copy PNG (clipboard)
+
+       Raster exports are always rendered at 4x source resolution for
+       maximum sharpness. The trick: we set the serialized SVG&#x27;s
+       `width`/`height` to viewBox * 4 so the browser rasterizes the
+       vectors at that resolution natively. drawImage then draws at
+       the image&#x27;s natural size (no upscaling = no blur).
+
+       JPEG/WebP paint the current theme&#x27;s background explicitly since
+       those formats have no alpha channel.
+       ============================================================ */
+    (function () {
+      var RASTER_SCALE = 4;
+
+      function diagramFilename() {
+        var title = (document.title || &#x27;diagram&#x27;)
+          .replace(/\s+Architecture(\s+Diagram)?$/i, &#x27;&#x27;)
+          .replace(/\s+Diagram$/i, &#x27;&#x27;)
+          .trim();
+        return title.replace(/[^a-z0-9_\-]+/gi, &#x27;-&#x27;)
+                    .toLowerCase()
+                    .replace(/^-+|-+$/g, &#x27;&#x27;) || &#x27;diagram&#x27;;
+      }
+
+      function currentBg() {
+        return getComputedStyle(document.body).backgroundColor || &#x27;#ffffff&#x27;;
+      }
+
+      /**
+       * Serialize the main SVG into a standalone document.
+       *
+       * Two modes:
+       * - Default (opts.autoTheme=false) — locks the serialized SVG to the
+       *   viewer&#x27;s current theme. Used by the raster pipeline
+       *   (PNG/JPEG/WebP/clipboard) because canvas rasterization needs
+       *   deterministic colors; a raster cannot react to
+       *   prefers-color-scheme after encoding.
+       * - autoTheme=true — emits BOTH dark and light variable sets plus a
+       *   `@media (prefers-color-scheme)` rule so the resulting SVG
+       *   self-themes when embedded in GitHub READMEs or other hosts that
+       *   expose a color scheme. Used for &quot;Download SVG&quot;.
+       */
+      function serializeSvg(scale, opts) {
+        // scale: integer multiplier for intrinsic SVG pixel dimensions used by
+        // the raster path. Defaults to 1 (natural size) for SVG download.
+        scale = scale || 1;
+        opts = opts || {};
+        var autoTheme = opts.autoTheme === true;
+
+        var svg = document.querySelector(&#x27;.diagram-container svg&#x27;);
+        var clone = svg.cloneNode(true);
+
+        var vb = svg.viewBox.baseVal;
+        // Scale width/height so the browser rasterizes the vectors at target
+        // resolution directly. viewBox stays unchanged so coordinates don&#x27;t
+        // shift. This is the key to sharp rasters — do NOT scale later via
+        // canvas upscaling.
+        clone.setAttribute(&#x27;width&#x27;, vb.width * scale);
+        clone.setAttribute(&#x27;height&#x27;, vb.height * scale);
+        clone.setAttribute(&#x27;xmlns&#x27;, &#x27;http://www.w3.org/2000/svg&#x27;);
+
+        // Only the SVG-relevant rules: semantic classes, markers, and the
+        // theme variable blocks. Toolbar/cards/print CSS can never apply
+        // inside a standalone SVG and would only bloat the export.
+        var hostStyle = (function () {
+          var out = [];
+          Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+            var rules;
+            try { rules = sheet.cssRules; } catch (_) { return; } // cross-origin
+            if (!rules) return;
+            Array.prototype.forEach.call(rules, function (rule) {
+              if (rule.type !== 1) return; // plain style rules only
+              var sel = rule.selectorText || &#x27;&#x27;;
+              if (/(^|,)\s*(svg|:root|\[data-theme|\.c-|\.t-|\.a-|\.m-)/.test(sel)) {
+                out.push(rule.cssText);
+              }
+            });
+          });
+          return out.join(&#x27;\n&#x27;);
+        })();
+
+        // Derive the variable list from the stylesheet so newly added theme
+        // variables can never be missed by the export pipeline again
+        // (--lane-fill/--lane-stroke once were).
+        var varNames = (function () {
+          var seen = {};
+          var names = [];
+          (hostStyle.match(/--[a-zA-Z0-9-]+(?=\s*:)/g) || []).forEach(function (n) {
+            if (!seen[n]) { seen[n] = true; names.push(n); }
+          });
+          return names;
+        })();
+
+        // Resolve the full variable set for a given data-theme via an
+        // off-DOM probe, independent of what the viewer is currently set to.
+        function resolveVars(themeAttr) {
+          var probe = document.createElement(&#x27;div&#x27;);
+          probe.setAttribute(&#x27;data-theme&#x27;, themeAttr);
+          probe.style.cssText = &#x27;position:absolute;width:0;height:0;visibility:hidden;&#x27;;
+          document.body.appendChild(probe);
+          try {
+            var c = getComputedStyle(probe);
+            return varNames.map(function (n) {
+              return n + &#x27;: &#x27; + c.getPropertyValue(n).trim() + &#x27;;&#x27;;
+            }).join(&#x27; &#x27;);
+          } finally {
+            document.body.removeChild(probe);
+          }
+        }
+
+        // Prepend a local()-only @font-face block for each weight so that the
+        // sandboxed image-rendering context used during PNG/JPEG/WebP export
+        // can find JetBrains Mono if the user has it installed locally, and
+        // falls through cleanly to the monospace stack otherwise. The usual
+        // Google-Fonts &lt;link&gt; in the host document is unreachable from the
+        // serialized SVG, so url()-sourced faces would just hang.
+        var fontFallback = [400, 500, 600, 700].map(function (w) {
+          return &quot;@font-face { font-family: &#x27;JetBrains Mono&#x27;; font-weight: &quot; + w +
+                 &quot;; src: local(&#x27;JetBrains Mono&#x27;), local(&#x27;JetBrainsMono-Regular&#x27;); }&quot;;
+        }).join(&#x27;\n&#x27;);
+
+        var style = document.createElementNS(&#x27;http://www.w3.org/2000/svg&#x27;, &#x27;style&#x27;);
+        var bgRect = document.createElementNS(&#x27;http://www.w3.org/2000/svg&#x27;, &#x27;rect&#x27;);
+        bgRect.setAttribute(&#x27;width&#x27;, &#x27;100%&#x27;);
+        bgRect.setAttribute(&#x27;height&#x27;, &#x27;100%&#x27;);
+
+        if (autoTheme) {
+          // Dual-theme SVG. Dark is the default (so hosts without
+          // prefers-color-scheme still render), light swaps in via media
+          // query, and svg[data-theme=&quot;...&quot;] still lets downstream
+          // consumers force a specific theme.
+          var darkVars = resolveVars(&#x27;dark&#x27;);
+          var lightVars = resolveVars(&#x27;light&#x27;);
+
+          style.textContent =
+            fontFallback + &quot;\n&quot; +
+            &quot;svg { font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace; }\n&quot; +
+            hostStyle + &quot;\n&quot; +
+            &quot;:root, svg { &quot; + darkVars + &quot; }\n&quot; +
+            &quot;@media (prefers-color-scheme: light) { :root, svg { &quot; + lightVars + &quot; } }\n&quot; +
+            &quot;svg[data-theme=\&quot;light\&quot;] { &quot; + lightVars + &quot; }\n&quot; +
+            &quot;svg[data-theme=\&quot;dark\&quot;] { &quot; + darkVars + &quot; }\n&quot; +
+            &quot;rect.c-bg-rect { fill: var(--bg); }\n&quot;;
+
+          // Don&#x27;t lock the serialized SVG to the viewer&#x27;s current theme.
+          clone.removeAttribute(&#x27;data-theme&#x27;);
+          // Background follows the CSS variable, not a fixed color, so it
+          // swaps with the media query.
+          bgRect.setAttribute(&#x27;class&#x27;, &#x27;c-bg-rect&#x27;);
+        } else {
+          // Raster path: lock to the viewer&#x27;s current theme.
+          var theme = document.documentElement.getAttribute(&#x27;data-theme&#x27;) || &#x27;dark&#x27;;
+          var themeHost = document.querySelector(&#x27;[data-theme=&quot;&#x27; + theme + &#x27;&quot;]&#x27;) || document.documentElement;
+          var computed = getComputedStyle(themeHost);
+          var vars = varNames.map(function (n) {
+            return n + &#x27;: &#x27; + computed.getPropertyValue(n).trim() + &#x27;;&#x27;;
+          }).join(&#x27; &#x27;);
+
+          // IMPORTANT: inject the resolved variables AFTER hostStyle,
+          // otherwise hostStyle&#x27;s &quot;:root, [data-theme=\&quot;dark\&quot;] { ... }&quot; rule
+          // overrides our chosen theme via later-in-cascade equal-specificity.
+          // Keep this order.
+          style.textContent =
+            fontFallback + &quot;\n&quot; +
+            &quot;svg { font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace; }\n&quot; +
+            hostStyle + &quot;\n&quot; +
+            &quot;:root, svg { &quot; + vars + &quot; }\n&quot;;
+
+          bgRect.setAttribute(&#x27;fill&#x27;, computed.getPropertyValue(&#x27;--bg&#x27;).trim() || &#x27;#ffffff&#x27;);
+        }
+
+        clone.insertBefore(style, clone.firstChild);
+        clone.insertBefore(bgRect, style.nextSibling);
+
+        return {
+          svgString: new XMLSerializer().serializeToString(clone),
+          width: vb.width * scale,
+          height: vb.height * scale
+        };
+      }
+
+      function download(blob, filename) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement(&#x27;a&#x27;);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      }
+
+      // Conservative upper bound on total canvas pixels. Older Safari on iOS
+      // silently produces a blank canvas above ~16 Mpx; Chrome / Firefox /
+      // desktop Safari are far higher but start failing on memory-constrained
+      // devices. We pick the largest integer scale in {4,3,2,1} whose target
+      // pixel count fits under this cap.
+      var MAX_CANVAS_PIXELS = 16 * 1024 * 1024;
+
+      function pickSafeScale(vbW, vbH) {
+        for (var s = RASTER_SCALE; s &gt;= 1; s--) {
+          if (vbW * s * vbH * s &lt;= MAX_CANVAS_PIXELS) return s;
+        }
+        return 1;
+      }
+
+      function rasterize(format) {
+        // Serialize at a safe scale (RASTER_SCALE=4 by default, reduced if the
+        // resulting canvas would exceed MAX_CANVAS_PIXELS). The SVG itself is
+        // rasterized at target resolution natively; drawImage draws at natural
+        // size — no upsampling blur.
+        var svg = document.querySelector(&#x27;.diagram-container svg&#x27;);
+        var vb = svg.viewBox.baseVal;
+        var scale = pickSafeScale(vb.width, vb.height);
+        var data = serializeSvg(scale);
+        var svgBlob = new Blob([data.svgString], { type: &#x27;image/svg+xml;charset=utf-8&#x27; });
+        var svgUrl = URL.createObjectURL(svgBlob);
+
+        return new Promise(function (resolve, reject) {
+          var img = new Image();
+          img.onload = function () {
+            var canvas = document.createElement(&#x27;canvas&#x27;);
+            canvas.width = data.width;
+            canvas.height = data.height;
+            var ctx = canvas.getContext(&#x27;2d&#x27;);
+            if (format === &#x27;jpeg&#x27;) {
+              ctx.fillStyle = currentBg();
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            // Draw at natural size — SVG was already rasterized at target res.
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(svgUrl);
+            var mime = format === &#x27;jpeg&#x27; ? &#x27;image/jpeg&#x27; :
+                       format === &#x27;webp&#x27; ? &#x27;image/webp&#x27; : &#x27;image/png&#x27;;
+            var quality = format === &#x27;png&#x27; ? undefined : 0.95;
+            canvas.toBlob(function (blob) {
+              if (!blob) reject(new Error(&#x27;toBlob returned null for &#x27; + format));
+              else resolve(blob);
+            }, mime, quality);
+          };
+          img.onerror = function (e) {
+            URL.revokeObjectURL(svgUrl);
+            reject(e);
+          };
+          img.src = svgUrl;
+        });
+      }
+
+      var menu = document.getElementById(&#x27;export-menu&#x27;);
+      var btn = document.getElementById(&#x27;btn-export&#x27;);
+      var items = function () {
+        return Array.prototype.slice.call(menu.querySelectorAll(&#x27;button[role=&quot;menuitem&quot;]&#x27;));
+      };
+
+      // ---- Clipboard support ----------------------------------------------
+      function canCopyImage() {
+        return typeof ClipboardItem !== &#x27;undefined&#x27; &amp;&amp;
+               navigator.clipboard &amp;&amp;
+               typeof navigator.clipboard.write === &#x27;function&#x27;;
+      }
+
+      // ---- Raster format detection ----------------------------------------
+      // canvas.toBlob(&#x27;image/webp&#x27;) silently returns a PNG on browsers without
+      // WebP encoding (older Safari), so detect explicitly.
+      function supports(format) {
+        if (format === &#x27;svg&#x27; || format === &#x27;png&#x27;) return true;
+        var mime = format === &#x27;jpeg&#x27; ? &#x27;image/jpeg&#x27; : &#x27;image/webp&#x27;;
+        try {
+          var c = document.createElement(&#x27;canvas&#x27;);
+          c.width = c.height = 2;
+          return c.toDataURL(mime).indexOf(&#x27;data:&#x27; + mime) === 0;
+        } catch (_) { return false; }
+      }
+
+      // Gray out unsupported items.
+      items().forEach(function (it) {
+        if (it.dataset.format &amp;&amp; !supports(it.dataset.format)) {
+          it.disabled = true;
+          it.title = &#x27;Not supported by this browser&#x27;;
+          it.style.opacity = &#x27;0.5&#x27;;
+        }
+        if (it.dataset.action === &#x27;copy&#x27; &amp;&amp; !canCopyImage()) {
+          it.disabled = true;
+          it.title = &#x27;Clipboard image write not supported by this browser&#x27;;
+          it.style.opacity = &#x27;0.5&#x27;;
+        }
+      });
+
+      // ---- Toast ----------------------------------------------------------
+      // A live region only announces CHANGES to an existing node, so the toast
+      // element is created once up front and updated in place.
+      var toastEl = document.createElement(&#x27;div&#x27;);
+      toastEl.className = &#x27;archify-toast&#x27;;
+      toastEl.setAttribute(&#x27;role&#x27;, &#x27;status&#x27;);
+      document.body.appendChild(toastEl);
+      var toastTimer = null;
+
+      function toast(msg) {
+        toastEl.textContent = &#x27;&#x27;;
+        requestAnimationFrame(function () {
+          toastEl.textContent = msg;
+          toastEl.classList.add(&#x27;show&#x27;);
+        });
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove(&#x27;show&#x27;); }, 1500);
+      }
+
+      function open(focusLast) {
+        menu.classList.add(&#x27;open&#x27;);
+        btn.setAttribute(&#x27;aria-expanded&#x27;, &#x27;true&#x27;);
+        var available = items().filter(function (i) { return !i.disabled; });
+        var target = focusLast ? available[available.length - 1] : available[0];
+        if (target) target.focus();
+      }
+      function close(focusTrigger) {
+        menu.classList.remove(&#x27;open&#x27;);
+        btn.setAttribute(&#x27;aria-expanded&#x27;, &#x27;false&#x27;);
+        if (focusTrigger) btn.focus();
+      }
+      function isOpen() { return menu.classList.contains(&#x27;open&#x27;); }
+
+      btn.addEventListener(&#x27;click&#x27;, function (e) {
+        e.stopPropagation();
+        if (isOpen()) close(false);
+        else open();
+      });
+      // APG menu-button pattern: ArrowDown/ArrowUp on the trigger opens the menu.
+      btn.addEventListener(&#x27;keydown&#x27;, function (e) {
+        if (e.key === &#x27;ArrowDown&#x27; || e.key === &#x27;ArrowUp&#x27;) {
+          e.preventDefault();
+          if (!isOpen()) open(e.key === &#x27;ArrowUp&#x27;);
+        }
+      });
+      document.addEventListener(&#x27;click&#x27;, function (e) {
+        if (!menu.contains(e.target) &amp;&amp; e.target !== btn) close(false);
+      });
+
+      // Keyboard navigation inside the menu.
+      //   Menu items: Up/Down, Home/End.
+      //   Esc closes + returns focus to trigger; Tab closes.
+      menu.addEventListener(&#x27;keydown&#x27;, function (e) {
+        if (e.key === &#x27;Escape&#x27;) { e.preventDefault(); close(true); return; }
+        if (e.key === &#x27;Tab&#x27;)    { close(false); return; }
+
+        var available = items().filter(function (i) { return !i.disabled; });
+        var current = available.indexOf(document.activeElement);
+        switch (e.key) {
+          case &#x27;ArrowDown&#x27;:
+            e.preventDefault();
+            if (available.length) available[(current + 1 + available.length) % available.length].focus();
+            break;
+          case &#x27;ArrowUp&#x27;:
+            e.preventDefault();
+            if (available.length) available[(current - 1 + available.length) % available.length].focus();
+            break;
+          case &#x27;Home&#x27;:
+            e.preventDefault();
+            if (available[0]) available[0].focus();
+            break;
+          case &#x27;End&#x27;:
+            e.preventDefault();
+            if (available.length) available[available.length - 1].focus();
+            break;
+        }
+      });
+
+      function runExport(format) {
+        var base = diagramFilename();
+        close(true);
+        return (format === &#x27;svg&#x27;
+          ? Promise.resolve(serializeSvg(1, { autoTheme: true })).then(function (d) {
+              download(new Blob([d.svgString], { type: &#x27;image/svg+xml;charset=utf-8&#x27; }), base + &#x27;.svg&#x27;);
+            })
+          : rasterize(format).then(function (blob) {
+              download(blob, base + &#x27;.&#x27; + format);
+            })
+        ).catch(function (err) {
+          console.error(err);
+          alert(&#x27;Export failed: &#x27; + (err &amp;&amp; err.message ? err.message : format));
+        });
+      }
+
+      function runCopy() {
+        close(true);
+        if (!canCopyImage()) {
+          alert(&#x27;Clipboard image write not supported in this browser.&#x27;);
+          return;
+        }
+        // WebKit requires ClipboardItem to be constructed synchronously inside
+        // the user gesture — pass the pending Promise&lt;Blob&gt; as the item value.
+        // Browsers that reject promise values throw synchronously; fall back
+        // to awaiting the blob first (works in Chromium/Firefox).
+        var blobPromise = rasterize(&#x27;png&#x27;);
+        var writePromise;
+        try {
+          writePromise = navigator.clipboard.write([new ClipboardItem({ &#x27;image/png&#x27;: blobPromise })]);
+        } catch (_) {
+          writePromise = blobPromise.then(function (blob) {
+            return navigator.clipboard.write([new ClipboardItem({ &#x27;image/png&#x27;: blob })]);
+          });
+        }
+        return writePromise.then(function () {
+          toast(&#x27;Copied PNG to clipboard&#x27;);
+        }).catch(function (err) {
+          console.error(err);
+          alert(&#x27;Copy failed: &#x27; + (err &amp;&amp; err.message ? err.message : &#x27;unknown&#x27;));
+        });
+      }
+
+      menu.addEventListener(&#x27;click&#x27;, function (e) {
+        var copyBtn = e.target.closest(&#x27;button[data-action=&quot;copy&quot;]&#x27;);
+        if (copyBtn &amp;&amp; !copyBtn.disabled) { runCopy(); return; }
+
+        var formatBtn = e.target.closest(&#x27;button[data-format]&#x27;);
+        if (formatBtn &amp;&amp; !formatBtn.disabled) { runExport(formatBtn.dataset.format); }
+      });
+
+      Archify.exportMenu = { open: open, close: close, isOpen: isOpen, run: runExport };
+
+      // Auto-open on page load for demo/screenshot purposes: ?openExport=1
+      // Wait for fonts (so the menu doesn&#x27;t flash before typography lands)
+      // and paint before opening. Fallback timeout for browsers without the
+      // Font Loading API.
+      try {
+        if (new URLSearchParams(window.location.search).get(&#x27;openExport&#x27;) === &#x27;1&#x27;) {
+          var openWhenReady = function () {
+            requestAnimationFrame(function () { requestAnimationFrame(open); });
+          };
+          if (document.fonts &amp;&amp; document.fonts.ready) {
+            document.fonts.ready.then(openWhenReady);
+          } else {
+            setTimeout(openWhenReady, 200);
+          }
+        }
+      } catch (_) {}
+    })();
+
+    /* ============================================================
+       Global keyboard shortcuts
+         T -&gt; toggle theme
+         E -&gt; open export menu
+       Ignored when focus is inside an input/textarea/contenteditable.
+       ============================================================ */
+    document.addEventListener(&#x27;keydown&#x27;, function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var t = e.target;
+      if (t &amp;&amp; (t.tagName === &#x27;INPUT&#x27; || t.tagName === &#x27;TEXTAREA&#x27; || t.isContentEditable)) return;
+      if (e.key === &#x27;t&#x27; || e.key === &#x27;T&#x27;) {
+        e.preventDefault();
+        Archify.theme.toggle();
+      } else if (e.key === &#x27;e&#x27; || e.key === &#x27;E&#x27;) {
+        e.preventDefault();
+        if (!Archify.exportMenu.isOpen()) Archify.exportMenu.open();
+      }
+    });
+  &lt;/script&gt;
+&lt;script&gt;document.querySelectorAll(&#x27;[data-detail]&#x27;).forEach(n=&gt;{function choose(){document.querySelectorAll(&#x27;.node-hit&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));n.classList.add(&#x27;selected&#x27;);parent.postMessage({type:&#x27;review-node&#x27;,id:n.dataset.detail},&#x27;*&#x27;)}n.addEventListener(&#x27;click&#x27;,choose);n.addEventListener(&#x27;keydown&#x27;,e=&gt;{if(e.key===&#x27;Enter&#x27;||e.key===&#x27; &#x27;){e.preventDefault();choose()}})});function resize(){parent.postMessage({type:&#x27;review-height&#x27;,height:document.body.scrollHeight},&#x27;*&#x27;)}new ResizeObserver(resize).observe(document.body);window.addEventListener(&#x27;load&#x27;,resize);&lt;/script&gt;&lt;/body&gt;
+&lt;/html&gt;
+" loading="eager"></iframe></div><div class="graph-pane" id="graph-execution" hidden><iframe title="执行图 · 分支、并发与反馈环" class="graph-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot; data-theme=&quot;dark&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;meta name=&quot;generator&quot; content=&quot;archify 2.10.0&quot;&gt;
+  &lt;title&gt;执行图 · 分支、并发与反馈环 Diagram&lt;/title&gt;
+  &lt;script&gt;
+    // Resolve the theme before first paint so light-preference users don&#x27;t
+    // see a dark flash. The toolbar script below re-applies with UI state.
+    (function () {
+      try {
+        var theme = null;
+        try {
+          var param = new URLSearchParams(window.location.search).get(&#x27;theme&#x27;);
+          if (param === &#x27;light&#x27; || param === &#x27;dark&#x27;) theme = param;
+        } catch (_) {}
+        if (!theme) {
+          try { theme = localStorage.getItem(&#x27;archify-theme&#x27;); } catch (_) {}
+        }
+        if (theme !== &#x27;light&#x27; &amp;&amp; theme !== &#x27;dark&#x27;) {
+          theme = window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;).matches ? &#x27;light&#x27; : &#x27;dark&#x27;;
+        }
+        document.documentElement.setAttribute(&#x27;data-theme&#x27;, theme);
+      } catch (_) {}
+    })();
+  &lt;/script&gt;
+  &lt;!-- Async font load: a blackholed network must not block first paint.
+       The body font stack falls back to system monospace until it lands. --&gt;
+
+
+  &lt;noscript&gt;
+
+  &lt;/noscript&gt;
+  &lt;style&gt;
+    /* ==========================================================
+       THEME VARIABLES — switch by toggling [data-theme] on &lt;html&gt;
+       ========================================================== */
+    :root,
+    [data-theme=&quot;dark&quot;] {
+      --bg: #020617;
+      --grid: #1e293b;
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+      /* UI chrome (menu hints, footer) needs more contrast than SVG .t-dim accents */
+      --text-faint: #7d8da1;
+
+      --panel: rgba(15, 23, 42, 0.5);
+      --panel-border: #1e293b;
+      --lane-fill: rgba(15, 23, 42, 0.22);
+      --lane-stroke: #334155;
+
+      --arrow: #64748b;
+      --arrow-emphasis: #34d399;
+
+      /* Opaque mask color used behind semi-transparent component fills
+         so the arrows drawn underneath are properly hidden. */
+      --mask: #0f172a;
+
+      --frontend-fill:    rgba(8, 51, 68, 0.4);
+      --frontend-stroke:  #22d3ee;
+      --backend-fill:     rgba(6, 78, 59, 0.4);
+      --backend-stroke:   #34d399;
+      --database-fill:    rgba(76, 29, 149, 0.4);
+      --database-stroke:  #a78bfa;
+      --cloud-fill:       rgba(120, 53, 15, 0.3);
+      --cloud-stroke:     #fbbf24;
+      --security-fill:    rgba(136, 19, 55, 0.4);
+      --security-stroke:  #fb7185;
+      --messagebus-fill:  rgba(251, 146, 60, 0.3);
+      --messagebus-stroke:#fb923c;
+      --external-fill:    rgba(30, 41, 59, 0.5);
+      --external-stroke:  #94a3b8;
+
+      --toolbar-bg:       rgba(15, 23, 42, 0.8);
+      --toolbar-border:   #334155;
+      --toolbar-text:     #e2e8f0;
+      --toolbar-hover:    rgba(15, 23, 42, 0.95);
+      --toolbar-menu-bg:  #0f172a;
+    }
+
+    [data-theme=&quot;light&quot;] {
+      --bg: #f8fafc;
+      --grid: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --text-faint: #64748b;
+
+      --panel: #ffffff;
+      --panel-border: #e2e8f0;
+      --lane-fill: rgba(248, 250, 252, 0.65);
+      --lane-stroke: #cbd5e1;
+
+      --arrow: #94a3b8;
+      --arrow-emphasis: #059669;
+
+      --mask: #ffffff;
+
+      --frontend-fill:    rgba(34, 211, 238, 0.15);
+      --frontend-stroke:  #0891b2;
+      --backend-fill:     rgba(52, 211, 153, 0.18);
+      --backend-stroke:   #059669;
+      --database-fill:    rgba(167, 139, 250, 0.2);
+      --database-stroke:  #7c3aed;
+      --cloud-fill:       rgba(251, 191, 36, 0.18);
+      --cloud-stroke:     #d97706;
+      --security-fill:    rgba(251, 113, 133, 0.15);
+      --security-stroke:  #e11d48;
+      --messagebus-fill:  rgba(251, 146, 60, 0.15);
+      --messagebus-stroke:#ea580c;
+      --external-fill:    rgba(148, 163, 184, 0.18);
+      --external-stroke:  #64748b;
+
+      --toolbar-bg:       rgba(255, 255, 255, 0.92);
+      --toolbar-border:   #cbd5e1;
+      --toolbar-text:     #334155;
+      --toolbar-hover:    #ffffff;
+      --toolbar-menu-bg:  #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace;
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 2rem;
+      color: var(--text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    .header { margin-bottom: 2rem; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--frontend-stroke);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: var(--panel);
+      border-radius: 1rem;
+      border: 1px solid var(--panel-border);
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: min(900px, 100%);
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: 0.75rem;
+      border: 1px solid var(--panel-border);
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan     { background: var(--frontend-stroke); }
+    .card-dot.emerald  { background: var(--backend-stroke); }
+    .card-dot.violet   { background: var(--database-stroke); }
+    .card-dot.amber    { background: var(--cloud-stroke); }
+    .card-dot.rose     { background: var(--security-stroke); }
+    .card-dot.orange   { background: var(--messagebus-stroke); }
+    .card-dot.slate    { background: var(--external-stroke); }
+
+    .card h3 { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+
+    .card ul {
+      list-style: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .card li { margin-bottom: 0.375rem; }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--text-faint);
+      font-size: 0.75rem;
+    }
+
+    /* ==========================================================
+       Print stylesheet — hide interactive controls, force light,
+       drop the grid so the diagram doesn&#x27;t waste ink, use landscape
+       so wide diagrams fit, pack summary cards into 2 columns to
+       avoid an orphan card on a trailing page.
+       ========================================================== */
+    @page { size: landscape; margin: 1.5cm; }
+
+    @media print {
+      /* Force the FULL light palette — including component fills/strokes and
+         lane/arrow colors — so printing from dark theme doesn&#x27;t put neon
+         strokes and translucent dark fills on white paper. */
+      :root, [data-theme=&quot;dark&quot;], [data-theme=&quot;light&quot;] {
+        --bg: #ffffff;
+        --grid: transparent;
+        --panel: #ffffff;
+        --panel-border: #e2e8f0;
+        --text: #0f172a;
+        --text-muted: #475569;
+        --text-dim: #94a3b8;
+        --text-faint: #64748b;
+        --mask: #ffffff;
+        --lane-fill: rgba(248, 250, 252, 0.65);
+        --lane-stroke: #cbd5e1;
+        --arrow: #94a3b8;
+        --arrow-emphasis: #059669;
+        --frontend-fill:    rgba(34, 211, 238, 0.15);
+        --frontend-stroke:  #0891b2;
+        --backend-fill:     rgba(52, 211, 153, 0.18);
+        --backend-stroke:   #059669;
+        --database-fill:    rgba(167, 139, 250, 0.2);
+        --database-stroke:  #7c3aed;
+        --cloud-fill:       rgba(251, 191, 36, 0.18);
+        --cloud-stroke:     #d97706;
+        --security-fill:    rgba(251, 113, 133, 0.15);
+        --security-stroke:  #e11d48;
+        --messagebus-fill:  rgba(251, 146, 60, 0.15);
+        --messagebus-stroke:#ea580c;
+        --external-fill:    rgba(148, 163, 184, 0.18);
+        --external-stroke:  #64748b;
+      }
+      body { background: #ffffff !important; padding: 0; }
+      .container { max-width: none; }
+      .toolbar, .archify-toast, .no-print { display: none !important; }
+      .diagram-container, .card { box-shadow: none; border-color: #e2e8f0; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      /* Ensure elements break sensibly across pages */
+      .card { break-inside: avoid; page-break-inside: avoid; }
+      .diagram-container { break-inside: avoid; page-break-inside: avoid; }
+      h1, .subtitle { color: #0f172a; }
+    }
+
+    /* ==========================================================
+       TOOLBAR (theme toggle + export menu)
+       ========================================================== */
+    .toolbar {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    .toolbar button {
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      border: 1px solid var(--toolbar-border);
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.15s, border-color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .toolbar button:hover {
+      background: var(--toolbar-hover);
+      border-color: var(--arrow);
+    }
+    .toolbar button:focus-visible {
+      outline: 2px solid var(--frontend-stroke);
+      outline-offset: 2px;
+    }
+    .toolbar .export-wrap { position: relative; }
+    .toolbar .export-menu {
+      position: absolute;
+      top: calc(100% + 0.375rem);
+      right: 0;
+      background: var(--toolbar-menu-bg);
+      border: 1px solid var(--toolbar-border);
+      border-radius: 0.5rem;
+      padding: 0.375rem;
+      min-width: 160px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .toolbar .export-menu.open { display: flex; }
+    .toolbar .export-menu button {
+      background: transparent;
+      border: 0;
+      justify-content: space-between;
+      width: 100%;
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+    }
+    .toolbar .export-menu button:hover {
+      background: var(--toolbar-hover);
+    }
+    .toolbar .export-menu .hint {
+      color: var(--text-faint);
+      font-size: 0.625rem;
+    }
+    .toolbar .export-menu hr {
+      border: 0;
+      border-top: 1px solid var(--toolbar-border);
+      margin: 0.25rem 0.375rem;
+      opacity: 0.5;
+    }
+
+    /* Toast — brief feedback for actions like &quot;copied&quot; */
+    .archify-toast {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: var(--toolbar-menu-bg);
+      color: var(--text);
+      border: 1px solid var(--toolbar-border);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .archify-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 1rem; }
+      .toolbar {
+        position: static;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+      }
+      .header { margin-bottom: 1.25rem; }
+      .header-row {
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+      h1 {
+        font-size: 1.25rem;
+        line-height: 1.25;
+      }
+      .subtitle {
+        margin-left: 0;
+        font-size: 0.8125rem;
+        line-height: 1.55;
+      }
+      .diagram-container {
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+      }
+      .cards {
+        grid-template-columns: 1fr;
+        margin-top: 1rem;
+      }
+    }
+
+    /* ==========================================================
+       SVG SEMANTIC CLASSES — use these instead of inline fill/stroke
+       ========================================================== */
+    .c-grid       { stroke: var(--grid); fill: none; }
+    .c-mask       { fill: var(--mask); stroke: none; }
+
+    .c-frontend   { fill: var(--frontend-fill);   stroke: var(--frontend-stroke); }
+    .c-backend    { fill: var(--backend-fill);    stroke: var(--backend-stroke); }
+    .c-database   { fill: var(--database-fill);   stroke: var(--database-stroke); }
+    .c-cloud      { fill: var(--cloud-fill);      stroke: var(--cloud-stroke); }
+    .c-security   { fill: var(--security-fill);   stroke: var(--security-stroke); }
+    .c-messagebus { fill: var(--messagebus-fill); stroke: var(--messagebus-stroke); }
+    .c-external   { fill: var(--external-fill);   stroke: var(--external-stroke); }
+
+    /* Text helpers */
+    .t-primary { fill: var(--text); }
+    .t-muted   { fill: var(--text-muted); }
+    .t-dim     { fill: var(--text-dim); }
+    .t-frontend   { fill: var(--frontend-stroke); }
+    .t-backend    { fill: var(--backend-stroke); }
+    .t-database   { fill: var(--database-stroke); }
+    .t-cloud      { fill: var(--cloud-stroke); }
+    .t-security   { fill: var(--security-stroke); }
+    .t-messagebus { fill: var(--messagebus-stroke); }
+    .t-external   { fill: var(--external-stroke); }
+
+    /* Arrows */
+    .a-default   { stroke: var(--arrow); fill: none; }
+    .a-emphasis  { stroke: var(--arrow-emphasis); fill: none; }
+    .a-security  { stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5; }
+    .a-dashed    { stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4; }
+
+    /* Arrowhead markers reference these */
+    .m-default   { fill: var(--arrow); }
+    .m-emphasis  { fill: var(--arrow-emphasis); }
+    .m-security  { fill: var(--security-stroke); }
+    .m-dashed    { fill: var(--database-stroke); }
+
+    /* Dashed boundary variants */
+    .c-security-group { fill: transparent; stroke: var(--security-stroke); stroke-dasharray: 4,4; }
+    .c-region         { fill: rgba(251, 191, 36, 0.05); stroke: var(--cloud-stroke); stroke-dasharray: 8,4; }
+    .c-lane           { fill: var(--lane-fill); stroke: var(--lane-stroke); stroke-dasharray: 6,6; }
+
+    /* Optional trace animation, enabled only by meta.animation = &quot;trace&quot;.
+       Static diagrams do not carry data-animation and render exactly as before. */
+    svg[data-animation=&quot;trace&quot;] [data-animate=&quot;edge&quot;] {
+      stroke-dasharray: 10 8;
+      stroke-dashoffset: 54;
+      animation: archify-edge-flow 2.4s linear infinite;
+      animation-delay: calc(var(--step, 0) * 160ms);
+    }
+    svg[data-animation=&quot;trace&quot;] [data-animate=&quot;node&quot;] {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: archify-node-pulse 3.6s ease-in-out infinite;
+      animation-delay: calc(var(--step, 0) * 160ms);
+    }
+    @keyframes archify-edge-flow {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes archify-node-pulse {
+      0%, 72%, 100% { filter: none; stroke-width: 1.5; }
+      18%, 36% {
+        filter: drop-shadow(0 0 8px var(--arrow-emphasis));
+        stroke-width: 2.4;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      svg[data-animation=&quot;trace&quot;] [data-animate] {
+        animation: none !important;
+        stroke-dashoffset: 0;
+      }
+    }
+  &lt;/style&gt;
+&lt;style&gt;body{padding:60px 16px 15px;min-height:0}.container{max-width:none}.header{display:none}.diagram-container{padding:10px;border:0;border-radius:0}.cards,.footer{display:none}.pulse-dot{animation:none}svg{min-width:850px}.node-hit{fill:transparent;stroke:none;cursor:pointer}.node-hit:hover,.node-hit:focus{stroke:var(--frontend-stroke);stroke-width:3;outline:none}.node-hit.selected{stroke:var(--frontend-stroke);stroke-width:3}svg text{font-family:-apple-system,&quot;PingFang SC&quot;,sans-serif}.toolbar{position:absolute;top:12px;right:16px}@media print{body{padding:0}svg{min-width:0}}&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- Toolbar: theme toggle + export menu (present on every generated diagram)
+       Keyboard: T toggles theme, E opens export menu (when no input focused) --&gt;
+  &lt;div class=&quot;toolbar&quot; role=&quot;toolbar&quot; aria-label=&quot;Diagram actions&quot;&gt;
+    &lt;button id=&quot;btn-theme&quot; type=&quot;button&quot;
+            title=&quot;Toggle theme (T)&quot;
+            aria-label=&quot;Toggle color theme&quot;
+            aria-pressed=&quot;false&quot;&gt;
+      &lt;span id=&quot;theme-icon&quot; aria-hidden=&quot;true&quot;&gt;&amp;#9790;&lt;/span&gt;
+      &lt;span id=&quot;theme-label&quot;&gt;Dark&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;div class=&quot;export-wrap&quot;&gt;
+      &lt;button id=&quot;btn-export&quot; type=&quot;button&quot;
+              title=&quot;Export diagram (E)&quot;
+              aria-label=&quot;Export diagram&quot;
+              aria-haspopup=&quot;menu&quot;
+              aria-expanded=&quot;false&quot;
+              aria-controls=&quot;export-menu&quot;&gt;
+        Export &lt;span aria-hidden=&quot;true&quot;&gt;&amp;#9662;&lt;/span&gt;
+      &lt;/button&gt;
+      &lt;div class=&quot;export-menu&quot; id=&quot;export-menu&quot; role=&quot;menu&quot; aria-label=&quot;Export&quot;&gt;
+        &lt;button data-action=&quot;copy&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Copy to clipboard &lt;span class=&quot;hint&quot;&gt;PNG&lt;/span&gt;&lt;/button&gt;
+        &lt;hr role=&quot;separator&quot;&gt;
+        &lt;button data-format=&quot;png&quot;   type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download PNG&lt;/button&gt;
+        &lt;button data-format=&quot;jpeg&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download JPEG&lt;/button&gt;
+        &lt;button data-format=&quot;webp&quot;  type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download WebP&lt;/button&gt;
+        &lt;hr role=&quot;separator&quot;&gt;
+        &lt;button data-format=&quot;svg&quot;   type=&quot;button&quot; role=&quot;menuitem&quot; tabindex=&quot;-1&quot;&gt;Download SVG &lt;span class=&quot;hint&quot;&gt;vector&lt;/span&gt;&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;!-- Header --&gt;
+    &lt;div class=&quot;header&quot;&gt;
+      &lt;div class=&quot;header-row&quot;&gt;
+        &lt;div class=&quot;pulse-dot&quot;&gt;&lt;/div&gt;
+        &lt;h1&gt;执行图 · 分支、并发与反馈环&lt;/h1&gt;
+      &lt;/div&gt;
+      &lt;p class=&quot;subtitle&quot;&gt;蓝色为主执行路径；粉色虚线为等待与回退；灰色虚线为状态流转&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Main Diagram --&gt;
+    &lt;div class=&quot;diagram-container&quot;&gt;
+      &lt;svg viewBox=&quot;0 0 1160 970&quot; role=&quot;img&quot; aria-label=&quot;执行图 · 分支、并发与反馈环 — 蓝色为主执行路径；粉色虚线为等待与回退；灰色虚线为状态流转 (architecture diagram)&quot;&gt;
+        &lt;!-- Definitions --&gt;
+        &lt;defs&gt;
+          &lt;marker id=&quot;arrowhead&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-default&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-emphasis&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-emphasis&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-security&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-security&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;marker id=&quot;arrowhead-dashed&quot; markerWidth=&quot;10&quot; markerHeight=&quot;7&quot; refX=&quot;9&quot; refY=&quot;3.5&quot; orient=&quot;auto&quot;&gt;
+            &lt;polygon points=&quot;0 0, 10 3.5, 0 7&quot; class=&quot;m-dashed&quot; /&gt;
+          &lt;/marker&gt;
+          &lt;pattern id=&quot;grid&quot; width=&quot;40&quot; height=&quot;40&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+            &lt;path d=&quot;M 40 0 L 0 0 0 40&quot; class=&quot;c-grid&quot; stroke-width=&quot;0.5&quot;/&gt;
+          &lt;/pattern&gt;
+        &lt;/defs&gt;
+
+        &lt;!-- Background Grid --&gt;
+        &lt;rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;url(#grid)&quot; /&gt;
+
+        &lt;!-- Boundaries (behind everything) --&gt;
+        &lt;rect x=&quot;30&quot; y=&quot;70&quot; width=&quot;1010&quot; height=&quot;114&quot; rx=&quot;12&quot; class=&quot;c-region&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;38&quot; y=&quot;88&quot; class=&quot;t-cloud&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;主图 · 人工确认与重规划&lt;/text&gt;
+
+        &lt;rect x=&quot;30&quot; y=&quot;330&quot; width=&quot;1010&quot; height=&quot;114&quot; rx=&quot;12&quot; class=&quot;c-region&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;38&quot; y=&quot;348&quot; class=&quot;t-cloud&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;ResearchAgent 子图 · 查询、并发检索与证据循环&lt;/text&gt;
+
+        &lt;rect x=&quot;30&quot; y=&quot;620&quot; width=&quot;1010&quot; height=&quot;114&quot; rx=&quot;12&quot; class=&quot;c-region&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;38&quot; y=&quot;638&quot; class=&quot;t-cloud&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;WriterAgent 子图 · 草稿、审查与有限修订&lt;/text&gt;
+
+        &lt;!-- Connection paths (before components for correct z-order) --&gt;
+        &lt;path d=&quot;M 220 132 L 320 132&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 480 132 L 580 132&quot; class=&quot;a-dashed&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-dashed)&quot;/&gt;
+        &lt;path d=&quot;M 740 132 L 850 132&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 930 100 L 930 43 Q 930 35 922 35 L 148 35 Q 140 35 140 43 L 140 100&quot; class=&quot;a-security&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-security)&quot;/&gt;
+        &lt;path d=&quot;M 660 164 L 660 237 Q 660 245 652 245 L 28 245 Q 20 245 20 253 L 20 384 Q 20 392 28 392 L 60 392&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 220 392 L 320 392&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 480 392 L 580 392&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 740 392 L 850 392&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 660 424 L 660 474 Q 660 482 652 482 L 408 482 Q 400 482 400 474 L 400 424&quot; class=&quot;a-security&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-security)&quot;/&gt;
+        &lt;path d=&quot;M 930 424 L 930 547 Q 930 555 922 555 L 28 555 Q 20 555 20 563 L 20 674 Q 20 682 28 682 L 60 682&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 220 682 L 320 682&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 480 682 L 580 682&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 740 682 L 850 682&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+        &lt;path d=&quot;M 660 714 L 660 762 Q 660 770 652 770 L 408 770 Q 400 770 400 762 L 400 714&quot; class=&quot;a-security&quot; stroke-width=&quot;1.5&quot; marker-end=&quot;url(#arrowhead-security)&quot;/&gt;
+        &lt;path d=&quot;M 930 714 L 930 810&quot; class=&quot;a-emphasis&quot; stroke-width=&quot;1.8&quot; marker-end=&quot;url(#arrowhead-emphasis)&quot;/&gt;
+
+        &lt;!-- Components --&gt;
+        &lt;rect x=&quot;60&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;60&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;140&quot; y=&quot;130&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;generate_plan&lt;/text&gt;
+        &lt;text x=&quot;140&quot; y=&quot;146&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;生成计划&lt;/text&gt;
+
+        &lt;rect x=&quot;320&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;320&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;400&quot; y=&quot;130&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;等待人工确认&lt;/text&gt;
+        &lt;text x=&quot;400&quot; y=&quot;146&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;再次提交确认或反馈&lt;/text&gt;
+
+        &lt;rect x=&quot;580&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;580&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;660&quot; y=&quot;130&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;confirm_plan&lt;/text&gt;
+        &lt;text x=&quot;660&quot; y=&quot;146&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;评估确认 / 新鲜度&lt;/text&gt;
+
+        &lt;rect x=&quot;850&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;850&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;930&quot; y=&quot;130&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;replan&lt;/text&gt;
+        &lt;text x=&quot;930&quot; y=&quot;146&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;plan_status = unconfirmed&lt;/text&gt;
+
+        &lt;rect x=&quot;60&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;60&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;140&quot; y=&quot;390&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;generate_queries&lt;/text&gt;
+        &lt;text x=&quot;140&quot; y=&quot;406&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;已有事实 + 查询去重&lt;/text&gt;
+
+        &lt;rect x=&quot;320&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;320&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-external&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;400&quot; y=&quot;390&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;web_search × N&lt;/text&gt;
+        &lt;text x=&quot;400&quot; y=&quot;406&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;Send fan-out / 摘要 / 来源&lt;/text&gt;
+
+        &lt;rect x=&quot;580&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;580&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;660&quot; y=&quot;390&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;critique&lt;/text&gt;
+        &lt;text x=&quot;660&quot; y=&quot;406&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;判断证据缺口&lt;/text&gt;
+
+        &lt;rect x=&quot;850&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;850&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;930&quot; y=&quot;390&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;退出研究子图&lt;/text&gt;
+        &lt;text x=&quot;930&quot; y=&quot;406&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;返回增量状态&lt;/text&gt;
+
+        &lt;rect x=&quot;60&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;60&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;140&quot; y=&quot;680&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;outline&lt;/text&gt;
+        &lt;text x=&quot;140&quot; y=&quot;696&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;生成大纲&lt;/text&gt;
+
+        &lt;rect x=&quot;320&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;320&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;400&quot; y=&quot;680&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;draft&lt;/text&gt;
+        &lt;text x=&quot;400&quot; y=&quot;696&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;草稿 / 根据反馈修订&lt;/text&gt;
+
+        &lt;rect x=&quot;580&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;580&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;660&quot; y=&quot;680&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;critic_review&lt;/text&gt;
+        &lt;text x=&quot;660&quot; y=&quot;696&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;审稿 / 就绪标记&lt;/text&gt;
+
+        &lt;rect x=&quot;850&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;850&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-backend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;930&quot; y=&quot;680&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;cite_and_polish&lt;/text&gt;
+        &lt;text x=&quot;930&quot; y=&quot;696&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;引用归一化 / 校验 / 回退&lt;/text&gt;
+
+        &lt;rect x=&quot;850&quot; y=&quot;810&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;rect x=&quot;850&quot; y=&quot;810&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1.5&quot;/&gt;
+        &lt;text x=&quot;930&quot; y=&quot;840&quot; class=&quot;t-primary&quot; font-size=&quot;15&quot; font-weight=&quot;600&quot; text-anchor=&quot;middle&quot;&gt;END · 报告&lt;/text&gt;
+        &lt;text x=&quot;930&quot; y=&quot;856&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;终稿或已有材料兜底&lt;/text&gt;
+
+        &lt;!-- Connection labels --&gt;
+        &lt;rect x=&quot;250.6&quot; y=&quot;112&quot; width=&quot;38.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;270&quot; y=&quot;122&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;未确认&lt;/text&gt;
+        &lt;rect x=&quot;505.8&quot; y=&quot;112&quot; width=&quot;48.4&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;122&quot; class=&quot;t-messagebus&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;再次提交&lt;/text&gt;
+        &lt;rect x=&quot;775.6&quot; y=&quot;112&quot; width=&quot;38.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;795&quot; y=&quot;122&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;不满足&lt;/text&gt;
+        &lt;rect x=&quot;500.8&quot; y=&quot;20&quot; width=&quot;48.4&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;525&quot; y=&quot;30&quot; class=&quot;t-security&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;重新生成&lt;/text&gt;
+        &lt;rect x=&quot;313.4&quot; y=&quot;227&quot; width=&quot;149.2&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;388&quot; y=&quot;237&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;确认通过 → 调用 ResearchAgent&lt;/text&gt;
+        &lt;rect x=&quot;229&quot; y=&quot;372&quot; width=&quot;82&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;270&quot; y=&quot;382&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;去重 / 配额裁剪&lt;/text&gt;
+        &lt;rect x=&quot;496.2&quot; y=&quot;372&quot; width=&quot;67.6&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;382&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;并行结果汇合&lt;/text&gt;
+        &lt;rect x=&quot;744.4&quot; y=&quot;372&quot; width=&quot;101.2&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;795&quot; y=&quot;382&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;足够 / 达到停止条件&lt;/text&gt;
+        &lt;rect x=&quot;474.6&quot; y=&quot;463&quot; width=&quot;110.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;473&quot; class=&quot;t-security&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;不足 → follow-up 查询&lt;/text&gt;
+        &lt;rect x=&quot;376&quot; y=&quot;536&quot; width=&quot;178&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;465&quot; y=&quot;546&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;主图接收研究结果 → 调用 WriterAgent&lt;/text&gt;
+
+
+        &lt;rect x=&quot;749.2&quot; y=&quot;662&quot; width=&quot;91.6&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;795&quot; y=&quot;672&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;就绪 / 修订达上限&lt;/text&gt;
+        &lt;rect x=&quot;474.6&quot; y=&quot;751&quot; width=&quot;110.8&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;530&quot; y=&quot;761&quot; class=&quot;t-security&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;继续修订 + 上一版草稿&lt;/text&gt;
+        &lt;rect x=&quot;981&quot; y=&quot;765&quot; width=&quot;58&quot; height=&quot;14&quot; rx=&quot;3&quot; class=&quot;c-mask&quot;/&gt;
+        &lt;text x=&quot;1010&quot; y=&quot;775&quot; class=&quot;t-backend&quot; font-size=&quot;11&quot; text-anchor=&quot;middle&quot;&gt;主图 → END&lt;/text&gt;
+
+        &lt;!-- Legend --&gt;
+        &lt;text x=&quot;40&quot; y=&quot;941&quot; class=&quot;t-primary&quot; font-size=&quot;11&quot; font-weight=&quot;600&quot;&gt;Legend&lt;/text&gt;
+        &lt;rect x=&quot;40&quot; y=&quot;946&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-backend&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;60&quot; y=&quot;954&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;Backend&lt;/text&gt;
+        &lt;rect x=&quot;133&quot; y=&quot;946&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-frontend&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;153&quot; y=&quot;954&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;Frontend&lt;/text&gt;
+        &lt;rect x=&quot;231&quot; y=&quot;946&quot; width=&quot;14&quot; height=&quot;9&quot; rx=&quot;2&quot; class=&quot;c-external&quot; stroke-width=&quot;1&quot;/&gt;
+        &lt;text x=&quot;251&quot; y=&quot;954&quot; class=&quot;t-muted&quot; font-size=&quot;11&quot;&gt;External&lt;/text&gt;
+      &lt;rect x=&quot;60&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 generate_plan 说明&quot; data-detail=&quot;main&quot;/&gt;&lt;rect x=&quot;320&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 等待人工确认 说明&quot; data-detail=&quot;ui&quot;/&gt;&lt;rect x=&quot;580&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 confirm_plan 说明&quot; data-detail=&quot;main&quot;/&gt;&lt;rect x=&quot;850&quot; y=&quot;100&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 replan 说明&quot; data-detail=&quot;main&quot;/&gt;&lt;rect x=&quot;60&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 generate_queries 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;rect x=&quot;320&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 web_search × N 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;rect x=&quot;580&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 critique 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;rect x=&quot;850&quot; y=&quot;360&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 退出研究子图 说明&quot; data-detail=&quot;research&quot;/&gt;&lt;rect x=&quot;60&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 outline 说明&quot; data-detail=&quot;writer&quot;/&gt;&lt;rect x=&quot;320&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 draft 说明&quot; data-detail=&quot;writer&quot;/&gt;&lt;rect x=&quot;580&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 critic_review 说明&quot; data-detail=&quot;writer&quot;/&gt;&lt;rect x=&quot;850&quot; y=&quot;650&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 cite_and_polish 说明&quot; data-detail=&quot;writer&quot;/&gt;&lt;rect x=&quot;850&quot; y=&quot;810&quot; width=&quot;160&quot; height=&quot;64&quot; rx=&quot;6&quot; class=&quot;node-hit&quot; tabindex=&quot;0&quot; role=&quot;button&quot; aria-label=&quot;查看 END · 报告 说明&quot; data-detail=&quot;report&quot;/&gt;&lt;/svg&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Info Cards --&gt;
+    &lt;div class=&quot;cards&quot;&gt;
+
+    &lt;/div&gt;
+
+    &lt;!-- Footer --&gt;
+    &lt;p class=&quot;footer&quot;&gt;
+      Architecture diagram &amp;bull; Built with Archify&lt;span class=&quot;no-print&quot;&gt; &amp;bull; Press &lt;kbd&gt;T&lt;/kbd&gt; for theme and &lt;kbd&gt;E&lt;/kbd&gt; for export&lt;/span&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    /* ============================================================
+       Theme toggle — persists to localStorage, respects system pref
+       ============================================================ */
+    var Archify = {};
+
+    Archify.theme = (function () {
+      var STORAGE_KEY = &#x27;archify-theme&#x27;;
+      var html = document.documentElement;
+      var btn = document.getElementById(&#x27;btn-theme&#x27;);
+      var icon = document.getElementById(&#x27;theme-icon&#x27;);
+      var label = document.getElementById(&#x27;theme-label&#x27;);
+
+      // localStorage can throw (blocked cookies, sandboxed iframes); the whole
+      // script element dies on an uncaught error, so guard every access.
+      function readStored() {
+        try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; }
+      }
+      function writeStored(value) {
+        try { localStorage.setItem(STORAGE_KEY, value); } catch (_) {}
+      }
+      function urlOverride() {
+        // URL param wins (useful for deterministic screenshots / share links)
+        try {
+          var param = new URLSearchParams(window.location.search).get(&#x27;theme&#x27;);
+          if (param === &#x27;light&#x27; || param === &#x27;dark&#x27;) return param;
+        } catch (_) {}
+        return null;
+      }
+
+      function resolveInitial() {
+        var fromUrl = urlOverride();
+        if (fromUrl) return fromUrl;
+        var saved = readStored();
+        if (saved === &#x27;light&#x27; || saved === &#x27;dark&#x27;) return saved;
+        return window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;).matches ? &#x27;light&#x27; : &#x27;dark&#x27;;
+      }
+
+      function apply(theme) {
+        html.setAttribute(&#x27;data-theme&#x27;, theme);
+        icon.textContent = theme === &#x27;dark&#x27; ? &#x27;\u263E&#x27; : &#x27;\u263C&#x27;;
+        label.textContent = theme === &#x27;dark&#x27; ? &#x27;Dark&#x27; : &#x27;Light&#x27;;
+        btn.setAttribute(&#x27;aria-pressed&#x27;, theme === &#x27;light&#x27; ? &#x27;true&#x27; : &#x27;false&#x27;);
+      }
+
+      function toggle() {
+        var next = html.getAttribute(&#x27;data-theme&#x27;) === &#x27;dark&#x27; ? &#x27;light&#x27; : &#x27;dark&#x27;;
+        apply(next);
+        writeStored(next);
+      }
+
+      apply(resolveInitial());
+      btn.addEventListener(&#x27;click&#x27;, toggle);
+
+      // Follow live OS theme changes while the user has no explicit preference.
+      try {
+        var media = window.matchMedia(&#x27;(prefers-color-scheme: light)&#x27;);
+        var onChange = function (e) {
+          var saved = readStored();
+          if (urlOverride() || saved === &#x27;light&#x27; || saved === &#x27;dark&#x27;) return;
+          apply(e.matches ? &#x27;light&#x27; : &#x27;dark&#x27;);
+        };
+        if (media.addEventListener) media.addEventListener(&#x27;change&#x27;, onChange);
+        else if (media.addListener) media.addListener(onChange);
+      } catch (_) {}
+
+      return { toggle: toggle };
+    })();
+
+    /* ============================================================
+       Export — PNG / JPEG / WebP / SVG (download) and Copy PNG (clipboard)
+
+       Raster exports are always rendered at 4x source resolution for
+       maximum sharpness. The trick: we set the serialized SVG&#x27;s
+       `width`/`height` to viewBox * 4 so the browser rasterizes the
+       vectors at that resolution natively. drawImage then draws at
+       the image&#x27;s natural size (no upscaling = no blur).
+
+       JPEG/WebP paint the current theme&#x27;s background explicitly since
+       those formats have no alpha channel.
+       ============================================================ */
+    (function () {
+      var RASTER_SCALE = 4;
+
+      function diagramFilename() {
+        var title = (document.title || &#x27;diagram&#x27;)
+          .replace(/\s+Architecture(\s+Diagram)?$/i, &#x27;&#x27;)
+          .replace(/\s+Diagram$/i, &#x27;&#x27;)
+          .trim();
+        return title.replace(/[^a-z0-9_\-]+/gi, &#x27;-&#x27;)
+                    .toLowerCase()
+                    .replace(/^-+|-+$/g, &#x27;&#x27;) || &#x27;diagram&#x27;;
+      }
+
+      function currentBg() {
+        return getComputedStyle(document.body).backgroundColor || &#x27;#ffffff&#x27;;
+      }
+
+      /**
+       * Serialize the main SVG into a standalone document.
+       *
+       * Two modes:
+       * - Default (opts.autoTheme=false) — locks the serialized SVG to the
+       *   viewer&#x27;s current theme. Used by the raster pipeline
+       *   (PNG/JPEG/WebP/clipboard) because canvas rasterization needs
+       *   deterministic colors; a raster cannot react to
+       *   prefers-color-scheme after encoding.
+       * - autoTheme=true — emits BOTH dark and light variable sets plus a
+       *   `@media (prefers-color-scheme)` rule so the resulting SVG
+       *   self-themes when embedded in GitHub READMEs or other hosts that
+       *   expose a color scheme. Used for &quot;Download SVG&quot;.
+       */
+      function serializeSvg(scale, opts) {
+        // scale: integer multiplier for intrinsic SVG pixel dimensions used by
+        // the raster path. Defaults to 1 (natural size) for SVG download.
+        scale = scale || 1;
+        opts = opts || {};
+        var autoTheme = opts.autoTheme === true;
+
+        var svg = document.querySelector(&#x27;.diagram-container svg&#x27;);
+        var clone = svg.cloneNode(true);
+
+        var vb = svg.viewBox.baseVal;
+        // Scale width/height so the browser rasterizes the vectors at target
+        // resolution directly. viewBox stays unchanged so coordinates don&#x27;t
+        // shift. This is the key to sharp rasters — do NOT scale later via
+        // canvas upscaling.
+        clone.setAttribute(&#x27;width&#x27;, vb.width * scale);
+        clone.setAttribute(&#x27;height&#x27;, vb.height * scale);
+        clone.setAttribute(&#x27;xmlns&#x27;, &#x27;http://www.w3.org/2000/svg&#x27;);
+
+        // Only the SVG-relevant rules: semantic classes, markers, and the
+        // theme variable blocks. Toolbar/cards/print CSS can never apply
+        // inside a standalone SVG and would only bloat the export.
+        var hostStyle = (function () {
+          var out = [];
+          Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+            var rules;
+            try { rules = sheet.cssRules; } catch (_) { return; } // cross-origin
+            if (!rules) return;
+            Array.prototype.forEach.call(rules, function (rule) {
+              if (rule.type !== 1) return; // plain style rules only
+              var sel = rule.selectorText || &#x27;&#x27;;
+              if (/(^|,)\s*(svg|:root|\[data-theme|\.c-|\.t-|\.a-|\.m-)/.test(sel)) {
+                out.push(rule.cssText);
+              }
+            });
+          });
+          return out.join(&#x27;\n&#x27;);
+        })();
+
+        // Derive the variable list from the stylesheet so newly added theme
+        // variables can never be missed by the export pipeline again
+        // (--lane-fill/--lane-stroke once were).
+        var varNames = (function () {
+          var seen = {};
+          var names = [];
+          (hostStyle.match(/--[a-zA-Z0-9-]+(?=\s*:)/g) || []).forEach(function (n) {
+            if (!seen[n]) { seen[n] = true; names.push(n); }
+          });
+          return names;
+        })();
+
+        // Resolve the full variable set for a given data-theme via an
+        // off-DOM probe, independent of what the viewer is currently set to.
+        function resolveVars(themeAttr) {
+          var probe = document.createElement(&#x27;div&#x27;);
+          probe.setAttribute(&#x27;data-theme&#x27;, themeAttr);
+          probe.style.cssText = &#x27;position:absolute;width:0;height:0;visibility:hidden;&#x27;;
+          document.body.appendChild(probe);
+          try {
+            var c = getComputedStyle(probe);
+            return varNames.map(function (n) {
+              return n + &#x27;: &#x27; + c.getPropertyValue(n).trim() + &#x27;;&#x27;;
+            }).join(&#x27; &#x27;);
+          } finally {
+            document.body.removeChild(probe);
+          }
+        }
+
+        // Prepend a local()-only @font-face block for each weight so that the
+        // sandboxed image-rendering context used during PNG/JPEG/WebP export
+        // can find JetBrains Mono if the user has it installed locally, and
+        // falls through cleanly to the monospace stack otherwise. The usual
+        // Google-Fonts &lt;link&gt; in the host document is unreachable from the
+        // serialized SVG, so url()-sourced faces would just hang.
+        var fontFallback = [400, 500, 600, 700].map(function (w) {
+          return &quot;@font-face { font-family: &#x27;JetBrains Mono&#x27;; font-weight: &quot; + w +
+                 &quot;; src: local(&#x27;JetBrains Mono&#x27;), local(&#x27;JetBrainsMono-Regular&#x27;); }&quot;;
+        }).join(&#x27;\n&#x27;);
+
+        var style = document.createElementNS(&#x27;http://www.w3.org/2000/svg&#x27;, &#x27;style&#x27;);
+        var bgRect = document.createElementNS(&#x27;http://www.w3.org/2000/svg&#x27;, &#x27;rect&#x27;);
+        bgRect.setAttribute(&#x27;width&#x27;, &#x27;100%&#x27;);
+        bgRect.setAttribute(&#x27;height&#x27;, &#x27;100%&#x27;);
+
+        if (autoTheme) {
+          // Dual-theme SVG. Dark is the default (so hosts without
+          // prefers-color-scheme still render), light swaps in via media
+          // query, and svg[data-theme=&quot;...&quot;] still lets downstream
+          // consumers force a specific theme.
+          var darkVars = resolveVars(&#x27;dark&#x27;);
+          var lightVars = resolveVars(&#x27;light&#x27;);
+
+          style.textContent =
+            fontFallback + &quot;\n&quot; +
+            &quot;svg { font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace; }\n&quot; +
+            hostStyle + &quot;\n&quot; +
+            &quot;:root, svg { &quot; + darkVars + &quot; }\n&quot; +
+            &quot;@media (prefers-color-scheme: light) { :root, svg { &quot; + lightVars + &quot; } }\n&quot; +
+            &quot;svg[data-theme=\&quot;light\&quot;] { &quot; + lightVars + &quot; }\n&quot; +
+            &quot;svg[data-theme=\&quot;dark\&quot;] { &quot; + darkVars + &quot; }\n&quot; +
+            &quot;rect.c-bg-rect { fill: var(--bg); }\n&quot;;
+
+          // Don&#x27;t lock the serialized SVG to the viewer&#x27;s current theme.
+          clone.removeAttribute(&#x27;data-theme&#x27;);
+          // Background follows the CSS variable, not a fixed color, so it
+          // swaps with the media query.
+          bgRect.setAttribute(&#x27;class&#x27;, &#x27;c-bg-rect&#x27;);
+        } else {
+          // Raster path: lock to the viewer&#x27;s current theme.
+          var theme = document.documentElement.getAttribute(&#x27;data-theme&#x27;) || &#x27;dark&#x27;;
+          var themeHost = document.querySelector(&#x27;[data-theme=&quot;&#x27; + theme + &#x27;&quot;]&#x27;) || document.documentElement;
+          var computed = getComputedStyle(themeHost);
+          var vars = varNames.map(function (n) {
+            return n + &#x27;: &#x27; + computed.getPropertyValue(n).trim() + &#x27;;&#x27;;
+          }).join(&#x27; &#x27;);
+
+          // IMPORTANT: inject the resolved variables AFTER hostStyle,
+          // otherwise hostStyle&#x27;s &quot;:root, [data-theme=\&quot;dark\&quot;] { ... }&quot; rule
+          // overrides our chosen theme via later-in-cascade equal-specificity.
+          // Keep this order.
+          style.textContent =
+            fontFallback + &quot;\n&quot; +
+            &quot;svg { font-family: &#x27;JetBrains Mono&#x27;, ui-monospace, SFMono-Regular, Menlo, Consolas, &#x27;DejaVu Sans Mono&#x27;, &#x27;Liberation Mono&#x27;, &#x27;Noto Sans Mono CJK SC&#x27;, &#x27;PingFang SC&#x27;, &#x27;Hiragino Sans GB&#x27;, &#x27;Microsoft YaHei&#x27;, monospace; }\n&quot; +
+            hostStyle + &quot;\n&quot; +
+            &quot;:root, svg { &quot; + vars + &quot; }\n&quot;;
+
+          bgRect.setAttribute(&#x27;fill&#x27;, computed.getPropertyValue(&#x27;--bg&#x27;).trim() || &#x27;#ffffff&#x27;);
+        }
+
+        clone.insertBefore(style, clone.firstChild);
+        clone.insertBefore(bgRect, style.nextSibling);
+
+        return {
+          svgString: new XMLSerializer().serializeToString(clone),
+          width: vb.width * scale,
+          height: vb.height * scale
+        };
+      }
+
+      function download(blob, filename) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement(&#x27;a&#x27;);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      }
+
+      // Conservative upper bound on total canvas pixels. Older Safari on iOS
+      // silently produces a blank canvas above ~16 Mpx; Chrome / Firefox /
+      // desktop Safari are far higher but start failing on memory-constrained
+      // devices. We pick the largest integer scale in {4,3,2,1} whose target
+      // pixel count fits under this cap.
+      var MAX_CANVAS_PIXELS = 16 * 1024 * 1024;
+
+      function pickSafeScale(vbW, vbH) {
+        for (var s = RASTER_SCALE; s &gt;= 1; s--) {
+          if (vbW * s * vbH * s &lt;= MAX_CANVAS_PIXELS) return s;
+        }
+        return 1;
+      }
+
+      function rasterize(format) {
+        // Serialize at a safe scale (RASTER_SCALE=4 by default, reduced if the
+        // resulting canvas would exceed MAX_CANVAS_PIXELS). The SVG itself is
+        // rasterized at target resolution natively; drawImage draws at natural
+        // size — no upsampling blur.
+        var svg = document.querySelector(&#x27;.diagram-container svg&#x27;);
+        var vb = svg.viewBox.baseVal;
+        var scale = pickSafeScale(vb.width, vb.height);
+        var data = serializeSvg(scale);
+        var svgBlob = new Blob([data.svgString], { type: &#x27;image/svg+xml;charset=utf-8&#x27; });
+        var svgUrl = URL.createObjectURL(svgBlob);
+
+        return new Promise(function (resolve, reject) {
+          var img = new Image();
+          img.onload = function () {
+            var canvas = document.createElement(&#x27;canvas&#x27;);
+            canvas.width = data.width;
+            canvas.height = data.height;
+            var ctx = canvas.getContext(&#x27;2d&#x27;);
+            if (format === &#x27;jpeg&#x27;) {
+              ctx.fillStyle = currentBg();
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            // Draw at natural size — SVG was already rasterized at target res.
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(svgUrl);
+            var mime = format === &#x27;jpeg&#x27; ? &#x27;image/jpeg&#x27; :
+                       format === &#x27;webp&#x27; ? &#x27;image/webp&#x27; : &#x27;image/png&#x27;;
+            var quality = format === &#x27;png&#x27; ? undefined : 0.95;
+            canvas.toBlob(function (blob) {
+              if (!blob) reject(new Error(&#x27;toBlob returned null for &#x27; + format));
+              else resolve(blob);
+            }, mime, quality);
+          };
+          img.onerror = function (e) {
+            URL.revokeObjectURL(svgUrl);
+            reject(e);
+          };
+          img.src = svgUrl;
+        });
+      }
+
+      var menu = document.getElementById(&#x27;export-menu&#x27;);
+      var btn = document.getElementById(&#x27;btn-export&#x27;);
+      var items = function () {
+        return Array.prototype.slice.call(menu.querySelectorAll(&#x27;button[role=&quot;menuitem&quot;]&#x27;));
+      };
+
+      // ---- Clipboard support ----------------------------------------------
+      function canCopyImage() {
+        return typeof ClipboardItem !== &#x27;undefined&#x27; &amp;&amp;
+               navigator.clipboard &amp;&amp;
+               typeof navigator.clipboard.write === &#x27;function&#x27;;
+      }
+
+      // ---- Raster format detection ----------------------------------------
+      // canvas.toBlob(&#x27;image/webp&#x27;) silently returns a PNG on browsers without
+      // WebP encoding (older Safari), so detect explicitly.
+      function supports(format) {
+        if (format === &#x27;svg&#x27; || format === &#x27;png&#x27;) return true;
+        var mime = format === &#x27;jpeg&#x27; ? &#x27;image/jpeg&#x27; : &#x27;image/webp&#x27;;
+        try {
+          var c = document.createElement(&#x27;canvas&#x27;);
+          c.width = c.height = 2;
+          return c.toDataURL(mime).indexOf(&#x27;data:&#x27; + mime) === 0;
+        } catch (_) { return false; }
+      }
+
+      // Gray out unsupported items.
+      items().forEach(function (it) {
+        if (it.dataset.format &amp;&amp; !supports(it.dataset.format)) {
+          it.disabled = true;
+          it.title = &#x27;Not supported by this browser&#x27;;
+          it.style.opacity = &#x27;0.5&#x27;;
+        }
+        if (it.dataset.action === &#x27;copy&#x27; &amp;&amp; !canCopyImage()) {
+          it.disabled = true;
+          it.title = &#x27;Clipboard image write not supported by this browser&#x27;;
+          it.style.opacity = &#x27;0.5&#x27;;
+        }
+      });
+
+      // ---- Toast ----------------------------------------------------------
+      // A live region only announces CHANGES to an existing node, so the toast
+      // element is created once up front and updated in place.
+      var toastEl = document.createElement(&#x27;div&#x27;);
+      toastEl.className = &#x27;archify-toast&#x27;;
+      toastEl.setAttribute(&#x27;role&#x27;, &#x27;status&#x27;);
+      document.body.appendChild(toastEl);
+      var toastTimer = null;
+
+      function toast(msg) {
+        toastEl.textContent = &#x27;&#x27;;
+        requestAnimationFrame(function () {
+          toastEl.textContent = msg;
+          toastEl.classList.add(&#x27;show&#x27;);
+        });
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove(&#x27;show&#x27;); }, 1500);
+      }
+
+      function open(focusLast) {
+        menu.classList.add(&#x27;open&#x27;);
+        btn.setAttribute(&#x27;aria-expanded&#x27;, &#x27;true&#x27;);
+        var available = items().filter(function (i) { return !i.disabled; });
+        var target = focusLast ? available[available.length - 1] : available[0];
+        if (target) target.focus();
+      }
+      function close(focusTrigger) {
+        menu.classList.remove(&#x27;open&#x27;);
+        btn.setAttribute(&#x27;aria-expanded&#x27;, &#x27;false&#x27;);
+        if (focusTrigger) btn.focus();
+      }
+      function isOpen() { return menu.classList.contains(&#x27;open&#x27;); }
+
+      btn.addEventListener(&#x27;click&#x27;, function (e) {
+        e.stopPropagation();
+        if (isOpen()) close(false);
+        else open();
+      });
+      // APG menu-button pattern: ArrowDown/ArrowUp on the trigger opens the menu.
+      btn.addEventListener(&#x27;keydown&#x27;, function (e) {
+        if (e.key === &#x27;ArrowDown&#x27; || e.key === &#x27;ArrowUp&#x27;) {
+          e.preventDefault();
+          if (!isOpen()) open(e.key === &#x27;ArrowUp&#x27;);
+        }
+      });
+      document.addEventListener(&#x27;click&#x27;, function (e) {
+        if (!menu.contains(e.target) &amp;&amp; e.target !== btn) close(false);
+      });
+
+      // Keyboard navigation inside the menu.
+      //   Menu items: Up/Down, Home/End.
+      //   Esc closes + returns focus to trigger; Tab closes.
+      menu.addEventListener(&#x27;keydown&#x27;, function (e) {
+        if (e.key === &#x27;Escape&#x27;) { e.preventDefault(); close(true); return; }
+        if (e.key === &#x27;Tab&#x27;)    { close(false); return; }
+
+        var available = items().filter(function (i) { return !i.disabled; });
+        var current = available.indexOf(document.activeElement);
+        switch (e.key) {
+          case &#x27;ArrowDown&#x27;:
+            e.preventDefault();
+            if (available.length) available[(current + 1 + available.length) % available.length].focus();
+            break;
+          case &#x27;ArrowUp&#x27;:
+            e.preventDefault();
+            if (available.length) available[(current - 1 + available.length) % available.length].focus();
+            break;
+          case &#x27;Home&#x27;:
+            e.preventDefault();
+            if (available[0]) available[0].focus();
+            break;
+          case &#x27;End&#x27;:
+            e.preventDefault();
+            if (available.length) available[available.length - 1].focus();
+            break;
+        }
+      });
+
+      function runExport(format) {
+        var base = diagramFilename();
+        close(true);
+        return (format === &#x27;svg&#x27;
+          ? Promise.resolve(serializeSvg(1, { autoTheme: true })).then(function (d) {
+              download(new Blob([d.svgString], { type: &#x27;image/svg+xml;charset=utf-8&#x27; }), base + &#x27;.svg&#x27;);
+            })
+          : rasterize(format).then(function (blob) {
+              download(blob, base + &#x27;.&#x27; + format);
+            })
+        ).catch(function (err) {
+          console.error(err);
+          alert(&#x27;Export failed: &#x27; + (err &amp;&amp; err.message ? err.message : format));
+        });
+      }
+
+      function runCopy() {
+        close(true);
+        if (!canCopyImage()) {
+          alert(&#x27;Clipboard image write not supported in this browser.&#x27;);
+          return;
+        }
+        // WebKit requires ClipboardItem to be constructed synchronously inside
+        // the user gesture — pass the pending Promise&lt;Blob&gt; as the item value.
+        // Browsers that reject promise values throw synchronously; fall back
+        // to awaiting the blob first (works in Chromium/Firefox).
+        var blobPromise = rasterize(&#x27;png&#x27;);
+        var writePromise;
+        try {
+          writePromise = navigator.clipboard.write([new ClipboardItem({ &#x27;image/png&#x27;: blobPromise })]);
+        } catch (_) {
+          writePromise = blobPromise.then(function (blob) {
+            return navigator.clipboard.write([new ClipboardItem({ &#x27;image/png&#x27;: blob })]);
+          });
+        }
+        return writePromise.then(function () {
+          toast(&#x27;Copied PNG to clipboard&#x27;);
+        }).catch(function (err) {
+          console.error(err);
+          alert(&#x27;Copy failed: &#x27; + (err &amp;&amp; err.message ? err.message : &#x27;unknown&#x27;));
+        });
+      }
+
+      menu.addEventListener(&#x27;click&#x27;, function (e) {
+        var copyBtn = e.target.closest(&#x27;button[data-action=&quot;copy&quot;]&#x27;);
+        if (copyBtn &amp;&amp; !copyBtn.disabled) { runCopy(); return; }
+
+        var formatBtn = e.target.closest(&#x27;button[data-format]&#x27;);
+        if (formatBtn &amp;&amp; !formatBtn.disabled) { runExport(formatBtn.dataset.format); }
+      });
+
+      Archify.exportMenu = { open: open, close: close, isOpen: isOpen, run: runExport };
+
+      // Auto-open on page load for demo/screenshot purposes: ?openExport=1
+      // Wait for fonts (so the menu doesn&#x27;t flash before typography lands)
+      // and paint before opening. Fallback timeout for browsers without the
+      // Font Loading API.
+      try {
+        if (new URLSearchParams(window.location.search).get(&#x27;openExport&#x27;) === &#x27;1&#x27;) {
+          var openWhenReady = function () {
+            requestAnimationFrame(function () { requestAnimationFrame(open); });
+          };
+          if (document.fonts &amp;&amp; document.fonts.ready) {
+            document.fonts.ready.then(openWhenReady);
+          } else {
+            setTimeout(openWhenReady, 200);
+          }
+        }
+      } catch (_) {}
+    })();
+
+    /* ============================================================
+       Global keyboard shortcuts
+         T -&gt; toggle theme
+         E -&gt; open export menu
+       Ignored when focus is inside an input/textarea/contenteditable.
+       ============================================================ */
+    document.addEventListener(&#x27;keydown&#x27;, function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var t = e.target;
+      if (t &amp;&amp; (t.tagName === &#x27;INPUT&#x27; || t.tagName === &#x27;TEXTAREA&#x27; || t.isContentEditable)) return;
+      if (e.key === &#x27;t&#x27; || e.key === &#x27;T&#x27;) {
+        e.preventDefault();
+        Archify.theme.toggle();
+      } else if (e.key === &#x27;e&#x27; || e.key === &#x27;E&#x27;) {
+        e.preventDefault();
+        if (!Archify.exportMenu.isOpen()) Archify.exportMenu.open();
+      }
+    });
+  &lt;/script&gt;
+&lt;script&gt;document.querySelectorAll(&#x27;[data-detail]&#x27;).forEach(n=&gt;{function choose(){document.querySelectorAll(&#x27;.node-hit&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));n.classList.add(&#x27;selected&#x27;);parent.postMessage({type:&#x27;review-node&#x27;,id:n.dataset.detail},&#x27;*&#x27;)}n.addEventListener(&#x27;click&#x27;,choose);n.addEventListener(&#x27;keydown&#x27;,e=&gt;{if(e.key===&#x27;Enter&#x27;||e.key===&#x27; &#x27;){e.preventDefault();choose()}})});function resize(){parent.postMessage({type:&#x27;review-height&#x27;,height:document.body.scrollHeight},&#x27;*&#x27;)}new ResizeObserver(resize).observe(document.body);window.addEventListener(&#x27;load&#x27;,resize);&lt;/script&gt;&lt;/body&gt;
+&lt;/html&gt;
+" loading="eager"></iframe></div><div class="note graph-note"><b>读图顺序：</b>系统图从左到右读主链路，再看上下方依赖；执行图从上到下读三层图，沿回边理解重规划与反思循环。手机端可在图内横向滚动。Checkpoint 连到编排入口表示支撑整个图；独立 RedisSaver 与 LangGraph API 托管持久化是不同运行路径。<br><b>执行图口径：</b>“等待 → 确认”表示用户再次提交后跳过已有计划，不是图内连续执行边。图中展开主要业务路径；各阶段预算检查与预算耗尽兜底详见“恢复与预算”。</div><div id="node-detail" class="detail-panel" aria-live="polite"></div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/graph.py">backend/src/agent/graph.py</a><a href="../../backend/src/agent/state.py">backend/src/agent/state.py</a><a href="../../frontend/src/App.tsx">frontend/src/App.tsx</a></div></section><section id="workflow" class="chapter"><header class="chapter-head"><span class="eyebrow">执行路线 · 主图与子图</span><h2>从“确认计划”到“足够的证据”</h2><p>人机交互是任务状态的一部分；研究和写作分别有自己的反馈循环。</p></header><div class="flow"><div class="flow-node"><small>01</small><strong>输入问题</strong><span>主题、研究深度、模型配置</span></div><div class="flow-node"><small>02</small><strong>generate_plan</strong><span>生成 Markdown 计划</span></div><div class="flow-node"><small>03</small><strong>等待用户</strong><span>unconfirmed → awaiting_plan_confirmation</span></div><div class="flow-node"><small>04</small><strong>confirm_plan</strong><span>确认继续 / 反馈重规划</span></div><div class="flow-node"><small>05</small><strong>ResearchAgent</strong><span>补足材料，直到停止条件</span></div><div class="flow-node"><small>06</small><strong>WriterAgent</strong><span>输出可回源报告</span></div></div><div class="split"><article class="panel"><h3>研究循环</h3><div class="loop"><b>预算检查</b><span>↓</span><b>召回已有事实 → 生成查询</b><span>↓ 规范化去重 + 剩余额度截断</span><b>Send 并行搜索 → 摘要 + 来源 + 事实落库</b><span>↓ 汇合</span><b>Critique：is_sufficient / knowledge_gap</b><span>↺ 缺口查询再次检索；满足条件则退出</span></div><p class="muted">停止条件包括：证据足够、最大循环数、搜索预算、无进展、全局 token / 时间预算，或没有可执行的新查询。模型认为“足够”是启发式判断。</p></article><article class="panel"><h3>写作循环</h3><div class="loop"><b>预算检查 → Outline</b><span>↓</span><b>Draft：材料 + 大纲 + 上一版草稿</b><span>↓</span><b>Critic：缺陷、严重级别、是否可润色</b><span>↺ 未就绪且未达修订上限 → Draft</span><b>Cite & Polish → 确定性校验 → Finalize</b><span>全局预算耗尽 → 已有草稿 / 证据兜底</span></div><p class="muted">研究 Critic 判断“材料够不够”；写作 Critic 判断“报告好不好”。修订数达到上限也会进入润色，不能保证所有问题都解决。</p></article></div><div class="note"><b>容易说错的实现细节</b> 当前人工确认走显式状态与再次提交；主图里没有直接调用 <code>interrupt()</code>。前端提交确认状态后，<code>generate_plan</code> 可跳过重复生成，再进入确认路由。不要把所有人机交互都描述为 LangGraph interrupt / Command。</div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/graph.py">backend/src/agent/graph.py</a><a href="../../backend/src/agent/sub_agents/research_agent.py">backend/src/agent/sub_agents/research_agent.py</a><a href="../../backend/src/agent/sub_agents/writer_agent.py">backend/src/agent/sub_agents/writer_agent.py</a></div></section><section id="state" class="chapter"><header class="chapter-head"><span class="eyebrow">核心难点 · Reducer 与边界</span><h2>为什么会从 N 变成 2N？</h2><p>先区分“业务动作执行了一次”与“结果在状态中记了两次”。</p></header><div class="compare"><article class="panel bad"><span class="eyebrow">原始问题</span><h3>生成与执行共写累加字段</h3><div class="tokens"><code>generate: [q1,q2,q3]</code><span>＋ operator.add</span><code>search: [q1,q2,q3]</code><strong>search_query = 6 条</strong></div><p>网页搜索本身仍执行 3 次；状态中出现 50% 重复，导致后续统计、成本归因和引用追踪失真。</p></article><article class="panel good"><span class="eyebrow">修复之后</span><h3>分离语义 + fan-out 前去重</h3><div class="tokens"><code>generated_queries = 3 条</code><code>executed_queries = 3 条</code><code>skipped_duplicate_queries</code><strong>状态查询数 = 3 条</strong></div><p>执行节点不再把查询追加回 <code>search_query</code>。规范化去重也覆盖 follow-up，已执行集合参与过滤。</p></article></div><div class="table-wrap"><table><thead><tr><th>状态类型</th><th>代表字段</th><th>更新规则 / 面试关注点</th></tr></thead><tbody><tr><td>消息</td><td>messages / plan_messages</td><td>add_messages；不是简单重复拼接全部历史。</td></tr><tr><td>累加列表</td><td>generated_queries / executed_queries / sources_gathered / web_search_result</td><td>operator.add；每个节点返回增量，不要把累计状态再次回传。</td></tr><tr><td>累加计数</td><td>web_search_call_count / llm_token_count</td><td>返回本次新增值；父子图之间先求差。</td></tr><tr><td>覆盖状态</td><td>plan_status / report_draft / is_sufficient / revision_count</td><td>保存当前值；列表需要累加还是覆盖必须逐字段设计。</td></tr></tbody></table></div><div class="note"><b>再深一层：父子图重复累加</b> 子图输出包含历史累计状态，父图若直接合并会再次触发 reducer。<code>_subgraph_delta_updates</code> 对计数返回差值、对前缀一致的列表返回新增后缀；Writer 还排除 <code>sources_gathered</code> 回传，避免来源重复。这个适配依赖“累加列表保留历史前缀”的约定。</div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/state.py">backend/src/agent/state.py</a><a href="../../backend/src/agent/graph.py">backend/src/agent/graph.py</a><a href="../../docs/reviews/2026-06-16-agent-harness-benchmark.md">docs/reviews/2026-06-16-agent-harness-benchmark.md</a></div></section><section id="retrieval" class="chapter"><header class="chapter-head"><span class="eyebrow">核心难点 · 事实检索</span><h2>先扩大候选，再竞争最终的 K 个位置</h2><p>原始相似度 Top-K 可能被重复、过期和低质量记录占位；扩大候选让过滤和去重后还有补位空间。</p></header><div class="flow"><div class="flow-node"><small>01</small><strong>Query embedding</strong><span>一次向量化，A/B 复用</span></div><div class="flow-node"><small>02</small><strong>Milvus 召回 3K</strong><span>默认倍率 3，可配置</span></div><div class="flow-node"><small>03</small><strong>过滤与衰减</strong><span>置信度门槛 + 年龄 / 类别 TTL</span></div><div class="flow-node"><small>04</small><strong>质量重排</strong><span>相关性 + 置信度 + 新鲜度</span></div><div class="flow-node"><small>05</small><strong>规范化去重</strong><span>按最高分保留一个规范化文本</span></div><div class="flow-node"><small>06</small><strong>返回 Top-K</strong><span>不保证每次都能补满</span></div></div><div class="formula"><span>retrieval_score</span><strong>0.65 × relevance <em>+</em> 0.25 × confidence <em>+</em> 0.10 × freshness</strong><small>relevance 为 COSINE 相似度，越大越好；confidence 在启用 decay 时使用衰减后的值。是确定性加权规则，不是 LLM reranker。</small></div><div class="simulator"><div><span class="eyebrow">操作演示 · 人工示意数据</span><h3>切换策略，观察候选怎样占位</h3><p>固定 K=5，模拟原始相似度排序。仅帮助理解机制，不复现真实 Milvus 实验或评测指标。</p><div class="segmented" role="group" aria-label="检索策略"><button id="sim-base" aria-pressed="true">原始 Top-K</button><button id="sim-opt" aria-pressed="false">3K + 重排 + 去重</button></div></div><div id="sim-results" aria-live="polite"></div></div><div class="cards"><article class="card"><h3>为什么是 3 倍？</h3><p>工程上用适度额外召回来缓解过滤后的候选不足。现有记录支持“默认选择 3”，不支持“3 是全局最优”。要证明倍率选择，应比较 1 / 2 / 3 / 5 倍的质量、延迟和候选量。</p></article><article class="card"><h3>去重到底是什么？</h3><p>代码用 Unicode 正则去掉非 word 字符，再转小写；属于规范化文本去重。不能合并所有语义相同的改写，也不能自动消解事实冲突；0% 仅是受控集及该指标口径。</p></article><article class="card"><h3>置信度可以信吗？</h3><p>confidence 是存储的事实质量信号，不是经校准的真值概率；与新鲜度一起参与启发式排序。权重与打分尺度会影响结果，不能把高分直接解释成事实正确。</p></article></div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/kb/fact_store.py">backend/src/agent/kb/fact_store.py</a><a href="../../backend/eval/run_retrieval_benchmark.py">backend/eval/run_retrieval_benchmark.py</a></div></section><section id="memory" class="chapter"><header class="chapter-head"><span class="eyebrow">数据设计 · 事实的生命周期</span><h2>Milvus 记事实，Redis 分别记缓存与任务</h2><p>三个存储用途不同，因此它们的失败策略也不同。</p></header><div class="record"><span class="eyebrow">Fact 记录</span><div class="record-fields"><code>vector</code><code>fact_text</code><code>source_url</code><code>research_topic</code><code>confidence</code><code>fact_category</code><code>created_at</code></div><p>搜索摘要 → FactExtractor 提取结构化事实 → 短链接还原真实 URL → embedding → Milvus 插入。下一任务召回事实，为查询生成提供已知上下文。</p></div><div class="table-wrap"><table><thead><tr><th>机制</th><th>实现</th><th>要记住的边界</th></tr></thead><tbody><tr><td>freshness（默认）</td><td>high 7 天 / medium 30 天 / low 180 天</td><td>来自计划阶段的 fresh_level；显式“开始研究 / 需求确认”快捷路径设为 medium。</td></tr><tr><td>lifecycle（可选）</td><td>market_data 7 天；product_info 30 天；strategy 90 天；technology 180 天；historical 无 TTL</td><td>按类别过滤；历史事实不设 TTL 不等于内容永远正确。</td></tr><tr><td>confidence decay</td><td>raw_confidence × max(0.3, 1 − age / (2 × horizon))</td><td>低置信度门槛检查发生在衰减前；衰减后的 confidence 影响重排。</td></tr><tr><td>off / inform</td><td>off 不过滤、不衰减、不标年龄；inform 只加年龄标记和提示</td><td>告知模型旧事实可能过期，避免“已有事实就禁止再次搜索”。</td></tr></tbody></table></div><div class="note warn"><b>时间与冲突的真实边界</b> <code>created_at</code> 缺省是入库时间，可能不同于事实发生时间或来源发布时间。因此“新入库”不一定“内容新”。当前规范化去重也不构成版本替换或冲突裁决系统。</div><div class="table-wrap"><table><thead><tr><th>存储</th><th>保存什么</th><th>失败时</th><th>为什么</th></tr></thead><tbody><tr><td>Milvus FactStore</td><td>跨任务语义事实记忆</td><td>不中断研究；初始化失败冷却后重试，默认 30 秒</td><td>事实库是增强能力，在线检索仍可继续。</td></tr><tr><td>Redis Search Cache</td><td>以 prompt、count 生成 key；结果默认缓存 3600 秒</td><td>降级进程内缓存</td><td>只影响性能和跨进程复用。</td></tr><tr><td>Redis Checkpoint</td><td>图状态与待执行位置</td><td>配置 redis 时默认 fail closed</td><td>静默退内存会破坏“重启可恢复”承诺；本地可显式打开 fallback。</td></tr></tbody></table></div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/kb/lifecycle.py">backend/src/agent/kb/lifecycle.py</a><a href="../../backend/src/agent/kb/provider.py">backend/src/agent/kb/provider.py</a><a href="../../backend/src/agent/search_cache.py">backend/src/agent/search_cache.py</a><a href="../../backend/src/agent/checkpoint.py">backend/src/agent/checkpoint.py</a></div></section><section id="resume" class="chapter"><header class="chapter-head"><span class="eyebrow">可靠性 · 不从零开始</span><h2>恢复计算进度，也恢复预算</h2><p>恢复不是把任务再提交一遍；需要稳定任务身份、持久状态和明确重试边界。</p></header><div class="recovery"><div><span class="eyebrow">故障注入</span><div class="rail"><b>生成 3 个查询 ✓</b><b>搜索 3 次 ✓</b><b class="failure">Critique ×</b><b>报告</b></div></div><div class="compare"><article class="panel"><h3>Restart</h3><p>从头重跑 → 再生成、再搜索</p><strong class="large">6 次搜索</strong><p>查询生成 2 次 · Critique 2 次</p></article><article class="panel good"><h3>Resume</h3><p>相同 thread_id → 读取 pending critique</p><strong class="large">3 次搜索</strong><p>查询生成 1 次 · Critique 2 次</p></article></div></div><div class="note"><b>实验与能力分开说</b> 上面的 6→3 来自 <b>memory checkpoint 的确定性故障注入 harness</b>，证明该失败位置可以复用已完成节点，不是 Redis 跨进程恢复的实测 SLA。代码另有 Redis 持久化路径；LangGraph API runtime 下会禁用这里的自建 checkpointer，交由运行时管理。</div><div class="cards"><article class="card"><h3>恢复入口</h3><p>同一 thread_id 调用 ainvoke(None, config)，恢复待执行节点；传入新消息则在 checkpoint 状态上启动新图步骤。需要检查 snapshot.next，而不是只判断是否有历史消息。</p></article><article class="card"><h3>不能承诺 exactly-once</h3><p>若外部搜索已经成功，但写 checkpoint 前失败，节点可能重放。Checkpoint 避免的是已稳定落盘工作重复执行；外部副作用仍需要幂等键、结果缓存等保护。</p></article><article class="card"><h3>SSE 与任务恢复不同</h3><p>前端使用 LangGraph SDK、streamResumable 等配置接收长任务事件。流断线续传解决事件接收；checkpoint resume 解决图执行进度，两层不要混为一谈。</p></article></div><h3>预算是一组持久状态，不是进程局部变量</h3><div class="flow"><div class="flow-node"><small>01</small><strong>进入节点前</strong><span>检查墙钟时间、已用 token</span></div><div class="flow-node"><small>02</small><strong>并发派发前</strong><span>按剩余搜索次数裁剪查询</span></div><div class="flow-node"><small>03</small><strong>调用完成后</strong><span>把新增用量累加到 state</span></div><div class="flow-node"><small>04</small><strong>证据反思后</strong><span>比对 evidence fingerprint</span></div><div class="flow-node"><small>05</small><strong>达到停止条件</strong><span>结束研究 / Writer 使用兜底</span></div></div><p class="muted">run_started_at、web_search_call_count、llm_token_count、no_progress_rounds、budget_stop_reason 随图状态持久化。token 通常在调用完成后计入，边界检查并不等于对在途调用的硬实时中断。无进展检测比较证据载荷指纹，不是语义等价判断。</p><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/resume.py">backend/src/agent/resume.py</a><a href="../../backend/src/agent/budget.py">backend/src/agent/budget.py</a><a href="../../docs/reviews/2026-06-16-agent-checkpoint-resume-benchmark.md">docs/reviews/2026-06-16-agent-checkpoint-resume-benchmark.md</a><a href="../../frontend/src/lib/langgraphClient.ts">frontend/src/lib/langgraphClient.ts</a></div></section><section id="citation" class="chapter"><header class="chapter-head"><span class="eyebrow">可信输出 · 防止引用链断开</span><h2>让终稿引用回到真正的来源</h2><p>引用存在、URL 合法、来源权威、论断被支持，是四个不同的问题。</p></header><div class="flow"><div class="flow-node"><small>01</small><strong>搜索结果</strong><span>title / url / snippet</span></div><div class="flow-node"><small>02</small><strong>临时别名</strong><span>short_url ↔ 真实 URL</span></div><div class="flow-node"><small>03</small><strong>摘要与来源</strong><span>web_search_result + sources_gathered</span></div><div class="flow-node"><small>04</small><strong>写作与修订</strong><span>基于材料生成与反馈</span></div><div class="flow-node"><small>05</small><strong>引用归一化</strong><span>内部 ID → 数字引用 / 真 URL</span></div><div class="flow-node"><small>06</small><strong>来源索引</strong><span>去重来源，追加报告末尾</span></div></div><div class="cards"><article class="card"><h3>Draft 的护栏</h3><p>对照大纲检查章节；缺失时定向补全。修订输入显式包含上一版草稿，避免 Critic 提了意见但 Writer 从零再写。</p></article><article class="card"><h3>Polish 的护栏</h3><p>启用质量护栏时检查长度比例、章节保留、URL 白名单和部分专名；不合格时回退完整 draft。长度比例阈值在当前实现中为 0.75。</p></article><article class="card"><h3>Critic 的分工</h3><p>研究 Critic 输出证据缺口；写作 Critic 输出修改意见和就绪状态，使用 reflection_model。最终一次反馈也会传入 polish。</p></article><article class="card"><h3>不能保证“零幻觉”</h3><p>确定性检查是局部约束；专名规则是启发式，URL 白名单也不能证明引用支持具体论断。需要 claim–evidence 对齐、来源分级与人工抽检。</p></article></div><div class="note warn"><b>最好的面试解释</b> “我从纯提示词约束走到提示词 + 程序校验 + 回退，并用固定集检查收益。历史 5 题 v3 中 Judge 未判定幻觉，但覆盖和时效性下降，所以我没有把它说成全面质量提升。”</div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/sub_agents/writer_agent.py">backend/src/agent/sub_agents/writer_agent.py</a><a href="../../docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md">docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md</a></div></section><section id="evaluation" class="chapter"><header class="chapter-head"><span class="eyebrow">实验看板 · 简历逐项对账</span><h2>记住结果，也记住分母</h2><p>这些数字来自不同实验。它们回答的问题不同，不能混成一个“大幅提升”的结论。</p></header><div class="metric-board"><article><span>受控检索 · NDCG@5</span><strong>24.6 → 39.4<small>%</small></strong><p>+14.8 个百分点 · paired CI [+9.3, +20.3]</p><div class="bar-pair"><i style="width:24.6%"></i><i style="width:39.4%"></i></div></article><article><span>受控检索 · 重复率</span><strong>29.4 → 0<small>%</small></strong><p>70 个冻结测试查询 · 1,000 条受控事实</p><div class="bar-pair"><i style="width:29.4%"></i><i style="width:0%"></i></div></article></div><div class="table-wrap"><table><thead><tr><th>实验</th><th>设置与结果</th><th>结论边界</th></tr></thead><tbody><tr><td>检索组件 A/B · 2026-08-16</td><td>5 域；100 查询 = 30 dev + 70 test；1,000 条全局候选池；真实 Milvus + bge-m3；每题 5 条分级相关事实及干扰项</td><td>合成受控语料；同一 embedding；优化组合为 3K + 过滤 + 质量排序 + 规范化去重。不能单独归因某一个模块。</td></tr><tr><td>查询状态 A/B · 2026-06-16</td><td>10 题 research-only；平均状态查询 6→3；执行查询 3→3；LLM 调用 8→8；token 29202.8→30084.9</td><td>修复状态记录污染，不证明搜索 API 或 token 成本减少。状态重复率 50%→0%。</td></tr><tr><td>故障注入 · 2026-06-16</td><td>memory checkpoint；critique 瞬时失败；Restart 搜索 6 次、Resume 3 次</td><td>确定性恢复机制验证；不是 Redis 重启稳定性统计。</td></tr><tr><td>历史 E2E · 2026-06-18</td><td>5 题；2 queries / 2 loops；baseline 对比 Guards v3；Judge 五维评分</td><td>小样本、单轮 A/B，检索 / 生成 / Judge 都有方差。</td></tr><tr><td>扩展 E2E 集 · 2026-08-19</td><td>smoke 5 / core 30 / full 100；支持分层、repeat 和离线聚合</td><td>该扩容记录没有运行付费 E2E；不能宣称已完成 core / full 正式 A/B。</td></tr></tbody></table></div><div class="split"><article class="panel"><h3>NDCG 怎样算？</h3><p><code>DCG@K = Σ (2^gain − 1) / log₂(rank + 1)</code></p><p><code>NDCG@K = DCG@K / IDCG@K</code></p><p>rank 从 1 开始；相关性有等级，排得越靠前贡献越大。与仅判断“有没有相关结果”的指标相比，它更关注排序质量。当前评测对规范化文本重复的事实 只给首次命中增益。</p><p><b>配对 bootstrap：</b>以查询为单位对 baseline / optimized 成对有放回采样，计算均值差，重复 10,000 次，取 2.5% / 97.5% 分位数。固定测试集上的区间不跨 0，不等于真实线上必然提升。</p></article><article class="panel"><h3>K=10 的反例必须会讲</h3><p>Unique Precision@10：<b>37.7% → 34.1%</b><br>Recall@10：<b>75.4% → 68.3%</b><br>NDCG@10：<b>41.5% → 46.0%</b></p><p>NDCG 差值 CI 为 <b>[−0.9, +9.8] pp</b>，跨 0。不能说所有 K 都提升。结果提示权重与候选选择有取舍；可能的原因需要分桶与消融验证。</p><p>有效槽位率 82.6%→100% 与 Recall 回退可同时发生：位置补满了，不代表补进来的都是更相关事实。</p></article></div><h3>Judge 五维对照：只说实际改善的维度</h3><div id="judge-chart" class="judge-chart"></div><div class="note warn"><b>综合均分：4.36 → 4.24（−0.12）</b>；Judge 幻觉判定题数：3/5 → 0/5。事实准确性 3.6→4.0、逻辑结构 4.6→4.8 是真实记录，但不能省略覆盖与时效回退后宣称“整体报告质量提升”。</div><div class="sources"><b>回到证据</b><a href="../../docs/reviews/2026-08-16-milvus-retrieval-rerank-v2.md">docs/reviews/2026-08-16-milvus-retrieval-rerank-v2.md</a><a href="../../backend/eval_runs/retrieval_rerank_v2_20260816.json">backend/eval_runs/retrieval_rerank_v2_20260816.json</a><a href="../../docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md">docs/reviews/2026-06-18-prompt-quality-guards-e2e-ab.md</a><a href="../../docs/reviews/2026-08-19-e2e-fixed-set.md">docs/reviews/2026-08-19-e2e-fixed-set.md</a></div></section><section id="tradeoffs" class="chapter"><header class="chapter-head"><span class="eyebrow">技术判断 · 选型与改进</span><h2>面试加分在于讲清取舍</h2><p>以下“下一步”是建议方向，不是已经实现或取得效果的功能。</p></header><div class="table-wrap"><table><thead><tr><th>选择</th><th>当前收益</th><th>代价 / 下一步</th></tr></thead><tbody><tr><td>LangGraph 主图 + 子图</td><td>显式路由、循环、状态聚合与 checkpoint；子图可独立验证</td><td>增加 reducer 与父子边界复杂度；重点测试增量传递和恢复。</td></tr><tr><td>事实级 Memory-Augmented RAG</td><td>比整段原文更紧凑，可附来源、类别与时效元数据</td><td>摘要与抽取可能丢上下文；下一步补原文片段、事件时间与版本证据。</td></tr><tr><td>确定性加权重排</td><td>透明、可复现、不增加 LLM rerank 调用</td><td>权重未必最优、语义重复与冲突未解；下一步做消融、分域分析、语义去重对照。</td></tr><tr><td>并行 fan-out</td><td>独立查询可并发执行，缩短等待链</td><td>聚合、限流、任务额度分配更复杂；并发量与供应商限额需要联合控制。</td></tr><tr><td>Writer–Critic 有限循环</td><td>将修改意见纳入生成，避免无限修订</td><td>额外 token / 延迟；Critic 有偏差，达到次数上限也可能仍有缺陷。</td></tr><tr><td>LLM-as-Judge</td><td>可扩展地评价报告的多个维度</td><td>非真值，受提示词与模型偏差影响；下一步固定版本、重复运行、盲评顺序、人类校准。</td></tr><tr><td>Checkpoint 持久状态</td><td>复用已完成计算，支持失败恢复</td><td>不能自动保证外部副作用 exactly-once；需要幂等、运行身份与恢复集成测试。</td></tr></tbody></table></div><h3>当前工作区扩展：与简历核心分开准备</h3><div class="cards"><article class="card"><h3>多源 / 多媒体检索</h3><p>当前 retrieval.py 支持 DashScope 与 OmniSeek，包含 augment / fallback / only 策略、提供方错误隔离与媒体句柄。fallback 路径按查询顺序执行，用于控制空结果后的 OmniSeek 额度；不能说所有模式都全并行。</p></article><article class="card"><h3>前后端与工程质量</h3><p>React / TypeScript 工作台展示计划、活动路径与 Markdown 报告；后端 Python / LangGraph API。交付门禁包含锁文件、Pytest、Ruff、Mypy、前端 lint / Vitest / build 与主 JS chunk 上限。</p></article><article class="card"><h3>扩展不抢主线</h3><p>秋招先讲“状态—证据—恢复—评测”，再按追问补充多源、媒体与工程加固。当前本地扩展存在未提交内容，不能将其自动归入 3–7 月已交付版本。</p></article></div><div class="sources"><b>回到证据</b><a href="../../backend/src/agent/retrieval.py">backend/src/agent/retrieval.py</a><a href="../../Makefile">Makefile</a><a href="../../docs/plans/2026-07-28-engineering-hardening.md">docs/plans/2026-07-28-engineering-hardening.md</a></div></section><section id="interview" class="chapter"><header class="chapter-head"><span class="eyebrow">主动回忆 · 24 道追问</span><h2>先说出答案，再翻面</h2><p>建议每题说 30–90 秒；使用“问题 → 原因 → 实现 → 验证 → 局限”组织答案。掌握进度保存在当前浏览器。</p></header><div class="quiz"><div class="quiz-top"><span id="quiz-tag" class="eyebrow"></span><span id="quiz-progress"></span></div><h3 id="quiz-q"></h3><div id="quiz-answer" hidden></div><div class="quiz-actions"><button id="quiz-flip" class="primary">显示答案</button><button id="quiz-next">换一题</button><button id="quiz-known">标记已掌握</button><button id="quiz-reset">重置进度</button></div><span id="quiz-feedback" role="status"></span></div><div class="question-toolbar"><h3>全部追问与参考答案</h3><button id="expand-questions">展开全部答案</button></div><details class="question"><summary><span>01</span>用一分钟介绍项目。<em>项目表达</em></summary><p>背景 → 流程 → 个人难点 → 证据 → 边界。长链路研究状态易乱、事实会旧、引用会丢；主图确认计划，Research 迭代检索，Writer 审稿生成；挑查询状态或重排讲深。不要开场罗列所有技术栈。</p></details><details class="question"><summary><span>02</span>为什么不用一个大 Prompt 一次写完？<em>架构</em></summary><p>复杂主题需要外部证据、用户确认和多轮补缺。拆图让每阶段输入、状态、停止条件和失败位置可观察；代价是编排、状态聚合及模型调用成本增加。</p></details><details class="question"><summary><span>03</span>两个 Critic 有什么不同？<em>架构</em></summary><p>Research Critic 看证据充分性与缺口，输出后续查询；Writer Critic 看草稿问题并控制修订 / 润色。一个评价材料，一个评价表达和论证。</p></details><details class="question"><summary><span>04</span>为什么 N 条查询会记录成 2N？<em>状态</em></summary><p>累加 reducer 上，生成节点与执行节点各返回同一查询。实际执行 N 次，状态 2N。分离 generated / executed / skipped，执行结果不回写 search_query，并在派发前去重。</p></details><details class="question"><summary><span>05</span>父子图为什么也会重复累加？<em>状态</em></summary><p>子图返回累计状态，父图 reducer 再次追加历史。通过 _subgraph_delta_updates 返回列表后缀和计数差，保持增量契约；Writer 不把去重来源列表再次追加回父图。</p></details><details class="question"><summary><span>06</span>3 倍过采样解决什么？<em>检索</em></summary><p>Top-K 先被过期与重复项占位，过滤后不足。先召回 3K 扩大补位空间，再过滤、重排、去重取 K。不是调用 3 次 embedding，也不保证始终 K 条。</p></details><details class="question"><summary><span>07</span>重排公式和去重规则是什么？<em>检索</em></summary><p>0.65×相关性 + 0.25×置信度 + 0.10×新鲜度。启用 decay 时 confidence 已衰减。规范化删除非 word 字符并转小写，按分数保留首次；不是语义聚类。</p></details><details class="question"><summary><span>08</span>0% 重复率是不是彻底解决重复事实？<em>检索</em></summary><p>不是。只是在受控测试集与规范化文本去重指标口径下为 0；语义改写可能保留，矛盾事实不会被自动裁决。应分开设计语义去重与版本 / 冲突处理。</p></details><details class="question"><summary><span>09</span>为什么用 NDCG@5？<em>评测</em></summary><p>它评价带等级相关性的前排排序。DCG 使用增益与位置折扣，除理想排序 IDCG 得到归一化值；当前评测对规范化文本重复的事实 后续命中不给增益。</p></details><details class="question"><summary><span>10</span>95% CI +9.3～+20.3 怎样得到？<em>评测</em></summary><p>70 个 test 查询逐题配对，bootstrap 成对有放回采样，算均值差；10,000 次后取 2.5% 和 97.5% 分位。单位是百分点，不是相对百分比。区间仅反映固定集配对差异的抽样不确定性。</p></details><details class="question"><summary><span>11</span>这些检索指标能证明报告质量提升吗？<em>评测</em></summary><p>不能。真实 Milvus + bge-m3，但语料是受控合成集；它验证组件排序、过滤和去重。报告质量要单独跑端到端固定集及重复评测。</p></details><details class="question"><summary><span>12</span>优化有什么反例？<em>评测</em></summary><p>K=10 Precision / Recall 回退，NDCG 增量 CI 跨 0。E2E v3 事实与结构改善，但总均分 4.36→4.24，覆盖和时效下降。这些结果需要保留，下一步做消融和重复运行。</p></details><details class="question"><summary><span>13</span>为什么 Redis 有两种降级策略？<em>可靠性</em></summary><p>Search Cache 是优化，失败退内存还能完成研究；Checkpoint 承担持久恢复承诺，redis 配置下连接失败默认关闭任务路径，避免静默失去持久性。</p></details><details class="question"><summary><span>14</span>Resume 是否保证外部调用只执行一次？<em>可靠性</em></summary><p>不保证。稳定 checkpoint 后可跳过已完成节点；调用成功但 checkpoint 前故障可能重放。幂等键、结果缓存和外部副作用设计仍然必要。</p></details><details class="question"><summary><span>15</span>故障实验的 6→3 与查询 2N→N 是一回事吗？<em>可靠性</em></summary><p>不是。前者是 memory checkpoint 故障注入下，恢复比从头重跑少 3 次搜索；后者是查询状态记录修复，实际搜索都是 N 次。不能混用成本结论。</p></details><details class="question"><summary><span>16</span>任务恢复以后预算会重置吗？<em>可靠性</em></summary><p>不应重置。开始时间、搜索调用数、token、无进展轮数等保存在 LangGraph state。各节点返回增量，父子图也要避免重复累计。当前检查在节点边界，不等于硬实时中止调用。</p></details><details class="question"><summary><span>17</span>Milvus 挂了怎么办？<em>可靠性</em></summary><p>事实记忆作为可选增强，读写失败不阻断研究。FactStoreProvider 初始化失败后冷却重试，默认 30 秒，锁避免并发重复初始化；不是永久 disable。</p></details><details class="question"><summary><span>18</span>如何判断事实过时？<em>记忆</em></summary><p>默认 freshness 按 high/medium/low 使用 7/30/180 天；可选 lifecycle 按类别 TTL。created_at 默认为入库时间，不能冒充事件时间，应补来源发布时间和事实有效期。</p></details><details class="question"><summary><span>19</span>报告 URL 都合法就可信了吗？<em>引用</em></summary><p>不等价。还需知道来源是否权威、内容是否支持论断。现有归一化和白名单避免引用链丢失或新增 URL；不保证语义蕴含，下一步做 claim–evidence 验证。</p></details><details class="question"><summary><span>20</span>为什么 polish 失败要退回 draft？<em>引用</em></summary><p>模型润色可能截断、漏章节、新增专名或来源。程序检查不通过时保留完整草稿，避免较晚的一次生成破坏已有质量；兜底仍不保证 draft 没有事实问题。</p></details><details class="question"><summary><span>21</span>你会怎样设计下一轮可信 A/B？<em>评测</em></summary><p>固定模型、题集、参数与来源快照（可行时）；分离唯一变量；按题配对、多次重复；报告均值、方差、胜率、失败样本和维度回退，并做人类抽检。</p></details><details class="question"><summary><span>22</span>最值得先做的改进？<em>改进</em></summary><p>先保证评测可解释：核心固定集重复 A/B 与人类校准；检索做倍率 / 权重 / 去重消融。再补事件时间、版本冲突和证据级校验，而不是仅堆更多 Agent。</p></details><details class="question"><summary><span>23</span>为何简历截至 7 月却引用 8 月实验？<em>项目表达</em></summary><p>先核对真实经历。若 8 月仍在迭代，应更新截止时间，或明确 3–7 月开发、8 月补充评测。保留真实日期，避免对历史成果的错误归属。</p></details><details class="question"><summary><span>24</span>人工确认一定使用 interrupt 吗？<em>架构</em></summary><p>当前主图是 plan_status 和 awaiting_plan_confirmation，再次提交后进行确认 / 重规划；并未直接调用 interrupt()。恢复待执行节点与提交新的人类反馈是不同输入路径。</p></details></section><section id="sources" class="chapter"><header class="chapter-head"><span class="eyebrow">收尾路线 · 回到代码</span><h2>30 分钟复习安排与证据索引</h2><p>文件链接相对于当前 HTML 所在位置；在原仓库目录打开可直接定位。单独复制 HTML 不影响图表和复习功能，但源码链接需要一起保留仓库。</p></header><div class="flow"><div class="flow-node"><small>01</small><strong>0–5 分钟</strong><span>说清一分钟介绍 + 总图</span></div><div class="flow-node"><small>02</small><strong>5–12 分钟</strong><span>查询状态 + Milvus 重排</span></div><div class="flow-node"><small>03</small><strong>12–18 分钟</strong><span>Checkpoint + 引用保护</span></div><div class="flow-node"><small>04</small><strong>18–24 分钟</strong><span>实验数字 + 反例边界</span></div><div class="flow-node"><small>05</small><strong>24–30 分钟</strong><span>抽题口述 + 回看不会的点</span></div></div><div class="table-wrap"><table><thead><tr><th>要复习的问题</th><th>首选文件</th></tr></thead><tbody><tr><td>主图与父子状态契约</td><td><a href="../../backend/src/agent/graph.py">graph.py</a> · <a href="../../backend/src/agent/state.py">state.py</a></td></tr><tr><td>研究循环与搜索派发</td><td><a href="../../backend/src/agent/sub_agents/research_agent.py">research_agent.py</a></td></tr><tr><td>写作修订与引用归一化</td><td><a href="../../backend/src/agent/sub_agents/writer_agent.py">writer_agent.py</a></td></tr><tr><td>事实重排与生命周期</td><td><a href="../../backend/src/agent/kb/fact_store.py">fact_store.py</a> · <a href="../../backend/src/agent/kb/lifecycle.py">lifecycle.py</a></td></tr><tr><td>持久化、恢复与预算</td><td><a href="../../backend/src/agent/checkpoint.py">checkpoint.py</a> · <a href="../../backend/src/agent/resume.py">resume.py</a> · <a href="../../backend/src/agent/budget.py">budget.py</a></td></tr><tr><td>检索数据与评分实现</td><td><a href="../../backend/eval/retrieval_dataset.py">retrieval_dataset.py</a> · <a href="../../backend/eval/run_retrieval_benchmark.py">run_retrieval_benchmark.py</a></td></tr><tr><td>E2E 与 Judge</td><td><a href="../../backend/eval/evaluator.py">evaluator.py</a> · <a href="../../backend/eval/judge.py">judge.py</a> · <a href="../../backend/eval/aggregate.py">aggregate.py</a></td></tr><tr><td>回归验证</td><td><a href="../../backend/test/test_graph.py">test_graph.py</a> · <a href="../../backend/test/test_fact_store.py">test_fact_store.py</a> · <a href="../../backend/test/test_checkpoint.py">test_checkpoint.py</a> · <a href="../../Makefile">Makefile</a></td></tr></tbody></table></div><div class="note"><b>本页事实范围</b> 依据 2026-09-07 本地代码和已存档评测记录整理；没有运行付费 LLM / 搜索 / embedding 评测，没有外推线上收益。历史指标与当前实现分别标注；建议方向不作为已完成能力。</div></section><footer>DeepResearch 秋招复习图谱 · 代码实现 / 历史实测 / 建议方向分别呈现。<br>本文件内嵌全部样式、交互与图表；可独立离线打开。</footer></main><script>
+const nodes={"ui": ["React 工作台", "用户输入主题、研究深度和模型；等待计划时提交确认或反馈；通过 LangGraph SDK 展示消息与节点活动。", "关注前端确认状态、长任务流式事件、流恢复和任务恢复的区别。"], "main": ["LangGraph 主图", "generate_plan → 确认路由 → ResearchAgent → WriterAgent。重规划回到 generate_plan；父子图累计输出通过增量适配再合并。", "关键状态：messages、plan、plan_status、fresh_level，以及持久预算。"], "research": ["ResearchAgent · 证据循环", "先从 KB 召回事实辅助查询生成，再去重、Send 派发检索、生成摘要、提取事实，汇合到 Critique 判断缺口。", "关键状态：generated_queries、executed_queries、web_search_result、sources_gathered、is_sufficient、follow_up_queries。"], "writer": ["WriterAgent · 修订循环", "预算检查后生成大纲和草稿；Critic 未就绪且未到修订上限则回到草稿；最后归一化引用、润色并校验。", "关键状态：report_outline、report_draft、critic_feedback、ready_for_polish、revision_count。"], "report": ["报告与来源索引", "输出 Markdown，将内部引用标识映射回检索来源，追加来源索引；当前扩展可附经过 URL 检查的媒体证据。", "URL 能回源不代表来源权威，也不证明每句论断得到支持。"], "milvus": ["Milvus · 事实记忆", "存储带向量、来源、类别、置信度和时间的事实。召回时执行过滤、衰减、重排与规范化去重；不是搜索结果缓存。", "跨任务复用；初始化失败可冷却重试。数据新鲜度仍受入库时间与事实时间差异影响。"], "cache": ["Redis Search Cache · 可降级优化", "缓存外部搜索结果，以 prompt 与 count 生成 key，默认 TTL 3600 秒；失效后可重新调用搜索。", "Redis 不可用时降级进程内缓存；缓存命中率不是持久任务恢复能力。"], "checkpoint": ["Checkpoint · 持久任务状态", "按稳定 thread_id 保存图状态和待执行位置；失败后从已保存进度继续。redis 配置下默认连接失败即失败，不静默改成内存。", "LangGraph API runtime 下由运行时管理；独立图路径可使用 RedisSaver。故障 benchmark 使用 memory。"]}, questions=[["用一分钟介绍项目。", "背景 → 流程 → 个人难点 → 证据 → 边界。长链路研究状态易乱、事实会旧、引用会丢；主图确认计划，Research 迭代检索，Writer 审稿生成；挑查询状态或重排讲深。不要开场罗列所有技术栈。", "项目表达"], ["为什么不用一个大 Prompt 一次写完？", "复杂主题需要外部证据、用户确认和多轮补缺。拆图让每阶段输入、状态、停止条件和失败位置可观察；代价是编排、状态聚合及模型调用成本增加。", "架构"], ["两个 Critic 有什么不同？", "Research Critic 看证据充分性与缺口，输出后续查询；Writer Critic 看草稿问题并控制修订 / 润色。一个评价材料，一个评价表达和论证。", "架构"], ["为什么 N 条查询会记录成 2N？", "累加 reducer 上，生成节点与执行节点各返回同一查询。实际执行 N 次，状态 2N。分离 generated / executed / skipped，执行结果不回写 search_query，并在派发前去重。", "状态"], ["父子图为什么也会重复累加？", "子图返回累计状态，父图 reducer 再次追加历史。通过 _subgraph_delta_updates 返回列表后缀和计数差，保持增量契约；Writer 不把去重来源列表再次追加回父图。", "状态"], ["3 倍过采样解决什么？", "Top-K 先被过期与重复项占位，过滤后不足。先召回 3K 扩大补位空间，再过滤、重排、去重取 K。不是调用 3 次 embedding，也不保证始终 K 条。", "检索"], ["重排公式和去重规则是什么？", "0.65×相关性 + 0.25×置信度 + 0.10×新鲜度。启用 decay 时 confidence 已衰减。规范化删除非 word 字符并转小写，按分数保留首次；不是语义聚类。", "检索"], ["0% 重复率是不是彻底解决重复事实？", "不是。只是在受控测试集与规范化文本去重指标口径下为 0；语义改写可能保留，矛盾事实不会被自动裁决。应分开设计语义去重与版本 / 冲突处理。", "检索"], ["为什么用 NDCG@5？", "它评价带等级相关性的前排排序。DCG 使用增益与位置折扣，除理想排序 IDCG 得到归一化值；当前评测对规范化文本重复的事实 后续命中不给增益。", "评测"], ["95% CI +9.3～+20.3 怎样得到？", "70 个 test 查询逐题配对，bootstrap 成对有放回采样，算均值差；10,000 次后取 2.5% 和 97.5% 分位。单位是百分点，不是相对百分比。区间仅反映固定集配对差异的抽样不确定性。", "评测"], ["这些检索指标能证明报告质量提升吗？", "不能。真实 Milvus + bge-m3，但语料是受控合成集；它验证组件排序、过滤和去重。报告质量要单独跑端到端固定集及重复评测。", "评测"], ["优化有什么反例？", "K=10 Precision / Recall 回退，NDCG 增量 CI 跨 0。E2E v3 事实与结构改善，但总均分 4.36→4.24，覆盖和时效下降。这些结果需要保留，下一步做消融和重复运行。", "评测"], ["为什么 Redis 有两种降级策略？", "Search Cache 是优化，失败退内存还能完成研究；Checkpoint 承担持久恢复承诺，redis 配置下连接失败默认关闭任务路径，避免静默失去持久性。", "可靠性"], ["Resume 是否保证外部调用只执行一次？", "不保证。稳定 checkpoint 后可跳过已完成节点；调用成功但 checkpoint 前故障可能重放。幂等键、结果缓存和外部副作用设计仍然必要。", "可靠性"], ["故障实验的 6→3 与查询 2N→N 是一回事吗？", "不是。前者是 memory checkpoint 故障注入下，恢复比从头重跑少 3 次搜索；后者是查询状态记录修复，实际搜索都是 N 次。不能混用成本结论。", "可靠性"], ["任务恢复以后预算会重置吗？", "不应重置。开始时间、搜索调用数、token、无进展轮数等保存在 LangGraph state。各节点返回增量，父子图也要避免重复累计。当前检查在节点边界，不等于硬实时中止调用。", "可靠性"], ["Milvus 挂了怎么办？", "事实记忆作为可选增强，读写失败不阻断研究。FactStoreProvider 初始化失败后冷却重试，默认 30 秒，锁避免并发重复初始化；不是永久 disable。", "可靠性"], ["如何判断事实过时？", "默认 freshness 按 high/medium/low 使用 7/30/180 天；可选 lifecycle 按类别 TTL。created_at 默认为入库时间，不能冒充事件时间，应补来源发布时间和事实有效期。", "记忆"], ["报告 URL 都合法就可信了吗？", "不等价。还需知道来源是否权威、内容是否支持论断。现有归一化和白名单避免引用链丢失或新增 URL；不保证语义蕴含，下一步做 claim–evidence 验证。", "引用"], ["为什么 polish 失败要退回 draft？", "模型润色可能截断、漏章节、新增专名或来源。程序检查不通过时保留完整草稿，避免较晚的一次生成破坏已有质量；兜底仍不保证 draft 没有事实问题。", "引用"], ["你会怎样设计下一轮可信 A/B？", "固定模型、题集、参数与来源快照（可行时）；分离唯一变量；按题配对、多次重复；报告均值、方差、胜率、失败样本和维度回退，并做人类抽检。", "评测"], ["最值得先做的改进？", "先保证评测可解释：核心固定集重复 A/B 与人类校准；检索做倍率 / 权重 / 去重消融。再补事件时间、版本冲突和证据级校验，而不是仅堆更多 Agent。", "改进"], ["为何简历截至 7 月却引用 8 月实验？", "先核对真实经历。若 8 月仍在迭代，应更新截止时间，或明确 3–7 月开发、8 月补充评测。保留真实日期，避免对历史成果的错误归属。", "项目表达"], ["人工确认一定使用 interrupt 吗？", "当前主图是 plan_status 和 awaiting_plan_confirmation，再次提交后进行确认 / 重规划；并未直接调用 interrupt()。恢复待执行节点与提交新的人类反馈是不同输入路径。", "架构"]];
+const $=s=>document.querySelector(s);
+function selectNode(id){document.querySelectorAll('[data-node]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.node===id)));const n=nodes[id];$('#node-detail').innerHTML=`<h3>${n[0]}</h3><p>${n[1]}</p><p><b>面试抓手：</b>${n[2]}</p>`;}
+document.querySelectorAll('[data-node]').forEach(b=>b.addEventListener('click',()=>selectNode(b.dataset.node)));selectNode('main');
+const candidates=[{fact:'官方发布：产品 A 当前版本',rel:.98,conf:.90,fresh:.90,key:'a'},{fact:'官方发布：产品 A 当前版本。',rel:.97,conf:.90,fresh:.90,key:'a'},{fact:'产品 A 旧版价格（过期）',rel:.96,conf:.95,fresh:0,key:'old',expired:true},{fact:'同名产品的论坛猜测',rel:.94,conf:.60,fresh:.10,key:'noise'},{fact:'当前价格与计费口径',rel:.92,conf:.95,fresh:.95,key:'b'},{fact:'官方发布时间',rel:.90,conf:.98,fresh:.98,key:'c'},{fact:'版本适用范围与限制',rel:.88,conf:.97,fresh:.97,key:'d'},{fact:'当前功能与兼容性',rel:.87,conf:.96,fresh:.95,key:'e'},{fact:'同名旧产品背景',rel:.84,conf:.62,fresh:.15,key:'f'},{fact:'兼容性。',rel:.80,conf:.64,fresh:.40,key:'g'},{fact:'过期市场数据',rel:.79,conf:.90,fresh:0,key:'h',expired:true},{fact:'当前价格与计费口径。',rel:.78,conf:.95,fresh:.95,key:'b'},{fact:'相关开发者笔记',rel:.76,conf:.62,fresh:.40,key:'i'},{fact:'过期产品公告',rel:.75,conf:.94,fresh:0,key:'j',expired:true},{fact:'历史非核心信息',rel:.72,conf:.61,fresh:.20,key:'k'}];
+function simulation(opt){$('#sim-base').setAttribute('aria-pressed',String(!opt));$('#sim-opt').setAttribute('aria-pressed',String(opt));let chosen=(opt?candidates:candidates.slice(0,5)).filter(c=>!c.expired).map(c=>({...c,score:.65*c.rel+.25*c.conf+.1*c.fresh}));if(opt){chosen.sort((a,b)=>b.score-a.score);const seen=new Set();chosen=chosen.filter(c=>!seen.has(c.key)&&seen.add(c.key)).slice(0,5);}const seen=new Set();$('#sim-results').innerHTML=chosen.map((c,i)=>{const dup=seen.has(c.key);seen.add(c.key);return `<div class="sim-row ${dup?'dup':''}"><b>${i+1}. ${c.fact}</b><span>${dup?'重复':opt?c.score.toFixed(3):'有效候选'}</span></div>`}).join('')+`<div class="sim-summary">${opt?'15 个候选 → 过滤 / 重排 / 去重 → 5 条独立文本':'先取 5 条 → 过滤掉 1 条过期记录 → 剩 4 条，其中 1 条重复'}<br>baseline 同样执行过滤；差异在候选空间、重排与去重。</div>`;}simulation(false);$('#sim-base').onclick=()=>simulation(false);$('#sim-opt').onclick=()=>simulation(true);
+const dims=[['事实准确性',3.6,4.0],['信息覆盖',4.8,4.4],['逻辑结构',4.6,4.8],['时效性',5.0,4.2],['引用质量',3.8,3.8]];$('#judge-chart').innerHTML='<p class="muted">灰色：baseline　蓝色：Guards v3　满分 5 分</p>'+dims.map(([n,a,b])=>`<div class="judge-row"><b>${n}</b><div class="judge-bars"><i style="width:${a/5*100}%"></i><i style="width:${b/5*100}%"></i></div><span>${a.toFixed(1)} → ${b.toFixed(1)}</span></div>`).join('');
+let known=new Set(),qi=0;try{const saved=JSON.parse(localStorage.getItem('deepresearch-review-v1')||'[]');if(Array.isArray(saved)) known=new Set(saved.filter(x=>Number.isInteger(x)&&x>=0&&x<questions.length));}catch{};
+function save(){try{localStorage.setItem('deepresearch-review-v1',JSON.stringify([...known]));}catch{}}
+function showQuestion(){const q=questions[qi];$('#quiz-q').textContent=q[0];$('#quiz-tag').textContent=`${q[2]} · ${String(qi+1).padStart(2,'0')}/${questions.length}`;$('#quiz-answer').textContent=q[1];$('#quiz-answer').hidden=true;$('#quiz-flip').textContent='显示答案';$('#quiz-flip').setAttribute('aria-expanded','false');$('#quiz-known').textContent=known.has(qi)?'取消掌握标记':'标记已掌握';$('#quiz-progress').textContent=`已掌握 ${known.size} / ${questions.length}`;$('#quiz-feedback').textContent='';}
+$('#quiz-flip').onclick=()=>{const a=$('#quiz-answer');a.hidden=!a.hidden;$('#quiz-flip').textContent=a.hidden?'显示答案':'收起答案';$('#quiz-flip').setAttribute('aria-expanded',String(!a.hidden));};
+$('#quiz-next').onclick=()=>{let choices=questions.map((_,i)=>i).filter(i=>i!==qi&&!known.has(i));if(!choices.length)choices=questions.map((_,i)=>i).filter(i=>i!==qi);qi=choices[Math.floor(Math.random()*choices.length)];showQuestion();};
+$('#quiz-known').onclick=()=>{if(known.has(qi))known.delete(qi);else known.add(qi);save();$('#quiz-known').textContent=known.has(qi)?'取消掌握标记':'标记已掌握';$('#quiz-progress').textContent=`已掌握 ${known.size} / ${questions.length}`;$('#quiz-feedback').textContent=known.has(qi)?'已记录；下一题优先选择未掌握内容。':'已取消标记。';};
+$('#quiz-reset').onclick=()=>{known.clear();save();showQuestion();$('#quiz-feedback').textContent='掌握进度已重置。';};showQuestion();
+$('#expand-questions').onclick=()=>{const all=[...document.querySelectorAll('.question')],open=!all.every(d=>d.open);all.forEach(d=>d.open=open);$('#expand-questions').textContent=open?'收起全部答案':'展开全部答案';};
+const chapters=[...document.querySelectorAll('.chapter')];$('#search').oninput=e=>{const term=e.target.value.trim().toLocaleLowerCase();let count=0;chapters.forEach(s=>{const match=!term||s.textContent.toLocaleLowerCase().includes(term);s.hidden=!match;if(match)count++;});$('#empty').hidden=count>0;$('#search-status').textContent=term?`匹配 ${count} 个章节`:'';};
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',()=>{$('#search').value='';chapters.forEach(s=>s.hidden=false);$('#empty').hidden=true;$('#search-status').textContent='';}));
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.nav a').forEach(a=>{const active=a.getAttribute('href')==='#'+e.target.id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});}});},{rootMargin:'-10% 0px -65% 0px'});chapters.forEach(c=>observer.observe(c));
+let printState=[];window.addEventListener('beforeprint',()=>{printState=[...document.querySelectorAll('.question')].map(d=>d.open);document.querySelectorAll('.question').forEach(d=>d.open=true);});window.addEventListener('afterprint',()=>document.querySelectorAll('.question').forEach((d,i)=>d.open=!!printState[i]));$('#print').onclick=()=>window.print();
+
+document.querySelectorAll('[data-graph]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-graph]').forEach(x=>{const active=x===b;x.setAttribute('aria-pressed',String(active));x.classList.toggle('primary',active)});document.querySelectorAll('.graph-pane').forEach(p=>p.hidden=p.id!=='graph-'+b.dataset.graph);});
+window.addEventListener('message',e=>{const f=[...document.querySelectorAll('.graph-frame')].find(f=>f.contentWindow===e.source);if(!f)return;if(e.data?.type==='review-node'&&nodes[e.data.id])selectNode(e.data.id);if(e.data?.type==='review-height'&&Number.isFinite(e.data.height)&&e.data.height>100)f.style.height=Math.min(1600,e.data.height+4)+'px';});
+</script></body></html>

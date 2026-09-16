@@ -1,0 +1,415 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "执行图 · 分支、并发与反馈环",
+    "subtitle": "蓝色为主执行路径；粉色虚线为等待与回退；灰色虚线为状态流转",
+    "viewBox": [
+      1160,
+      970
+    ]
+  },
+  "components": [
+    {
+      "id": "plan",
+      "label": "generate_plan",
+      "pos": [
+        60,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "生成计划"
+    },
+    {
+      "id": "wait",
+      "label": "等待人工确认",
+      "pos": [
+        320,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "frontend",
+      "sublabel": "再次提交确认或反馈"
+    },
+    {
+      "id": "confirm",
+      "label": "confirm_plan",
+      "pos": [
+        580,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "评估确认 / 新鲜度"
+    },
+    {
+      "id": "replan",
+      "label": "replan",
+      "pos": [
+        850,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "plan_status = unconfirmed"
+    },
+    {
+      "id": "queries",
+      "label": "generate_queries",
+      "pos": [
+        60,
+        360
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "已有事实 + 查询去重"
+    },
+    {
+      "id": "web",
+      "label": "web_search × N",
+      "pos": [
+        320,
+        360
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "external",
+      "sublabel": "Send fan-out / 摘要 / 来源"
+    },
+    {
+      "id": "critique",
+      "label": "critique",
+      "pos": [
+        580,
+        360
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "判断证据缺口"
+    },
+    {
+      "id": "exit",
+      "label": "退出研究子图",
+      "pos": [
+        850,
+        360
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "返回增量状态"
+    },
+    {
+      "id": "outline",
+      "label": "outline",
+      "pos": [
+        60,
+        650
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "生成大纲"
+    },
+    {
+      "id": "draft",
+      "label": "draft",
+      "pos": [
+        320,
+        650
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "草稿 / 根据反馈修订"
+    },
+    {
+      "id": "critic",
+      "label": "critic_review",
+      "pos": [
+        580,
+        650
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "审稿 / 就绪标记"
+    },
+    {
+      "id": "polish",
+      "label": "cite_and_polish",
+      "pos": [
+        850,
+        650
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "backend",
+      "sublabel": "引用归一化 / 校验 / 回退"
+    },
+    {
+      "id": "end",
+      "label": "END · 报告",
+      "pos": [
+        850,
+        810
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "type": "frontend",
+      "sublabel": "终稿或已有材料兜底"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "主图 · 人工确认与重规划",
+      "wraps": [
+        "plan",
+        "wait",
+        "confirm",
+        "replan"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "ResearchAgent 子图 · 查询、并发检索与证据循环",
+      "wraps": [
+        "queries",
+        "web",
+        "critique",
+        "exit"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "WriterAgent 子图 · 草稿、审查与有限修订",
+      "wraps": [
+        "outline",
+        "draft",
+        "critic",
+        "polish"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "plan",
+      "to": "wait",
+      "label": "未确认",
+      "variant": "emphasis"
+    },
+    {
+      "from": "wait",
+      "to": "confirm",
+      "label": "再次提交",
+      "variant": "dashed"
+    },
+    {
+      "from": "confirm",
+      "to": "replan",
+      "label": "不满足",
+      "variant": "emphasis"
+    },
+    {
+      "from": "replan",
+      "to": "plan",
+      "label": "重新生成",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          930,
+          35
+        ],
+        [
+          140,
+          35
+        ]
+      ],
+      "labelAt": [
+        525,
+        30
+      ]
+    },
+    {
+      "from": "confirm",
+      "to": "queries",
+      "label": "确认通过 → 调用 ResearchAgent",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          660,
+          245
+        ],
+        [
+          20,
+          245
+        ],
+        [
+          20,
+          392
+        ]
+      ],
+      "labelAt": [
+        388,
+        237
+      ]
+    },
+    {
+      "from": "queries",
+      "to": "web",
+      "label": "去重 / 配额裁剪",
+      "variant": "emphasis"
+    },
+    {
+      "from": "web",
+      "to": "critique",
+      "label": "并行结果汇合",
+      "variant": "emphasis"
+    },
+    {
+      "from": "critique",
+      "to": "exit",
+      "label": "足够 / 达到停止条件",
+      "variant": "emphasis"
+    },
+    {
+      "from": "critique",
+      "to": "web",
+      "label": "不足 → follow-up 查询",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          660,
+          482
+        ],
+        [
+          400,
+          482
+        ]
+      ],
+      "labelAt": [
+        530,
+        473
+      ]
+    },
+    {
+      "from": "exit",
+      "to": "outline",
+      "label": "主图接收研究结果 → 调用 WriterAgent",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          930,
+          555
+        ],
+        [
+          20,
+          555
+        ],
+        [
+          20,
+          682
+        ]
+      ],
+      "labelAt": [
+        465,
+        546
+      ]
+    },
+    {
+      "from": "outline",
+      "to": "draft",
+      "label": "",
+      "variant": "emphasis"
+    },
+    {
+      "from": "draft",
+      "to": "critic",
+      "label": "",
+      "variant": "emphasis"
+    },
+    {
+      "from": "critic",
+      "to": "polish",
+      "label": "就绪 / 修订达上限",
+      "variant": "emphasis"
+    },
+    {
+      "from": "critic",
+      "to": "draft",
+      "label": "继续修订 + 上一版草稿",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          660,
+          770
+        ],
+        [
+          400,
+          770
+        ]
+      ],
+      "labelAt": [
+        530,
+        761
+      ]
+    },
+    {
+      "from": "polish",
+      "to": "end",
+      "label": "主图 → END",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1010,
+        775
+      ]
+    }
+  ],
+  "cards": []
+}
